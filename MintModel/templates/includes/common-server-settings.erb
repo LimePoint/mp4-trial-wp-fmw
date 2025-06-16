@@ -1,0 +1,105 @@
+
+            {
+                "name": "<%= @name %>",
+                "type": "Server",
+                "params":
+                [
+                    {
+                        "type": "Log",
+                        "attributes":
+                        {
+                            "RotateLogOnStartup": "true",
+                            "MemoryBufferSize": "500",
+                            "StdoutFormat": "standard",
+                            "BufferSizeKB": "8",
+                            "ServerLoggingBridgeUseParentLoggersEnabled": "false",
+                            "RedirectStderrToServerLogEnabled": "false",
+                            "StdoutSeverity": "Off",
+							<% if ['obpobh','obposb','obpobu','obpsoa'].include?@asset_code %>
+							<% if @name.start_with?("AdminServer") %>
+							"DomainLogBroadcastSeverity": "Error",
+							<% else %>
+                            "DomainLogBroadcastSeverity": "Off",
+							<% end %>
+							<% else %>
+							"DomainLogBroadcastSeverity": "Error",
+							<% end %>
+                            "MemoryBufferSeverity": "Error",
+                            "StdoutLogStack": "true",
+                            "RedirectStdoutToServerLogEnabled": "false",
+                            "NumberOfFilesLimited": "true",
+                            "FileCount": "5",
+                            "RotationType": "byTime",
+                            "DomainLogBroadcasterBufferSize": "10",
+                            "Log4jLoggingEnabled": "false",
+                            "FileMinSize": "10000",
+                            "RotationTime": "05:00",
+                            "FileTimeSpan": "24",
+                            "StacktraceDepth": "5",
+                            "DateFormatPattern": "MMM d, yyyy h:mm:ss a z",
+                            "LogFileSeverity": "Warning",
+                            "LoggerSeverity": "Warning",
+                            "FileName": "<%= @log_location_path %>/<%= @domain_name %>/%Name%/%Name%.log"
+                        }
+                    },
+                    {
+                        "type": "WebServer",
+                        "params":
+                        [
+                            {
+                                "type": "WebServerLog",
+                                "attributes":
+                                {
+                                    "RotateLogOnStartup": "true",
+                                    "NumberOfFilesLimited": "true",
+                                    "FileCount": "5",
+                                    "RotationType": "byTime",
+                                    "FileMinSize": "10000",
+                                    "RotationTime": "05:00",
+                                    "FileTimeSpan": "24",
+                                    "FileName": "<%= @log_location_path %>/<%= @domain_name %>/%Name%/access.log",
+                                    "LogFileFormat": "extended",
+                                    <% if ['obpobh','obposb'].include?@asset_code %>
+                                    "ELFFields": "cs(X-Forwarded-For) c-ip auth_user date time time-taken cs-method cs-uri sc-status ctx-ecid ctx-rid bytes cs(correlationID)"
+                                    <% elsif ['obpsoa','obpobu','obpdoc','obpipm','obpoam','obpoim'].include?@asset_code %>
+                                    "ELFFields": "cs(X-Forwarded-For) c-ip auth_user date time time-taken cs-method cs-uri sc-status ctx-ecid ctx-rid bytes"
+                                    <% else %>
+                                    "ELFFields": "cs(X-Forwarded-For) c-ip auth_user date time time-taken cs-method cs-uri sc-status ctx-ecid ctx-rid"
+                                    <% end %>
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "type": "SSL",
+                        "attributes":
+                        {
+                            "ServerPrivateKeyAlias": "<%= @keystore_alias %>",
+                            "HostnameVerificationIgnored": "false",
+                            "Enabled": "true",
+                            "ServerPrivateKeyPassPhrase": "<%= PasswordVault.get_password(@password_vault_name +'/'+ @asset_code, 'keystorepass' ) %>",
+                            "JSSEEnabled": "true",
+                            "UseServerCerts": "true"
+                        }
+                    },
+                    {
+                        "type": "ServerDiagnosticConfig",
+                        "attributes":
+                        {
+                            "DiagnosticContextEnabled": "true"
+                        }
+                    }
+                ],
+                "attributes":
+                {
+                    "Notes": "Server settings",
+                    "KeyStores": "CustomIdentityAndCustomTrust",
+                    "CustomIdentityKeyStoreFileName": "<%= @certs_location_path %>/<%= @keystore_name %>.jks",
+                    "CustomTrustKeyStoreFileName": "<%= @certs_location_path %>/<%= @truststore %>",
+                    "CustomIdentityKeyStorePassPhrase": "<%= PasswordVault.get_password(@password_vault_name +'/'+ @asset_code, 'keystorepass' ) %>",
+                    "CustomTrustKeyStorePassPhrase": "<%= PasswordVault.get_password(@password_vault_name +'/'+ @asset_code, 'truststorepass' ) %>",
+                    "CustomIdentityKeyStoreType": "jks",
+                    "CustomTrustKeyStoreType": "jks",
+                    "AdministrationPort": "%ListenPort+2000%"
+                }
+            }

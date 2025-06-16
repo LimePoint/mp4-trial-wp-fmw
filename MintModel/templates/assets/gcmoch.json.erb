@@ -1,0 +1,1834 @@
+<% environment_name = @environment['name'] %>
+<% password_vault_name = @common['password_vault_name'] %>
+<% dns_domain = @gcmoch["dns_domain_name"] ; if dns_domain.nil? then dns_domain=".mintpress.io" end %>
+<% asset_code = 'gcmoch'  %>
+<% uniquifier = Time.now.to_i.to_s %>
+
+<% base_install_path = '/oracle/app/binaries/' + asset_code  %>
+<% base_domain_path  = '/oracle/app/runtime/' + asset_code %>
+<% inventory_install_path = '/oracle/app/runtime/' + asset_code + '/oraInventory' %>
+<% log_location_path   = '/oracle/app/logs/' + asset_code %>
+<% certs_location_path = '/oracle/app/runtime/' + environment_name + '/certs' %>
+
+<% java_install_path      = base_domain_path + '/java' %>
+<% jdk_version            = '8' %>
+<% oracle_client_install_path  = base_domain_path+ '/dbclient' %>
+<% siebel_install_path           = base_domain_path + '/siebel' %>
+<% temp_location          = base_install_path + '/tmp' %>
+
+{
+    "internalVariables":
+    {
+        "environmentName": "<%= environment_name %>",
+        "assetCode": "<%= asset_code %>",
+        "instanceParallelShutdown": "true",
+        "instanceParallelStartup": "false",
+        <% if environment_name =~ /^gcmcix/ or environment_name =~ /^gcmdev/ %>
+        "instanceStartupOrder": "MintPress::Siebel::Gateway,MintPress::Siebel::ApplicationInterface,MintPress::SiebelApi::ServerDeployment",
+        "instanceShutdownOrder": "MintPress::Siebel::ApplicationInterface,MintPress::SiebelApi::ServerDeployment,MintPress::Siebel::Gateway",
+        <% else %>
+        "instanceStartupOrder": "MintPress::SiebelApi::GatewayClusterDeployment,MintPress::Siebel::ApplicationInterface,MintPress::SiebelApi::ServerDeployment",
+        "instanceShutdownOrder": "MintPress::Siebel::ApplicationInterface,MintPress::SiebelApi::ServerDeployment,MintPress::SiebelApi::GatewayClusterDeployment",
+        <% end %>
+        "defaultHostTargetTmpDirectory": "<%= temp_location %>",
+        "backupFolder": "<%= base_install_path %>/backup",
+        "gtwysrvr": "<%= @gcmoch['gtgw_hostnameList'][0] %>",
+        "ent_name": "<%= @gcmoch['siebel']['ent_name'] %>",
+        "basedomainpath": "<%= base_domain_path %>",
+        "javainstallpath": "<%= java_install_path %>",
+        "ai_installpath": "<%= siebel_install_path %>/ai_external",
+        "siebelinstallpath": "<%= siebel_install_path %>",
+        "databaseSysUsername": "<%= @gcmoch['database']['sysdba_username'].upcase %>",
+        "databaseSysUserPassword": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, @gcmoch['database']['sysdba_username'].upcase) %>",
+        "keystorePassword" : "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, @common['keyStore']) %>",
+        "truststorePassword" : "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, @common['trustStore']) %>",
+        "walletPassword" : "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, @common['ldap_wallet']) %>",
+        "defaultHostTargetUsername": "oracle",
+        "defaultHostTargetPassword": "oinstall",
+        "stageRootDir": "/oracle/gcmstage",
+        "ochCustomStage": "/oracle/gcmstage/custom/och"
+    },
+    "projectName": "<%= environment_name %>_<%= asset_code %>_<%= uniquifier %>",
+    "uniquifier": "<%= uniquifier %>",
+    "site": {
+      "hostList": [
+        {
+          "id": "<%= @gcmoch['hostnameList'][0] %>",
+          "user": "${defaultHostTargetUsername}",
+          "password": "${defaultHostTargetPassword}",
+          "address": "<%= @gcmoch['hostnameList'][0] %><%= dns_domain %>",
+          "attributes":{
+            "options":{
+              "environment_variables": {
+                "CV_ASSUME_DISTID": "OL7"
+              }
+            },
+            "targetTempDir": "${defaultHostTargetTmpDirectory}"
+          }
+        }
+      ],
+      "installationList": [
+        {
+            "name": "jdk-32",
+            "product": "jdk",
+            "version": "1.8.0_321",
+            "installPath": "<%= base_domain_path %>/jdk-32",
+            "softwareStage": "${stageRootDir}/jdk/jre-8u321-linux-i586.tar.gz",
+            "attributes": {
+              "newworld": "true"
+            }
+        },
+        {
+          "name": "dbclient",
+          "product": "OracleDatabaseClient",
+          "version": "19.3.0.0",
+          "softwareStage": "${defaultHostTargetTmpDirectory}/dbclient/LINUX_193000_client/client32",
+          "installPath": "<%= oracle_client_install_path %>",
+          "dependsonList": [
+             "jdk-32"
+           ],
+         "attributes": {
+            "newworld": "true",
+            "OracleDatabaseClient": {
+               "inventory_location": "<%= inventory_install_path %>",
+               "owner": "oracle",
+               "group": "oracle",
+               "oracle_home": "<%= oracle_client_install_path %>",
+               "oracle_base": "<%= base_domain_path %>",
+               "install_type": "Administrator",
+               "ignore_prereqs": "true",
+               "ignore_sysprereqs": "true"
+               }
+            }
+        },
+        {
+            "name": "jdk",
+            "product": "jdk",
+            "version": "1.8.0_281",
+            "installPath": "<%= java_install_path %>",
+            "softwareStage": "${stageRootDir}/jdk/jdk-8u281-linux-x64.tar.gz",
+            "attributes": {
+              "newworld": "true"
+            }
+        },
+        {
+            "name": "siebel_ai",
+            "product": "Siebel",
+            "version": "17.0",
+            "installPath": "<%= siebel_install_path %>/ai_external",
+            "softwareStage": "${stageRootDir}/och/Siebel_non_MDE/IP17.0/Siebel_Enterprise_Server",
+            "dependsonList": [
+              "jdk",
+              "dbclient"
+            ],
+            "attributes": {
+              "newworld": "true",
+              "fmw_home": "${/installPath}",
+              "Siebel": {
+                "upgrade_version": "20.10",
+                "upgrade_stage": "${stageRootDir}/och/Siebel_non_MDE/IP20.10/20.10.0.0.update/Linux/Server/Siebel_Enterprise_Server", 
+                "ec_http_connection_port": "<%= @gcmoch['siebel_ec']['http_connection_port'] %>",
+                "ec_https_redirect_port": "<%= @gcmoch['siebel_ec']['https_redirect_port'] %>",
+                "ec_shutdown_port": "<%= @gcmoch['siebel_ec']['shutdown_port'] %>",
+                "ai_http_connection_port": "<%= @gcmoch['siebel_ai']['http_connection_port'] %>",
+                "ai_https_redirect_port": "<%= @gcmoch['siebel_ai']['https_redirect_port'] %>",
+                "ai_shutdown_port": "<%= @gcmoch['siebel_ai']['shutdown_port'] %>",
+                "tls_port": "<%= @gcmoch['siebel_gateway']['tls_port'] %>",
+                "ai_username": "<%= @gcmoch['siebel']['username'] %>",
+                "ai_password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, @gcmoch['siebel']['username']) %>",
+                "ai_shutdown_port": <%= @gcmoch['siebel_ai']['shutdown_port'] %>,
+                "ai_keystore_path": "${stageRootDir}/certs/${environmentName}/siebelkeystore.jks",
+                "ai_keystore_password": "${keystorePassword}",
+                "ai_truststore_path": "${stageRootDir}/certs/${environmentName}/siebelkeystore.jks",
+                "ai_truststore_password": "${truststorePassword}",
+                "application_interface_container_configuration": true,
+                "enterprise_container_configuration": false,
+                "client_oracle_home": "<%= oracle_client_install_path %>",
+                "oracle_home": "<%= siebel_install_path %>/ai_external",
+                "inventory_location": "<%= inventory_install_path %>",
+                "environment_type": "production",
+                "install_type": "New Installation",
+                "installer_is_mde": false
+              }
+          }
+        },
+        {
+            "name": "siebel_ec",
+            "product": "Siebel",
+            "version": "17.0",
+            "installPath": "<%= siebel_install_path %>",
+            "softwareStage": "${stageRootDir}/och/Siebel_non_MDE/IP17.0/Siebel_Enterprise_Server",
+            "dependsonList": [
+              "jdk",
+              "dbclient",
+              "siebel_ai"
+            ],
+            "attributes": {
+              "newworld": "true",
+              "fmw_home": "${/installPath}",
+              "Siebel": {      
+               "upgrade_version": "20.10",
+               "upgrade_stage": "${stageRootDir}/och/Siebel_non_MDE/IP20.10/20.10.0.0.update/Linux/Server/Siebel_Enterprise_Server", 
+               "ec_http_connection_port": "<%= @gcmoch['siebel_ec']['http_connection_port'] %>",
+               "ec_https_redirect_port": "<%= @gcmoch['siebel_ec']['https_redirect_port'] %>",
+               "ec_shutdown_port": "<%= @gcmoch['siebel_ec']['shutdown_port'] %>",
+               "ai_http_connection_port": "<%= @gcmoch['siebel_ai']['http_connection_port'] %>",
+               "ai_https_redirect_port": "<%= @gcmoch['siebel_ai']['https_redirect_port'] %>",
+               "ai_shutdown_port": "<%= @gcmoch['siebel_ai']['shutdown_port'] %>",
+               "tls_port": "<%= @gcmoch['siebel_gateway']['tls_port'] %>",
+                "install_gateway": true,
+                "install_ses": true,
+                "install_eai": true,
+                "install_database_tools": true,            
+                "application_interface_container_configuration": false,
+                "enterprise_container_configuration": true,
+                "client_oracle_home": "<%= oracle_client_install_path %>",
+                "ec_keystore_path": "${stageRootDir}/certs/${environmentName}/siebelkeystore.jks",
+                "ec_keystore_password": "${keystorePassword}",
+                "ec_truststore_path": "${stageRootDir}/certs/${environmentName}/siebelkeystore.jks",
+                "ec_truststore_password": "${truststorePassword}",
+                "oracle_home": "<%= siebel_install_path %>",
+                "environment_type": "production",
+                "inventory_location": "<%= inventory_install_path %>",
+                "install_type": "New Installation",
+                "installer_is_mde": false
+              }
+          }
+        }
+      ],
+      "environmentList": [
+            {
+                "name": "<%= environment_name %>",
+                "mwTopologyList": [
+                    {
+                        "name": "<%= asset_code %>",
+                        "description": "<%= environment_name %> <%= asset_code %> Environment",
+                        "hostInstallationList": [
+                            {
+                            "installationName": "siebel_ai",
+                            "hostIdentifierList": ["<%= @gcmoch['hostnameList'][0] %>"]
+                            },
+                            {
+                            "installationName": "siebel_ec",
+                            "hostIdentifierList": ["<%= @gcmoch['hostnameList'][0] %>"]
+                            }
+                          ],
+                        "instanceList": [
+                            {
+                              "name": "ai_instance",
+                              "type": "MintPress::Siebel::ApplicationInterface",
+                              "installationName": "siebel_ai",
+                              "hostIdentifier": "<%= @gcmoch['hostnameList'][0] %>",
+                              "attributes": {
+                                "has_control": "false",
+                                "newworld": "true",
+                                "scaleout": "false",
+                                "MintPress::Siebel::ApplicationInterface": {
+                                  "servermanager_oracle_home": "${/installations.siebel_ec.installPath}",
+                                  "username": "<%= @gcmoch['siebel']['username'] %>",
+                                  "password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, @gcmoch['siebel']['username']) %>"
+                                }
+                              }
+                            },
+                            {
+                              "name": "db_server",
+                              "type": "MintPress::Siebel::Database",
+                              "installationName": "siebel_ec",
+                              "hostIdentifier": "<%= @gcmoch['hostnameList'][0] %>",
+                              "attributes": {
+                                "newworld": "true",
+                                "scaleout": "false",
+                                "has_control": "false",
+                                "MintPress::Siebel::Database": {
+                                  "client_oracle_home": "<%= oracle_client_install_path %>",
+                                  "db_host": "<%= @gcmoch['database']['scan_address'] %>",
+                                  "db_port": "<%= @gcmoch['database']['listen_port'] %>",
+                                  "sysdba_username": "${databaseSysUsername}",
+                                  "sysdba_password": "${databaseSysUserPassword}",
+                                  "db_service_name": "<%= @gcmoch['database']['service_name'] %>",
+                                  "use_development_settings": true,
+                                  "connect_string": "<%= @gcmoch['database']['connect_url'] %>"
+                                }
+                              }
+                            },
+                                  
+                            {
+                              "name": "ServerDataSrc",
+                              "type": "MintPress::Siebel::DBDatasource",
+                              "installationName": "siebel_ec",
+                              "hostIdentifier": "<%= @gcmoch['hostnameList'][0] %>",
+                              "attributes": {
+                                "newworld": "true",
+                                "scaleout": "false",
+                                "has_control": "false",
+                                "MintPress::Siebel::DBDatasource": {
+                                  "advanced": "false",
+                                  "db_host": "<%= @gcmoch['database']['scan_address'] %>",
+                                  "db_port": <%= @gcmoch['database']['listen_port'] %>,
+                                  "db_service_name": "<%= @gcmoch['database']['service_name'] %>"
+                                }
+                              }
+                            },
+                            {
+                              "name": "siebel_gateway",
+                              "type": "MintPress::Siebel::Gateway",
+                              "installationName": "siebel_ec",
+                              "hostIdentifier": "<%= @gcmoch['gtgw_hostnameList'][0] %>",
+                              "attributes": {
+                                "newworld": "true",
+                                "scaleout": "false",
+                                "has_control": "true",
+                                "MintPress::Siebel::Gateway": {
+                                  "application_interface": "ai_instance",
+                                  "enforce_gateway_configuration": true,                                                                  
+                                  "tls_port": "<%= @gcmoch['siebel_gateway']['tls_port'] %>",
+                                  "client_oracle_home": "<%= oracle_client_install_path %>",
+                                  "primary_language": "@{ 'enu' }",
+                                  "registry_port": "<%= @gcmoch['siebel_gateway']['registry_port'] %>",
+                                  "registry_username": "<%= @gcmoch['siebel']['username'] %>",
+                                  "registry_password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, @gcmoch['siebel']['username']) %>"
+                                }
+                              }
+                            },
+                            {
+                              "name": "Gateway",
+                              "type": "MintPress::Siebel::SecurityProfile",
+                              "installationName": "siebel_ec",
+                              "hostIdentifier": "<%= @gcmoch['hostnameList'][0] %>",
+                              "attributes": { 
+                                "newworld": "true",
+                                "has_control": "false",
+                                "scaleout": "false",
+                                "MintPress::Siebel::SecurityProfile": {
+                                  "mode": "DB",
+                                  "test_user_name": "<%= @gcmoch['siebel']['username'] %>",
+                                  "test_user_password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, @gcmoch['siebel']['username']) %>",
+                                  "access_permission": "ReadWrite",
+                                  "application_interface": "ai_instance",
+                                  "data_sources": "ServerDataSrc",
+                                  "db_security_adapter_propagate_change": "true"
+                                }
+                              }
+                            },
+                            <% unless environment_name =~ /^gcmcix/ or environment_name =~ /^gcmdev/ %>
+                            {
+                              "name": "siebel_gateway_cluster_profile",
+                              "installationName": "siebel_ec",
+                              "type": "MintPress::SiebelApi::GatewayClusterProfile",
+                              "hostIdentifier": "<%= @gcmoch['gtgw_hostnameList'][0] %>",
+                              "attributes": {
+                                "newworld": "true",
+                                "has_control": "false",
+                                "scaleout": "false",
+                                "MintPress::SiebelApi::GatewayClusterProfile": {
+                                  "application_interface": "ai_instance",
+                                  "access_permission": "ReadWrite",
+                                  "client_port": "<%= @gcmoch['siebel_gateway']['registry_client_port'] %>",
+                                  "follower_port": "<%= @gcmoch['siebel_gateway']['registry_follower_port'] %>",
+                                  "leader_port": "<%= @gcmoch['siebel_gateway']['registry_leader_port'] %>"
+                                  }
+                              }
+                          },
+                          {
+                                "name": "siebel_gateway_cluster_deployment",
+                                "type": "MintPress::SiebelApi::GatewayClusterDeployment",
+                                "installationName": "siebel_ec",
+                                "hostIdentifier": "<%= @gcmoch['gtgw_hostnameList'][0] %>",
+                                "attributes": {
+                                  "newworld": "true",
+                                  "has_control": "true",                              
+                                  "scaleout": "false",
+                                  "MintPress::SiebelApi::GatewayClusterDeployment": {
+                                    "application_interface": "ai_instance",
+                                    "gateway_cluster_profile": "siebel_gateway_cluster_profile",
+                                    "description": "gateway cluster deployment",
+                                    "node_registry_list": [
+                                       { "physical_host_ip": "<%= @gcmoch['gtgw_hostnameList'][0] %><%= @gcmoch['dns_domain_name'] %>:<%= @gcmoch['siebel_ec']['https_redirect_port'] %>", is_primary: true }
+                                          <% @gcmoch['gtgw_hostnameList'][1..-1].each do |h| %>,
+                                              { "physical_host_ip": "<%= h %><%= @gcmoch['dns_domain_name'] %>:<%= @gcmoch['siebel_ec']['https_redirect_port'] %>"  }
+                                          <% end %>
+                                     ],
+                                    "node_service_list": [
+                                       { "physical_host_ip": "<%= @gcmoch['gtgw_hostnameList'][0] %><%= @gcmoch['dns_domain_name'] %>:<%= @gcmoch['siebel_ec']['https_redirect_port'] %>", is_primary: true }
+                                          <% @gcmoch['gtgw_hostnameList'][1..-1].each do |h| %>,
+                                            { "physical_host_ip": "<%= h %><%= @gcmoch['dns_domain_name'] %>:<%= @gcmoch['siebel_ec']['https_redirect_port'] %>" }
+                                          <% end %>
+                                      ]             
+                                    
+                                  }   
+                              }
+                            },
+                            <% end %>
+                            {
+                              "name": "siebel_enterprise_profile",
+                              "type": "MintPress::SiebelApi::EnterpriseProfile",
+                              "installationName": "siebel_ec",
+                              "hostIdentifier": "<%= @gcmoch['hostnameList'][0] %>",
+                              "attributes": {
+                                "newworld": "true",
+                                "has_control": "false",
+                                "scaleout": "false",
+                                "MintPress::SiebelApi::EnterpriseProfile": {
+                                  "application_interface": "ai_instance",
+                                  "username": "<%= @gcmoch['siebel']['username'] %>",
+                                  "password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, @gcmoch['siebel']['username']) %>",
+                                  "db_connect_string": "<%= @gcmoch['database']['connect_url'] %>",
+                                  "db_username": "<%= @gcmoch['siebel']['username'] %>",
+                                  "db_password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, @gcmoch['siebel']['username']) %>",
+                                  "table_owner": "<%= @gcmoch['database']['table_owner'] %>",
+                                  "sec_adpt_profile_name": "Gateway",
+                                  "encryption_type": "<%= @gcmoch['siebel']['encryption_type'] %>",
+                                  "primary_siebel_fs": "<%= @gcmoch['siebel']['siebelfs'] %>"
+                                  }
+                                }
+                              },
+                              {
+                              "name": "srv_prof",
+                              "type": "MintPress::SiebelApi::ServerProfile",
+                              "installationName": "siebel_ec",
+                              "hostIdentifier": "<%= @gcmoch['appserver_hostnameList'][0] %>",
+                              "attributes": {
+                                "newworld": "true",
+                                "has_control": "false",
+                                "scaleout": "false",
+                                "MintPress::SiebelApi::ServerProfile": {
+                                  "application_interface": "ai_instance",
+                                  "username": "<%= @gcmoch['siebel']['username'] %>",
+                                  "password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, @gcmoch['siebel']['username']) %>",
+                                  "anon_login_username": "<%= @gcmoch['siebel']['anon_user'] %>",
+                                  "anon_login_password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, @gcmoch['siebel']['anon_user']) %>",
+                                  "access_permission": "ReadWrite",
+                                  "use_oracle_connector": "true",
+                                  "scb_port": "<%= @gcmoch['siebel_ec']['sc_broker_port'] %>",
+                                  "local_synch_mgr_port": "<%= @gcmoch['siebel_ec']['network_port_sm'] %>",
+                                  <% if environment_name =~ /^gcmcix/ or environment_name =~ /^gcmdev/ %>
+                                  "enable_comp_groups_sia": "eai,ucm,siebelwebtools,workflow,remote,dataqual,system,cm,dq",
+                                  <% else %>
+                                  "enable_comp_groups_sia": "eai,ucm,workflow,remote,dataqual,system,cm,dq",
+                                  <% end %>
+                                  "clustering_environment_setup": "NotClustered"
+                                 }
+                                }
+                              },
+                              {
+                              "name": "batch_prof",
+                              "type": "MintPress::SiebelApi::ServerProfile",
+                              "installationName": "siebel_ec",
+                              "hostIdentifier": "<%= @gcmoch['batserver_hostnameList'][0] %>",
+                              "attributes": {
+                                "newworld": "true",
+                                "has_control": "false",
+                                "scaleout": "false",
+                                "MintPress::SiebelApi::ServerProfile": {
+                                  "application_interface": "ai_instance",
+                                  "username": "<%= @gcmoch['siebel']['username'] %>",
+                                  "password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, @gcmoch['siebel']['username']) %>",
+                                  "anon_login_username": "<%= @gcmoch['siebel']['anon_user'] %>",
+                                  "anon_login_password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, @gcmoch['siebel']['anon_user']) %>",
+                                  "access_permission": "ReadWrite",
+                                  "use_oracle_connector": "true",
+                                  "scb_port": "<%= @gcmoch['siebel_ec']['sc_broker_port'] %>",
+                                  "local_synch_mgr_port": "<%= @gcmoch['siebel_ec']['network_port_sm'] %>",
+                                  <% if environment_name =~ /^gcmcix/ or environment_name =~ /^gcmdev/ %>
+                                  "enable_comp_groups_sia": "eai,ucm,siebelwebtools,workflow,remote,dataqual,system,cm,dq",
+                                  <% else %>
+                                  "enable_comp_groups_sia": "eai,ucm,workflow,remote,dataqual,system,cm,dq",
+                                  <% end %>
+                                  "clustering_environment_setup": "NotClustered"
+                                  }
+                                }
+                              },
+                              {
+                                "name": "AI_Profile",
+                                "type": "MintPress::SiebelApi::ApplicationInterfaceProfile",
+                                "hostIdentifier": "<%= @gcmoch['hostnameList'][0] %>",
+                                "installationName": "siebel_ec",
+                                "attributes": {
+                                    "has_control": "false",
+                                    "newworld": "true",
+                                    "scaleout": "false",
+                                    "MintPress::SiebelApi::ApplicationInterfaceProfile": {
+                                      "application_interface": "ai_instance",
+                                      "applications": [
+                                            {
+                                              "authentication_properties_anon_password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, @gcmoch['siebel']['ucm_user']) %>",
+                                              "authentication_properties_anon_username": "<%= @gcmoch['siebel']['ucm_user'] %>",
+                                              "authentication_properties_guest_session_timeout": "<%= @gcmoch['siebel_ai']['ucm_guest_session_timeout'] %>",
+                                              "authentication_properties_session_timeout": "<%= @gcmoch['siebel_ai']['ucm_session_timeout'] %>",
+                                              "authentication_properties_session_token_timeout": "<%= @gcmoch['siebel_ai']['ucm_session_token_timeout'] %>",
+                                              "authentication_properties_session_token_max_age": "<%= @gcmoch['siebel_ai']['ucm_session_token_max_age'] %>",
+                                              "authentication_properties_session_timeout_wl_method": "UpdatePrefMsg",
+                                              "authentication_properties_session_timeout_wl_command": "HeartBeat",
+                                              "language": "enu",
+                                              "name": "ucm_enu",
+                                              "object_manager": "ucmobjmgr_enu"
+                                            },
+                                            {
+                                              "authentication_properties_anon_password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, @gcmoch['siebel']['anon_user']) %>",
+                                              "authentication_properties_anon_username": "<%= @gcmoch['siebel']['anon_user'] %>",
+                                              "authentication_properties_guest_session_timeout": "<%= @gcmoch['siebel_ai']['ucm_guest_session_timeout'] %>",
+                                              "authentication_properties_session_timeout": "<%= @gcmoch['siebel_ai']['ucm_session_timeout'] %>",
+                                              "authentication_properties_session_token_timeout": "<%= @gcmoch['siebel_ai']['ucm_session_token_timeout'] %>",
+                                              "authentication_properties_session_token_max_age": "<%= @gcmoch['siebel_ai']['ucm_session_token_max_age'] %>",
+                                              "authentication_properties_session_timeout_wl_method": "UpdatePrefMsg",
+                                              "authentication_properties_session_timeout_wl_command": "HeartBeat",
+                                              "enable_ext_service_only": true,
+                                              "eaisoap_no_sess_in_pref": true,
+                                              "eaisoap_max_retry": "<%= @gcmoch['siebel_ai']['soap_max_retry'] %>",
+                                              "language": "enu",
+                                              "name": "eai_enu",
+                                              "object_manager": "eaiobjmgr_enu"
+                                            },
+                                            <% if environment_name =~ /^gcmcix/ or environment_name =~ /^gcmdev/ %>
+                                            {
+                                              "authentication_properties_anon_password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, @gcmoch['siebel']['anon_user']) %>",
+                                              "authentication_properties_anon_username": "<%= @gcmoch['siebel']['anon_user'] %>",
+                                              "authentication_properties_guest_session_timeout": "<%= @gcmoch['siebel_ai']['ucm_guest_session_timeout'] %>",
+                                              "authentication_properties_session_timeout": "<%= @gcmoch['siebel_ai']['ucm_session_timeout'] %>",
+                                              "authentication_properties_session_token_timeout": "<%= @gcmoch['siebel_ai']['ucm_session_token_timeout'] %>",
+                                              "authentication_properties_session_token_max_age": "<%= @gcmoch['siebel_ai']['ucm_session_token_max_age'] %>",
+                                              "authentication_properties_session_timeout_wl_method": "UpdatePrefMsg",
+                                              "authentication_properties_session_timeout_wl_command": "HeartBeat",
+                                              "eaisoap_max_retry": "<%= @gcmoch['siebel_ai']['soap_max_retry'] %>",
+                                              "language": "enu",
+                                              "name": "swt_enu",
+                                              "object_manager": "swtoolsobjmgr_enu"
+                                            },
+                                            <% end %>
+                                            {
+                                              "authentication_properties_anon_password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, @gcmoch['siebel']['anon_user']) %>",
+                                              "authentication_properties_anon_username": "<%= @gcmoch['siebel']['anon_user'] %>",
+                                              "authentication_properties_guest_session_timeout": "<%= @gcmoch['siebel_ai']['guest_session_timeout'] %>",
+                                              "authentication_properties_session_timeout": "<%= @gcmoch['siebel_ai']['session_timeout'] %>",
+                                              "authentication_properties_session_token_timeout": "<%= @gcmoch['siebel_ai']['session_token_timeout'] %>",
+                                              "authentication_properties_session_token_max_age": "<%= @gcmoch['siebel_ai']['session_token_max_age'] %>",
+                                              "authentication_properties_session_timeout_wl_method": "UpdatePrefMsg",
+                                              "authentication_properties_session_timeout_wl_command": "HeartBeat",
+                                              "enable_ext_service_only": true,
+                                              "eaisoap_no_sess_in_pref": true,
+                                              "eaisoap_max_retry": "<%= @gcmoch['siebel_ai']['soap_max_retry'] %>",
+                                              "language": "enu",
+                                              "name": "WBCEAIUpsertWDP_enu",
+                                              "object_manager": "wbceaiupsertwdp_enu"
+                                            },
+                                            {
+                                              "authentication_properties_anon_password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, @gcmoch['siebel']['anon_user']) %>",
+                                              "authentication_properties_anon_username": "<%= @gcmoch['siebel']['anon_user'] %>",
+                                              "authentication_properties_guest_session_timeout": "<%= @gcmoch['siebel_ai']['guest_session_timeout'] %>",
+                                              "authentication_properties_session_timeout": "<%= @gcmoch['siebel_ai']['session_timeout'] %>",
+                                              "authentication_properties_session_token_timeout": "<%= @gcmoch['siebel_ai']['session_token_timeout'] %>",
+                                              "authentication_properties_session_token_max_age": "<%= @gcmoch['siebel_ai']['session_token_max_age'] %>",
+                                              "authentication_properties_session_timeout_wl_method": "UpdatePrefMsg",
+                                              "authentication_properties_session_timeout_wl_command": "HeartBeat",
+                                              "enable_ext_service_only": true,
+                                              "eaisoap_no_sess_in_pref": true,
+                                              "eaisoap_max_retry": "<%= @gcmoch['siebel_ai']['soap_max_retry'] %>",
+                                              "language": "enu",
+                                              "name": "WBCEAIHttpWDP_enu",
+                                              "object_manager": "wbceaihttpwdp_enu"
+                                            },
+                                            {
+                                              "authentication_properties_anon_password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, @gcmoch['siebel']['anon_user']) %>",
+                                              "authentication_properties_anon_username": "<%= @gcmoch['siebel']['anon_user'] %>",
+                                              "authentication_properties_guest_session_timeout": "<%= @gcmoch['siebel_ai']['guest_session_timeout'] %>",
+                                              "authentication_properties_session_timeout": "<%= @gcmoch['siebel_ai']['session_timeout'] %>",
+                                              "authentication_properties_session_token_timeout": "<%= @gcmoch['siebel_ai']['session_token_timeout'] %>",
+                                              "authentication_properties_session_token_max_age": "<%= @gcmoch['siebel_ai']['session_token_max_age'] %>",
+                                              "authentication_properties_session_timeout_wl_method": "UpdatePrefMsg",
+                                              "authentication_properties_session_timeout_wl_command": "HeartBeat",
+                                              "enable_ext_service_only": true,
+                                              "eaisoap_no_sess_in_pref": true,
+                                              "eaisoap_max_retry": "<%= @gcmoch['siebel_ai']['soap_max_retry'] %>",
+                                              "language": "enu",
+                                              "name": "WBCEAIHttpOSB_enu",
+                                              "object_manager": "wbceaihttposb_enu"
+                                            },
+                                            {
+                                              "authentication_properties_anon_password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, @gcmoch['siebel']['anon_user']) %>",
+                                              "authentication_properties_anon_username": "<%= @gcmoch['siebel']['anon_user'] %>",
+                                              "authentication_properties_guest_session_timeout": "<%= @gcmoch['siebel_ai']['guest_session_timeout'] %>",
+                                              "authentication_properties_session_timeout": "<%= @gcmoch['siebel_ai']['session_timeout'] %>",
+                                              "authentication_properties_session_token_timeout": "<%= @gcmoch['siebel_ai']['session_token_timeout'] %>",
+                                              "authentication_properties_session_token_max_age": "<%= @gcmoch['siebel_ai']['session_token_max_age'] %>",
+                                              "authentication_properties_session_timeout_wl_method": "UpdatePrefMsg",
+                                              "authentication_properties_session_timeout_wl_command": "HeartBeat",
+                                              "enable_ext_service_only": true,
+                                              "eaisoap_no_sess_in_pref": true,
+                                              "eaisoap_max_retry": "<%= @gcmoch['siebel_ai']['soap_max_retry'] %>",
+                                              "language": "enu",
+                                              "name": "WBCEAIUpsertOSB_enu",
+                                              "object_manager": "wbceaiupsertosb_enu"
+                                            },
+                                            {
+                                              "authentication_properties_anon_password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, @gcmoch['siebel']['anon_user']) %>",
+                                              "authentication_properties_anon_username": "<%= @gcmoch['siebel']['anon_user'] %>",
+                                              "authentication_properties_guest_session_timeout": "<%= @gcmoch['siebel_ai']['ucm_guest_session_timeout'] %>",
+                                              "authentication_properties_session_timeout": "<%= @gcmoch['siebel_ai']['ucm_session_timeout'] %>",
+                                              "authentication_properties_session_token_timeout": "<%= @gcmoch['siebel_ai']['ucm_session_token_timeout'] %>",
+                                              "authentication_properties_session_token_max_age": "<%= @gcmoch['siebel_ai']['ucm_session_token_max_age'] %>",
+                                              "authentication_properties_session_timeout_wl_method": "UpdatePrefMsg",
+                                              "authentication_properties_session_timeout_wl_command": "HeartBeat",
+                                              "language": "enu",
+                                              "name": "ucm_db_enu",
+                                              "object_manager": "ucmobjmgr_db_enu"
+                                            }
+                                          ],
+                                          "defaults_authentication_properties_anon_password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, @gcmoch['siebel']['anon_user']) %>",
+                                          "defaults_authentication_properties_anon_username": "<%= @gcmoch['siebel']['anon_user'] %>", 
+                                          "defaults_authentication_properties_guest_session_timeout": "<%= @gcmoch['siebel_ai']['ucm_guest_session_timeout'] %>",
+                                          "defaults_authentication_properties_session_timeout": "<%= @gcmoch['siebel_ai']['ucm_session_timeout'] %>",
+                                          "defaults_authentication_properties_session_token_timeout": "<%= @gcmoch['siebel_ai']['ucm_session_token_timeout'] %>",
+                                          "defaults_authentication_properties_session_token_max_age": "<%= @gcmoch['siebel_ai']['ucm_session_token_max_age'] %>",
+                                          "defaults_do_compression": "true",
+                                          "defaults_enable_fqdn": "true",
+                                          "defaults_fqdn": "<%= @gcmoch['hostnameList'][0] %><%= dns_domain %>",
+                                          "secure_channel": "true",
+                                          "rest_authentication_properties_anon_password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, @gcmoch['siebel']['anon_user']) %>",
+                                          "rest_authentication_properties_anon_username": "<%= @gcmoch['siebel']['anon_user'] %>",
+                                          "rest_in_bound_baseuri": "<%= @gcmoch['siebel_ai']['rest_in_bound_baseuri'] %>",
+                                          "rest_in_bound_max_connections": "<%= @gcmoch['siebel_ai']['rest_in_bound_max_connections'] %>",
+                                          "rest_in_bound_object_manager": "eaiobjmgr_enu",
+                                          "rest_in_bound_rest_authentication_properties_anon_password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, @gcmoch['siebel']['anon_user']) %>",
+                                          "rest_in_bound_rest_authentication_properties_anon_username": "<%= @gcmoch['siebel']['anon_user'] %>",
+                                          "rest_in_bound_rest_authentication_properties_sess_keep_alive":  "<%= @gcmoch['siebel_ai']['rest_session_keep_alive'] %>",                  
+                                    }      
+                                 }
+                              },
+                              {
+                              "name": "Siebel_Migration_Profile",
+                              "type": "MintPress::SiebelApi::MigrationProfile",
+                              "installationName": "siebel_ec",
+                              "hostIdentifier": "<%= @gcmoch['hostnameList'][0] %>",
+                              "attributes": {
+                                "newworld": "true",
+                                "scaleout": "false",
+                                "has_control": "false",
+                                 "MintPress::SiebelApi::MigrationProfile": {
+                                  "application_interface": "ai_instance",
+                                        "authentication_type": "Basic",
+                                        "rest_endpoint": "<%= @gcmoch['siebel_ai']['authentication_uri'] %>",
+                                        "timeout": "<%= @gcmoch['siebel_ai']['timeout'] %>",
+                                        "sleep_time": "<%= @gcmoch['siebel_ai']['sleep_time'] %>",
+                                        "database_type": "Oracle",
+                                        "hostname": "<%= @gcmoch['hostnameList'][0] %>",
+                                        "portnum": "<%= @gcmoch['siebel_ai']['https_redirect_port'] %>",
+                                        "table_owner": "<%= @gcmoch['database']['table_owner'] %>",
+                                        "username": "<%= @gcmoch['siebel']['username'] %>",
+                                        "password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, @gcmoch['siebel']['username']) %>",
+                                        "service_name": "<%= @gcmoch['database']['service_name'] %>",
+                                        "language": "enu",
+                                        "package_location": "<%= @gcmoch['siebel']['siebelfs'] %>",
+                                        "application_name": "ucm_db_enu"
+                                    }
+                                 }
+                              },
+                              {
+                              "name": "<%= @gcmoch['siebel']['ent_name'] %>",
+                              "type": "MintPress::SiebelApi::EnterpriseDeployment",
+                              "installationName": "siebel_ec",
+                              "hostIdentifier": "<%= @gcmoch['hostnameList'][0] %>",
+                              "attributes": {
+                                "newworld": "true",
+                                "has_control": "false",
+                                "scaleout": "false",
+                                "MintPress::SiebelApi::EnterpriseDeployment": {
+                                  "restart_all_appcontainers_before_deploy" : "true",
+                                  "application_interface": "ai_instance",
+                                  "enterprise_profile": "siebel_enterprise_profile",
+                                  "description": "<%= asset_code %> enterprise",
+                                  "physical_host_ip": "<%= @gcmoch['gtgw_hostnameList'][0] %><%= @gcmoch['dns_domain_name'] %>:<%= @gcmoch['siebel_ec']['https_redirect_port'] %>"
+                                }
+                              }
+                            },
+                            {
+                              "name": "eai_components",
+                              "type": "MintPress::SiebelApi::ComponentDefinitionSet",
+                               "installationName": "siebel_ec",
+                               "hostIdentifier": "<%= @gcmoch['hostnameList'][0] %>",
+                                   "attributes": {
+                                      "newworld": "true",
+                                      "skipSteps": "create,update",
+                                      "scaleout": "false",
+                                      "has_control": "false",
+                                      "MintPress::SiebelApi::ComponentDefinitionSet": {
+                                        "application_interface": "ai_instance",
+                                        "enterprise_name": "<%= @gcmoch['siebel']['ent_name'] %>",
+                                        "component_group": "EAI",
+                                        "component_type": "EAIObjMgr",
+                                        "runmode": "Interactive",
+                                        "component_set": {
+                                              "WBCEAIHttpWDP_enu": "Siebel EAI Object Manager",
+                                              "WBCEAIUpsertWDP_enu": "Siebel EAI Object Manager",
+                                              "WBCEAIHttpOSB_enu": "Siebel EAI Object Manager",
+                                              "WBCEAIUpsertOSB_enu": "Siebel EAI Object Manager",                                              
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                 "name": "create_all_nss",
+                                 "type": "MintPress::SiebelApi::NamedSubsystemGroup",
+                                 "installationName": "siebel_ec",
+                                 "hostIdentifier": "<%= @gcmoch['hostnameList'][0] %>",
+                                  "attributes": {
+                                    "newworld": "true",
+                                    "skipSteps": "create,update",
+                                    "scaleout": "false",
+                                    "has_control": "false",
+                                    "MintPress::SiebelApi::NamedSubsystemGroup": {
+                                        "application_interface": "ai_instance",
+                                        "use_srvrmgr": "false",
+                                            "enterprise_name": "<%= @gcmoch['siebel']['ent_name'] %>",
+                                              "group_list": {
+                                                "WBCJVM64": { "alias": "WBCJVM64", "subsystem_alias": "JavaContainerSubSys", "desc": "Created as part of JMS Upgrade"},
+                                                "WBCJMSInboundMergeDataHandlSubSys": { "alias": "WBCJMSInboundMerge", "subsystem_alias": "EAITransportDataHandlingSubsys", "desc": "Created for JMS Upgrade"},
+                                                "WBCJMSOutboundKAFKAConnSubSys": { "alias": "WBCJMSOutboundKAFKA", "subsystem_alias": "JMSSubsys", "desc": "22E1 Created for KAFKA Project: Updated as part of JMS Upgrade."},
+                                                "WBCJMSOutIndirectUpdateConnSubSys": { "alias": "WBCJMSOutIndirectUpdate", "subsystem_alias": "JMSSubsys", "desc": "20170602: L074328 : Created as part of 17E4 NPP project. Updated as part of JMS Upgrade"},
+                                                "WBCJMSEmailOutboundConnSubSys": { "alias": "WBCJMSEmailOutbound", "subsystem_alias": "JMSSubsys", "desc": "L090127:Created for 18E4 NPP: Updated as part of JMS Upgrade."},
+                                                "WBCJMSOutCISKeyConnSubSys": { "alias": "WBCJMSOutCISKey", "subsystem_alias": "JMSSubsys", "desc": "L122407: Created for 19E3 CISKey : Updated as part of JMS Upgrade."},
+                                                "WBCWSDCJMSInboundESBGCMConnSubSys": { "alias": "WBCWSDCJMSInboundESBGCM", "subsystem_alias": "JMSSubsys", "desc": "Created for JMS Upgrade"},
+                                                "WBCWSDCJMSInboundESBConnSubSys": { "alias": "WBCWSDCJMSInboundESB", "subsystem_alias": "JMSSubsys", "desc": "Created as part of JMS Upgrade"},
+                                                "WBCJMSInEAIAsyncCISDataSynDHS": { "alias": "WBCJMSInEAIAsyncCIS", "subsystem_alias": "EAITransportDataHandlingSubsys", "desc": "Data Handling Subsystem for CIS copied from WBCInEAIAsyncCISDataSynDHS for JMS Upgrade"},
+                                                "WBCWSDCJMSInboundLKConnSubSys": { "alias": "WBCWSDCJMSInboundLK", "subsystem_alias": "JMSSubsys", "desc": " Existing profile used for CIS transactions. Updated as part of JMS Upgrade"},                                                
+                                                "WBCJMSInboundLKDataHandlSubSys": { "alias": "WBCJMSInboundLK", "subsystem_alias": "EAITransportDataHandlingSubsys", "desc": "Created as part of JMS Upgrade"},
+                                                "WBCRCCJMSInboundESBGCMConnSubSys": { "alias": "WBCRCCJMSInboundESBGCM", "subsystem_alias": "JMSSubsys", "desc": "Created for JMS Upgrade"},                                                
+                                                "WBCRCCJMSInboundESBConnSubSys": { "alias": "WBCRCCJMSInboundESB", "subsystem_alias": "JMSSubsys", "desc": "Created as part of JMS Upgrade"},                                                
+                                                "WBCWSDCJMSInboundMergeConnSubSys": { "alias": "WBCWSDCJMSInboundMerge", "subsystem_alias": "JMSSubsys", "desc": "Created as part of JMS Upgrade"},                                                
+                                                "WBCJMSInboundSynchDataHandlSubSys": { "alias": "WBCJMSInboundSynch", "subsystem_alias": "EAITransportDataHandlingSubsys", "desc": "Created as part of JMS Upgrade"},
+                                                "WBCJMSInboundESBGCMDataHandSubSys": { "alias": "WBCJMSInboundESBGCM", "subsystem_alias": "EAITransportDataHandlingSubsys", "desc": "Data Handling Subsystem for other than CIS copied from WBCInboundESBGCMDataHandSubSys for JMS Upgrade"},
+                                                "WBCRCCJMSInEAIAsyncCISDataSynCSS": { "alias": "WBCRCCJMSInEAIAsyncCIS", "subsystem_alias": "JMSSubsys", "desc": "Created as part of JMS Upgrade"},                                                
+                                                "WBCRCCJMSInboundSynchConnSubSys": { "alias": "WBCRCCJMSInboundSynch", "subsystem_alias": "JMSSubsys", "desc": "Created as part of JMS Upgrade"},                                                
+                                                "WBCWSDCJMSInboundSynchConnSubSys": { "alias": "WBCWSDCJMSInboundSynch", "subsystem_alias": "JMSSubsys", "desc": "Created as part of JMS Upgrade"},                                                
+                                                "WBCRCCJMSInboundLKConnSubSys": { "alias": "WBCRCCJMSInboundLK", "subsystem_alias": "JMSSubsys", "desc": "Existing profile used for CIS transactions. Updated as part of JMS Upgrade"},                                                
+                                                "WBCJMSInboundESBDataHandlSubSys": { "alias": "WBCJMSInboundESB", "subsystem_alias": "EAITransportDataHandlingSubsys", "desc": "Data Handling Subsystem for ESB copied from WBCInboundESBDataHandlSubSys for JMS Upgrade"},
+                                                "WBCRCCJMSInboundMergeConnSubSys": { "alias": "WBCRCCJMSInboundMerge", "subsystem_alias": "JMSSubsys", "desc": "Existing profile used for CIS Merge. Updated as part of JMS Upgrade"},                                                
+                                                "WBCWSDCJMSInEAIAsyncCISDataSynCSS": { "alias": "WBCWSDCJMSInEAIAsyncCIS", "subsystem_alias": "JMSSubsys", "desc": "Created as part of JMS Upgrade"},
+                                                <% if environment_name =~ /^gcmsvp/ or environment_name =~ /^gcmprd/ or environment_name =~ /^gcmdr/ %>
+                                                    "WBCWSDCJMSInboundESBGCMConnSubSys2": { "alias": "WBCWSDCJMSInboundESBGCM2", "subsystem_alias": "JMSSubsys", "desc": "Created for JMS Upgrade"},
+                                                    "WBCWSDCJMSInboundESBConnSubSys2": { "alias": "WBCWSDCJMSInboundESB2", "subsystem_alias": "JMSSubsys", "desc": "Created as part of JMS Upgrade"},
+                                                    "WBCWSDCJMSInboundLKConnSubSys2": { "alias": "WBCWSDCJMSInboundLK2", "subsystem_alias": "JMSSubsys", "desc": " Existing profile used for CIS transactions. Updated as part of JMS Upgrade"},                                                
+                                                    "WBCWSDCJMSInboundMergeConnSubSys2": { "alias": "WBCWSDCJMSInboundMerge2", "subsystem_alias": "JMSSubsys", "desc": "Created as part of JMS Upgrade"},                                                
+                                                    "WBCWSDCJMSInboundSynchConnSubSys2": { "alias": "WBCWSDCJMSInboundSynch2", "subsystem_alias": "JMSSubsys", "desc": "Created as part of JMS Upgrade"},                                                
+                                                    "WBCWSDCJMSInEAIAsyncCISDataSynCSS2": { "alias": "WBCWSDCJMSInEAIAsyncCIS2", "subsystem_alias": "JMSSubsys", "desc": "Created as part of JMS Upgrade"},
+                                                    "WBCRCCJMSInboundESBGCMConnSubSys2": { "alias": "WBCRCCJMSInboundESBGCM2", "subsystem_alias": "JMSSubsys", "desc": "Created for JMS Upgrade"},                                                
+                                                    "WBCRCCJMSInboundESBConnSubSys2": { "alias": "WBCRCCJMSInboundESB2", "subsystem_alias": "JMSSubsys", "desc": "Created as part of JMS Upgrade"},                                                
+                                                    "WBCRCCJMSInEAIAsyncCISDataSynCSS2": { "alias": "WBCRCCJMSInEAIAsyncCIS2", "subsystem_alias": "JMSSubsys", "desc": "Created as part of JMS Upgrade"},                                                
+                                                    "WBCRCCJMSInboundSynchConnSubSys2": { "alias": "WBCRCCJMSInboundSynch2", "subsystem_alias": "JMSSubsys", "desc": "Created as part of JMS Upgrade"},                                                
+                                                    "WBCRCCJMSInboundLKConnSubSys2": { "alias": "WBCRCCJMSInboundLK2", "subsystem_alias": "JMSSubsys", "desc": "Existing profile used for CIS transactions. Updated as part of JMS Upgrade"},                                                
+                                                    "WBCRCCJMSInboundMergeConnSubSys2": { "alias": "WBCRCCJMSInboundMerge2", "subsystem_alias": "JMSSubsys", "desc": "Existing profile used for CIS Merge. Updated as part of JMS Upgrade"}, 
+                                                <% end %>
+                                                "GCMBatchDataSrc": { "alias": "GCMBatchDataSrc", "subsystem_alias": "InfraDatasources", "desc": "Datasource Used for accessing GCM Batch EBC Tables"},
+                                                "GCMStagingDataSrc": { "alias": "GCMStagingDataSrc", "subsystem_alias": "InfraDatasources", "desc": "description here"},
+                                                "WBCOutIndirectUpdateConnSubSys": { "alias": "WBCOutIndirectUpdateConnSubSys", "subsystem_alias": "MQSeriesServerSubsys", "desc": "L074328 : Created as part of 17E4 NPP project"},
+                                                "WBCInboundMergeConnSubSys": { "alias": "WBCInboundMergeConnSubSys", "subsystem_alias": "MQSeriesServerSubsys", "desc": "description here"},
+                                                "WBCInboundSynchDataHandlSubSys": { "alias": "WBCInboundSynchDataHandlSubSys", "subsystem_alias": "EAITransportDataHandlingSubsys", "desc": "description here"},
+                                                "WBCInboundESBGCMDataHandSubSys": { "alias": "WBCInboundESBGCMDataHandSubSys", "subsystem_alias": "EAITransportDataHandlingSubsys", "desc": "description here"},
+                                                "WBCInEAIAsyncCISDataSynCSS": { "alias": "WBCInEAIAsyncCISDataSynCSS", "subsystem_alias": "MQSeriesServerSubsys", "desc": "description here"},
+                                                "WBCInboundLKDataHandlSubSys": { "alias": "WBCInboundLKDataHandlSubSys", "subsystem_alias": "EAITransportDataHandlingSubsys", "desc": "description here"},
+                                                "WBCInboundSvcDataHandlSubSys": { "alias": "WBCInboundSvcDataHandlSubSys", "subsystem_alias": "EAITransportDataHandlingSubsys", "desc": "description here"},
+                                                "WBCInboundESBDataHandlSubSys": { "alias": "WBCInboundESBDataHandlSubSys", "subsystem_alias": "EAITransportDataHandlingSubsys", "desc": "description here"},
+                                                "WBCInEAIAsyncCISDataSynDHS": { "alias": "WBCInEAIAsyncCISDataSynDHS", "subsystem_alias": "EAITransportDataHandlingSubsys", "desc": "description here"},
+                                                "WBCEmailOutboundConnSubSys": { "alias": "WBCEmailOutboundConnSubSys", "subsystem_alias": "MQSeriesServerSubsys", "desc": "L090127:Created for 18E4 NPP"},
+                                                "WBCInboundESBGCMConnSubSys": { "alias": "WBCInboundESBGCMConnSubSys", "subsystem_alias": "MQSeriesServerSubsys", "desc": "description here"},
+                                                "WBCOutCISKeyConnSubSys": { "alias": "WBCOutCISKeyConnSubSys", "subsystem_alias": "MQSeriesServerSubsys", "desc": "L122407: Created for 19E3 CISKey"},
+                                                "WBCInboundMergeDataHandlSubSys": { "alias": "WBCInboundMergeDataHandlSubSys", "subsystem_alias": "EAITransportDataHandlingSubsys", "desc": "description here"},
+                                                "WBCInboundLKConnSubSys": { "alias": "WBCInboundLKConnSubSys", "subsystem_alias": "MQSeriesServerSubsys", "desc": "description here"},
+                                                "WBCOutboundKAFKAConnSubSys": { "alias": "WBCOutboundKAFKAConnSubSys", "subsystem_alias": "MQSeriesServerSubsys", "desc": "22E1 Created for KAFKA Project"},
+                                                "WBCInboundESBConnSubSys": { "alias": "WBCInboundESBConnSubSys", "subsystem_alias": "MQSeriesServerSubsys", "desc": "description here"},
+                                                "WBCInboundSynchConnSubSys": { "alias": "WBCInboundSynchConnSubSys", "subsystem_alias": "MQSeriesServerSubsys", "desc": "description here"}
+                                                }
+                                            }
+                                    }
+                            },
+                            {
+                                "name": "batch_components",
+                                "type": "MintPress::SiebelApi::ComponentDefinitionSet",
+                                 "installationName": "siebel_ec",
+                                 "hostIdentifier": "<%= @gcmoch['hostnameList'][0] %>",
+                                     "attributes": {
+                                        "newworld": "true",
+                                        "skipSteps": "create,update",
+                                        "scaleout": "false",
+                                        "has_control": "false",
+                                        "MintPress::SiebelApi::ComponentDefinitionSet": {
+                                          "application_interface": "ai_instance",
+                                          "enterprise_name": "<%= @gcmoch['siebel']['ent_name'] %>",
+                                          "component_group": "Workflow",
+                                          "component_type": "Workflow Process Manager",
+                                          "runmode": "Batch",
+                                           "component_set": {
+                                                  "WBC UCM Batch Manager": "WBC UCM Batch Manager",
+                                                  "WBCWfProcMgrKAFKA": "22E1: Custom component for KAFKA PubSub",
+                                                  "WBCAsyncAudit": "Custom WPM comp",
+                                                  "WBCAsyncHTTP": "Custom CSH R1.2 comp",
+                                                  "WBCBatchEIM": "Custom WPM comp",
+                                                  "WBCBatchPublish": "Custom WPM comp",
+                                                  "WBCBatchSDH": "Custom WPM comp",
+                                                  "WBCWfProcBatchMgr": "New comp created for 17E1 Audit trail",
+                                                  "WBCWfProcBatchMgrMGT": "Custom WPM comp",
+                                                  "WBCWfProcMgrDynamic": "New comp created for 13E4",
+                                                  "WBCWfProcMgrGHS": "New comp created for 13E4",
+                                                  "WBCWfProcMgrGMK": "Custom comp created for 17E4 GMK",
+                                                  "WBCWfProcMgrIndUpd": "Custom comp created for 17E4 NPP",
+                                                  "WBCWfProcMgrLK001": "New comp created for 13E4",
+                                                  "WBCWfProcMgrLegacySync": "Custom comp created for 17E3 LegacySync",
+                                                  "WBCWfProcMgrMatch": "Custom comp created for 18E2 Efinance",
+                                                  "WBCWfProcMgrNoBrand": "Custom WPM component for 12E1 brand filtering",
+                                                  "WBCWfProcMgrPubSub": "Custom WPM Comp for 12E4 Realtime PublishSubscribe",
+                                                  "WBCWfProcMgrSGBBSA": "Custom WPM component for 12E1 brand filtering",
+                                                  "WBCWfProcMgrSearch": "Custom comp created for OEDQ",
+                                                  "WBCWfProcMgrWBG": "Created to bypass Brans Silo access filtering",
+                                                  "WBCWfProcMgrWPAC": "Custom WPM component for 12E1 brand filtering",
+                                                  "WfProcBatchMgrGMK": "Custom Batch comp created for 17E4 GMK",
+                                                  "WBCXMLFiles": "Custom WPM component for 12E1 brand filtering"                                                  
+                                          },
+                                          "alias_map": {
+                                                  "WBC UCM Batch Manager": "WBCUCMBatchProcess",
+                                                  "WBCWfProcMgrKAFKA": "WfprocMgrKAFKA"
+                                         }
+                                      }
+                                   }
+                            },  
+                            {
+                                "name": "ucm_components",
+                                "type": "MintPress::SiebelApi::ComponentDefinitionSet",
+                                 "installationName": "siebel_ec",
+                                 "hostIdentifier": "<%= @gcmoch['hostnameList'][0] %>",
+                                     "attributes": {
+                                        "newworld": "true",
+                                        "skipSteps": "create,update",
+                                        "scaleout": "false",
+                                        "has_control": "false",
+                                        "MintPress::SiebelApi::ComponentDefinitionSet": {
+                                          "application_interface": "ai_instance",
+                                          "enterprise_name": "<%= @gcmoch['siebel']['ent_name'] %>",
+                                          "component_group": "UCM",
+                                          "component_type": "AppObjMgr",
+                                          "runmode": "Interactive",
+                                          "component_set": {
+                                                "UCM Custom Object Manager(ENU)": "UCM Custom Object Manager"
+                                          },
+                                          "alias_map": {
+                                                "UCM Custom Object Manager(ENU)": "UCMObjMgr_DB_enu"                                            
+                                         }      
+                                      }
+                                   }
+                            },  
+                            {
+                                "name": "jms_components",
+                                "type": "MintPress::SiebelApi::ComponentDefinitionSet",
+                                 "installationName": "siebel_ec",
+                                 "hostIdentifier": "<%= @gcmoch['hostnameList'][0] %>",
+                                     "attributes": {
+                                        "newworld": "true",
+                                        "skipSteps": "create,update",
+                                        "scaleout": "false",
+                                        "has_control": "false",
+                                         "MintPress::SiebelApi::ComponentDefinitionSet": {
+                                          "application_interface": "ai_instance",
+                                          "enterprise_name": "<%= @gcmoch['siebel']['ent_name'] %>",
+                                          "component_group": "EAI",
+                                          "component_type": "EAIJMSRcvr",
+                                          "runmode": "Batch",
+                                          "component_set": {
+                                                "JMSReceiverRCCInEAIAsyncCIS": "Custom JMS Receiver comp created for Async CIS to UCM sync requests via EAI",
+                                                "JMSReceiverRCCInboundESB": "Custom EAI JMS Receiver comp created for Inbound ESB2 Requests coming to GCM",
+                                                "JMSReceiverRCCInboundESBGCM": "Custom EAI JMS Receiver comp created for multiple Inbound ESB Requests coming to GCM",
+                                                "JMSReceiverRCCInboundLK": "Custom EAI JMS Receiver comp created for Inbound transaction coming from CIS System",
+                                                "JMSReceiverRCCInboundMerge": "Custom EAI JMS Receiver comp created for Inbound Merge Requests coming from CIS to GCM",
+                                                "JMSReceiverRCCInboundSynch": "Custom EAI JMS Receiver comp created for Inbound Sync Requests",
+                                                "JMSReceiverWSDCInEAIAsyncCIS": "Custom JMS Receiver comp created for Async CIS to UCM sync requests via EAI",
+                                                "JMSReceiverWSDCInboundESB": "Custom EAI JMS Receiver comp created for Inbound ESB2 Requests coming to GCM",
+                                                "JMSReceiverWSDCInboundESBGCM": "Custom EAI JMS Receiver comp created for multiple Inbound ESB Requests coming to GCM",
+                                                "JMSReceiverWSDCInboundLK": "Custom EAI JMS Receiver comp created for Inbound transaction coming from CIS System",
+                                                "JMSReceiverWSDCInboundMerge": "Custom EAI JMS Receiver comp created for Inbound Merge Requests coming from CIS to GCM",
+                                                "JMSReceiverWSDCInboundSynch": "Custom EAI JMS Receiver comp created for Inbound Sync Requests",
+                                                <% if environment_name =~ /^gcmsvp/ or environment_name =~ /^gcmprd/ or environment_name =~ /^gcmdr/ %>
+                                                    "JMSReceiverRCCInEAIAsyncCIS2": "Custom JMS Receiver comp created for Async CIS to UCM sync requests via EAI",
+                                                    "JMSReceiverRCCInboundESB2": "Custom EAI JMS Receiver comp created for Inbound ESB2 Requests coming to GCM",
+                                                    "JMSReceiverRCCInboundESBGCM2": "Custom EAI JMS Receiver comp created for multiple Inbound ESB Requests coming to GCM",
+                                                    "JMSReceiverRCCInboundLK2": "Custom EAI JMS Receiver comp created for Inbound transaction coming from CIS System",
+                                                    "JMSReceiverRCCInboundMerge2": "Custom EAI JMS Receiver comp created for Inbound Merge Requests coming from CIS to GCM",
+                                                    "JMSReceiverRCCInboundSynch2": "Custom EAI JMS Receiver comp created for Inbound Sync Requests",
+                                                    "JMSReceiverWSDCInEAIAsyncCIS2": "Custom JMS Receiver comp created for Async CIS to UCM sync requests via EAI",
+                                                    "JMSReceiverWSDCInboundESB2": "Custom EAI JMS Receiver comp created for Inbound ESB2 Requests coming to GCM",
+                                                    "JMSReceiverWSDCInboundESBGCM2": "Custom EAI JMS Receiver comp created for multiple Inbound ESB Requests coming to GCM",
+                                                    "JMSReceiverWSDCInboundLK2": "Custom EAI JMS Receiver comp created for Inbound transaction coming from CIS System",
+                                                    "JMSReceiverWSDCInboundMerge2": "Custom EAI JMS Receiver comp created for Inbound Merge Requests coming from CIS to GCM",
+                                                    "JMSReceiverWSDCInboundSynch2": "Custom EAI JMS Receiver comp created for Inbound Sync Requests"   
+                                                <% end %>                                             
+                                          }
+                                      }
+                                   }
+                            },                        
+                            {
+                                "name": "eim_components",
+                                "type": "MintPress::SiebelApi::ComponentDefinitionSet",
+                                 "installationName": "siebel_ec",
+                                 "hostIdentifier": "<%= @gcmoch['hostnameList'][0] %>",
+                                     "attributes": {
+                                        "newworld": "true",
+                                        "skipSteps": "create,update",
+                                        "scaleout": "false",
+                                        "has_control": "false",
+                                        "MintPress::SiebelApi::ComponentDefinitionSet": {
+                                          "application_interface": "ai_instance",
+                                          "enterprise_name": "<%= @gcmoch['siebel']['ent_name'] %>",
+                                          "component_group": "EAI",
+                                          "component_type": "EIM",
+                                          "runmode": "Batch",
+                                          "component_set": {
+                                                "WBCEIMMGT": "Custom EIM comp"
+                                          }
+                                      }
+                                   }
+                            },
+                            {
+                                "name": "eaircvr_components",
+                                "type": "MintPress::SiebelApi::ComponentDefinitionSet",
+                                 "installationName": "siebel_ec",
+                                 "hostIdentifier": "<%= @gcmoch['hostnameList'][0] %>",
+                                     "attributes": {
+                                        "newworld": "true",
+                                        "skipSteps": "create,update",
+                                        "scaleout": "false",
+                                        "has_control": "false",
+                                         "MintPress::SiebelApi::ComponentDefinitionSet": {
+                                          "application_interface": "ai_instance",
+                                          "enterprise_name": "<%= @gcmoch['siebel']['ent_name'] %>",
+                                          "component_group": "EAI",
+                                          "component_type": "EAIRcvr",
+                                          "runmode": "Background",
+                                          "component_set": {
+                                                "WBCInEAIAsyncCISDataSyn": "Custom EAI Receiver comp",
+                                                "WBCInboundESB": "Custom EAI Receiver comp",
+                                                "WBCInboundESBGCM": "Custom EAI Receiver comp",
+                                                "WBCInboundLK": "Siebel EAI Object Manager",
+                                                "WBCInboundMerge": "Siebel EAI Object Manager",
+                                                "WBCInboundSynch": "Siebel EAI Object Manager"
+                                          }
+                                      }
+                                   }
+                            },
+                            {
+                                "name": "ai_dep_1",
+                                "type": "MintPress::SiebelApi::ApplicationInterfaceDeployment",
+                                "installationName": "siebel_ai",
+                                "hostIdentifier": "<%= @gcmoch['hostnameList'][0] %>",
+                                "attributes": {
+                                  "newworld": "true",
+                                  "has_control": "false",
+                                  "skipSteps": "create,update",
+                                  "scaleout": "true",
+                                  "MintPress::SiebelApi::ApplicationInterfaceDeployment": {
+                                    "application_interface": "ai_instance",
+                                    "profile_name": "AI_Profile",
+                                    "description": "<%= asset_code %> ai deployment",
+                                    "physical_host_ip": "${/host.address}:<%= @gcmoch['siebel_ai']['https_redirect_port'] %>"
+                                }
+                              }
+                            },
+                            {
+                              "name": "mig_dep_1",
+                              "type": "MintPress::SiebelApi::MigrationDeployment",
+                              "installationName": "siebel_ec",
+                              "hostIdentifier": "<%= @gcmoch['appserver_hostnameList'][0] %>",
+                              "attributes": {
+                                "newworld": "true",
+                                "has_control": "false",
+                                "skipSteps": "create,update",
+                                "scaleout": "true",
+                                "MintPress::SiebelApi::MigrationDeployment": {
+                                  "application_interface": "ai_instance",
+                                  "profile_name": "Siebel_Migration_Profile",
+                                  "description": "<%= asset_code %> migration deployment",
+                                  "physical_host_ip": "${/host.address}:<%= @gcmoch['siebel_ai']['https_redirect_port'] %>"
+                                }
+                              }
+                            },
+                            {
+                              "name": "App_Srvr_1",
+                              "type": "MintPress::SiebelApi::ServerDeployment",
+                              "installationName": "siebel_ec",
+                              "hostIdentifier": "<%= @gcmoch['appserver_hostnameList'][0] %>",
+                              "attributes": {
+                                "newworld": "true",
+                                "has_control": "true",
+                                "parallelInstanceShutdown": "true",
+                                "parallelInstanceStartup": "true",
+                                "skipSteps": "create,update",
+                                "scaleout": "true",
+                                "MintPress::SiebelApi::ServerDeployment": {
+                                  "application_interface": "ai_instance",
+                                  "wait_for_warm": false,
+                                  "profile_name": "srv_prof",
+                                  "description": "<%= asset_code %> server",
+                                  "oracle_home": "<%= siebel_install_path %>/ses",
+                                  "physical_host_ip": "${/host.address}:<%= @gcmoch['siebel_ec']['https_redirect_port'] %>"
+                                }
+                              }
+                            },
+                            {
+                              "name": "Bat_Srvr_1",
+                              "type": "MintPress::SiebelApi::ServerDeployment",
+                              "installationName": "siebel_ec",
+                              "hostIdentifier": "<%= @gcmoch['batserver_hostnameList'][0] %>",
+                              "attributes": {
+                                "newworld": "true",
+                                "has_control": "true",
+                                "parallelInstanceShutdown": "true",
+                                "parallelInstanceStartup": "true",
+                                "skipSteps": "create,update",
+                                "scaleout": "true",
+                                "MintPress::SiebelApi::ServerDeployment": {
+                                  "application_interface": "ai_instance",
+                                  "disable_application_interface_container": "true",
+                                  "wait_for_warm": false,
+                                  "profile_name": "batch_prof",
+                                  "description": "<%= asset_code %> batch server",
+                                  "oracle_home": "<%= siebel_install_path %>/ses",
+                                  "physical_host_ip": "${/host.address}:<%= @gcmoch['siebel_ec']['https_redirect_port'] %>"
+                                }
+                              }
+                            },
+                            {
+                                "name": "nss_parameters",
+                                "type": "MintPress::SiebelApi::NamedSubsystemParameterGroup",
+                                "installationName": "siebel_ec",
+                                "hostIdentifier": "<%= @gcmoch['hostnameList'][0] %>",
+                                "attributes": {
+                                  "newworld": "true",
+                                  "skipSteps": "create,update",
+                                  "scaleout": "false",
+                                  "has_control": "false",
+                                  "MintPress::SiebelApi::NamedSubsystemParameterGroup": {
+                                    "application_interface": "ai_instance",
+                                    "use_srvrmgr": "true",
+                                    "enterprise_name": "<%= @gcmoch['siebel']['ent_name'] %>",
+                                    "parameter_set": {
+                                      <% @gcmoch['nss_parameters'].each do |parameter,value| %>
+                                        <%= "#{parameter.to_json}: #{value.to_json}" %>,
+                                      <% end %>                                                                                                       
+                                    }
+                                  }
+                                }
+                            },
+                            {
+                                "name": "nss_passwords",
+                                "type": "MintPress::SiebelApi::NamedSubsystemParameterGroup",
+                                "installationName": "siebel_ec",
+                                "hostIdentifier": "<%= @gcmoch['hostnameList'][0] %>",
+                                "attributes": {
+                                  "newworld": "true",
+                                  "skipSteps": "create,update",
+                                  "scaleout": "false",
+                                  "has_control": "false",
+                                  "MintPress::SiebelApi::NamedSubsystemParameterGroup": {
+                                    "application_interface": "ai_instance",
+                                    "enterprise_name": "<%= @gcmoch['siebel']['ent_name'] %>",
+                                    "parameter_set": {
+                                      "GCMBatchDataSrc": { "DSPassword": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'GCM_BATCH') %>" },
+                                      "GCMStagingDataSrc": { "DSPassword": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'GCM_STAGING') %>" },
+                                      <% unless environment_name =~ /^gcmcix/ or environment_name =~ /^gcmdev/ or environment_name =~ /^d1/ %>
+                                      "LDAPSecAdpt": { 
+                                        "ApplicationPassword": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'ApplicationUser') %>",
+                                        "SharedDBPassword": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'LDAPUSER') %>",
+                                        "WalletPassword": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'cwallet.sso') %>",
+                                        },
+                                      <% end %>
+                                     }
+                                  }
+                                }
+                            },
+                            {
+                                      "name": "SetEnterpriseParams",
+                                      "type": "MintPress::SiebelApi::EnterpriseParameterGroup",
+                                      "installationName": "siebel_ec",
+                                      "hostIdentifier": "<%= @gcmoch['hostnameList'][0] %>",
+                                      "attributes": {
+                                        "newworld": "true",
+                                        "skipSteps": "create,update",
+                                        "scaleout": "false",
+                                        "has_control": "false",
+                                        "MintPress::SiebelApi::EnterpriseParameterGroup": {
+                                          "enterprise_name": "<%= @gcmoch['siebel']['ent_name'] %>",
+                                          "parameter_set": {
+                                            <% @gcmoch['enterprise_parameters'].each do |parameter,value| %>
+                                              <%= "#{parameter.to_json}: #{value.to_json}" %>,
+                                            <% end %>
+                                       }
+                                   }
+                                }
+                            },
+                            {
+                                      "name": "enterprisecompdefparams",
+                                      "type": "MintPress::SiebelApi::ComponentDefinitionParameterGroup",
+                                      "installationName": "siebel_ec",
+                                      "hostIdentifier": "<%= @gcmoch['hostnameList'][0] %>",
+                                      "attributes": {
+                                        "newworld": "true",
+                                        "skipSteps": "create,update",
+                                        "scaleout": "false",
+                                        "has_control": "false",
+                                        "MintPress::SiebelApi::ComponentDefinitionParameterGroup": {
+                                          "enterprise_name": "<%= @gcmoch['siebel']['ent_name'] %>",
+                                          "parameter_set": {
+                                            <% @gcmoch['component_definition_parameters'].each do |parameter,value| %>
+                                              <%= "#{parameter.to_json}: #{value.to_json}" %>,
+                                            <% end %>                                            
+                                          }
+                                      }
+                                   }
+                            },
+                            {
+                                      "name": "enterprisecompdefpasswords",
+                                      "type": "MintPress::SiebelApi::ComponentDefinitionParameterGroup",
+                                      "installationName": "siebel_ec",
+                                      "hostIdentifier": "<%= @gcmoch['hostnameList'][0] %>",
+                                      "attributes": {
+                                        "newworld": "true",
+                                        "skipSteps": "create,update",
+                                        "scaleout": "false",
+                                        "has_control": "false",
+                                        "MintPress::SiebelApi::ComponentDefinitionParameterGroup": {
+                                          "enterprise_name": "<%= @gcmoch['siebel']['ent_name'] %>",
+                                          "parameter_set": {
+                                            "WBCWfProcBatchMgrMGT": { "Password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'WBCMIGADMIN') %>" },
+                                            "WBCWfProcMgrDynamic": { "Password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'WBCDYNMGR') %>" },
+                                            "WfprocMgrKAFKA": { "Password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'SADMIN') %>" },
+                                            "WBCWfProcMgrLK001": { "Password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'WBCLK001') %>" },
+                                            "WBCWfProcBatchMgr": { "Password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'WBCBATCHADMIN') %>" },
+                                            "WfProcBatchMgr": { "Password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'WBCBATCHADMIN') %>" },
+                                            "WBCWfProcMgrSGBBSA": { "Password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'WBCSGBBSA') %>" },
+                                            "WBCWfProcMgrWPAC": { "Password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'WBCWPAC') %>" },
+                                            "WBCWfProcMgrGHS": { "Password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'SADMIN') %>" },
+                                            "WBCUCMBatchProcess": { "Password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'WBCBATCHADMIN') %>" },
+                                            "WBCWfProcMgrGMK": { "Password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'SADMIN') %>" },
+                                            "WBCWfProcMgrMatch": { "Password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'SADMIN') %>" },
+                                            "WBCEIMMGT": { "Password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'WBCMIGADMIN') %>" },
+                                            "EIM": { "Password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'WBCBATCHADMIN') %>" },
+                                            "WBCWfProcMgrIndUpd": { "Password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'SADMIN') %>" },
+                                            "UCMBatchProcess": { "Password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'WBCMIGADMIN') %>" }
+                                          }
+                                      }
+                                  }
+                            },
+                            {
+                                    "name": "AppServerParams_1",
+                                    "type": "MintPress::SiebelApi::ServerParameterGroup",
+                                    "installationName": "siebel_ec",
+                                    "hostIdentifier": "<%= @gcmoch['appserver_hostnameList'][0] %>",
+                                    "attributes": {
+                                      "newworld": "true",
+                                      "skipSteps": "create,update",
+                                      "scaleout": "true",
+                                      "has_control": "false",
+                                      "MintPress::SiebelApi::ServerParameterGroup": {
+                                        "enterprise_name": "<%= @gcmoch['siebel']['ent_name'] %>",
+                                        "server_name": "App_Srvr_${_.nodeid}",
+                                        "parameter_set": {
+                                          <% @gcmoch['appserver_parameters'].each do |parameter,value| %>
+                                            <%= "#{parameter.to_json}: #{value.to_json}" %>,
+                                          <% end %>
+                                        }
+                                     }
+                                  }
+                            },
+                            {
+                                    "name": "BatchServerParams_1",
+                                    "type": "MintPress::SiebelApi::ServerParameterGroup",
+                                    "installationName": "siebel_ec",
+                                    "hostIdentifier": "<%= @gcmoch['batserver_hostnameList'][0] %>",
+                                    "attributes": {
+                                      "newworld": "true",
+                                      "skipSteps": "create,update",
+                                      "scaleout": "true",
+                                      "has_control": "false",
+                                      "MintPress::SiebelApi::ServerParameterGroup": {
+                                        "enterprise_name": "<%= @gcmoch['siebel']['ent_name'] %>",
+                                        "server_name": "Bat_Srvr_${_.nodeid}",
+                                        "parameter_set": {
+                                          <% @gcmoch['batchserver_parameters'].each do |parameter,value| %>
+                                            <%= "#{parameter.to_json}: #{value.to_json}" %>,
+                                          <% end %>
+                                        }
+                                     }
+                                  }
+                            },
+                            {
+                                      "name": "AppserverCompParams_1", 
+                                      "type": "MintPress::SiebelApi::ComponentParameterGroup",
+                                      "installationName": "siebel_ec",
+                                      "hostIdentifier": "<%= @gcmoch['appserver_hostnameList'][0] %>",
+                                      "attributes": {
+                                        "newworld": "true",
+                                        "skipSteps": "create,update",
+                                        "scaleout": "true",
+                                        "has_control": "false",
+                                        "MintPress::SiebelApi::ComponentParameterGroup": {
+                                          "enterprise_name": "<%= @gcmoch['siebel']['ent_name'] %>",
+                                          "server_name": "App_Srvr_${_.nodeid}",
+                                          "parameter_set": {
+                                            <% @gcmoch['appservercomponent_parameters'].each do |parameter,value| %>
+                                              <%= "#{parameter.to_json}: #{value.to_json}" %>,
+                                            <% end %>                                            
+                                          }
+                                      }
+                                   }
+                            },
+                            {
+                                      "name": "AppserverCompPasswords_1", 
+                                      "type": "MintPress::SiebelApi::ComponentParameterGroup",
+                                      "installationName": "siebel_ec",
+                                      "hostIdentifier": "<%= @gcmoch['appserver_hostnameList'][0] %>",
+                                      "attributes": {
+                                        "newworld": "true",
+                                        "skipSteps": "create,update",
+                                        "scaleout": "true",
+                                        "has_control": "false",
+                                        "MintPress::SiebelApi::ComponentParameterGroup": {
+                                          "enterprise_name": "<%= @gcmoch['siebel']['ent_name'] %>",
+                                          "server_name": "App_Srvr_${_.nodeid}",
+                                          "parameter_set": {
+                                            "WBCWfProcBatchMgrMGT": { "Password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'WBCMIGADMIN') %>" },
+                                            "WBCWfProcMgrLK001": { "Password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'WBCLK001') %>" },
+                                            "WBCWfProcMgrDynamic": { "Password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'WBCDYNMGR') %>" },                                                                                      
+                                            "WBCWfProcMgrSGBBSA": { "Password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'WBCSGBBSA') %>" },                                                                                                
+                                            "WfProcBatchMgr": { "Password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'WBCBATCHADMIN') %>" },
+                                            "WBCWfProcMgrWPAC": { "Password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'WBCWPAC') %>" },
+                                            "WBCWfProcMgrGHS": { "Password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'SADMIN') %>" }                                            
+                                          }
+                                      }
+                                  }
+                            },
+                            {
+                                      "name": "BatchserverCompParams_1",
+                                      "type": "MintPress::SiebelApi::ComponentParameterGroup",
+                                      "installationName": "siebel_ec",
+                                      "hostIdentifier": "<%= @gcmoch['batserver_hostnameList'][0] %>",
+                                      "attributes": {
+                                        "newworld": "true",
+                                        "skipSteps": "create,update",
+                                        "scaleout": "true",
+                                        "has_control": "false",
+                                        "MintPress::SiebelApi::ComponentParameterGroup": {
+                                          "enterprise_name": "<%= @gcmoch['siebel']['ent_name'] %>",
+                                          "server_name": "Bat_Srvr_${_.nodeid}",
+                                          "parameter_set": {
+                                           <% @gcmoch['batchservercomponent_parameters'].each do |parameter,value| %>
+                                              <%= "#{parameter.to_json}: #{value.to_json}" %>,
+                                            <% end %>                                            
+                                         }
+                                    }
+                                }
+                            },
+                            {
+                                      "name": "BatchserverCompPasswords_1",
+                                      "type": "MintPress::SiebelApi::ComponentParameterGroup",
+                                      "installationName": "siebel_ec",
+                                      "hostIdentifier": "<%= @gcmoch['batserver_hostnameList'][0] %>",
+                                      "attributes": {
+                                        "newworld": "true",
+                                        "skipSteps": "create,update",
+                                        "scaleout": "true",
+                                        "has_control": "false",
+                                        "MintPress::SiebelApi::ComponentParameterGroup": {
+                                          "enterprise_name": "<%= @gcmoch['siebel']['ent_name'] %>",
+                                          "server_name": "Bat_Srvr_${_.nodeid}",
+                                          "parameter_set": {
+                                            "WBCWfProcBatchMgrMGT": { "Password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'WBCMIGADMIN') %>" },
+                                            "WfProcBatchMgr": { "Password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'WBCBATCHADMIN') %>" },
+                                            "WBCWfProcMgrDynamic": { "Password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'WBCDYNMGR') %>" },                                                                                      
+                                            "WBCWfProcMgrSGBBSA": { "Password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'WBCSGBBSA') %>" },                                                                                                   
+                                            "WBCWfProcMgrWPAC": { "Password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'WBCWPAC') %>" },
+                                            "WBCWfProcMgrGHS": { "Password": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'SADMIN') %>" }                                    
+                                         }
+                                    }
+                                }
+                            },
+                            {
+                                    "name": "disable_components",
+                                    "type": "MintPress::SiebelApi::ComponentDefinitionSet",
+                                    "installationName": "siebel_ec",
+                                    "hostIdentifier": "<%= @gcmoch['hostnameList'][0] %>",
+                                    "attributes": {
+                                      "newworld": "true",
+                                      "skipSteps": "create,update",
+                                      "scaleout": "false",
+                                      "has_control": "false",
+                                      "MintPress::SiebelApi::ComponentDefinitionSet": {
+                                        "application_interface": "ai_instance",
+                                        "enterprise_name": "<%= @gcmoch['siebel']['ent_name'] %>",
+                                        "action": "deactivate",
+                                        "component_set": {
+                                          <% @gcmoch['disable_components'].each do |component,value| %>
+                                            <%= "#{component.to_json}: #{value.to_json}" %>,
+                                          <% end %>                                    
+                                          }
+                                      }
+                                  }
+                            },
+                            {
+                                    "name": "BatchManual_components_1",
+                                    "type": "MintPress::SiebelApi::ServerComponentControl",
+                                    "installationName": "siebel_ec",
+                                    "hostIdentifier": "<%= @gcmoch['batserver_hostnameList'][0] %>",
+                                    "attributes": {
+                                      "newworld": "true",
+                                      "skipSteps": "create,update",
+                                      "scaleout": "true",
+                                      "has_control": "false",
+                                      "MintPress::SiebelApi::ServerComponentControl": {
+                                        "application_interface": "ai_instance",
+                                        "enterprise_name": "<%= @gcmoch['siebel']['ent_name'] %>",
+                                        "server_name": "Bat_Srvr_${_.nodeid}",
+                                        "component_set": {
+                                          <% @gcmoch['batchmanual_components'].each do |component,value| %>
+                                            <%= "#{component.to_json}: #{value.to_json}" %>,
+                                          <% end %>                                    
+                                          }
+                                      }
+                                  }
+                            },
+                            {
+                                    "name": "AppManual_components_1",
+                                    "type": "MintPress::SiebelApi::ServerComponentControl",
+                                    "installationName": "siebel_ec",
+                                    "hostIdentifier": "<%= @gcmoch['appserver_hostnameList'][0] %>",
+                                    "attributes": {
+                                      "newworld": "true",
+                                      "skipSteps": "create,update",
+                                      "scaleout": "true",
+                                      "has_control": "false",
+                                      "MintPress::SiebelApi::ServerComponentControl": {
+                                        "application_interface": "ai_instance",
+                                        "enterprise_name": "<%= @gcmoch['siebel']['ent_name'] %>",
+                                        "server_name": "App_Srvr_${_.nodeid}",
+                                        "component_set": {
+                                          <% @gcmoch['appmanual_components'].each do |component,value| %>
+                                            <%= "#{component.to_json}: #{value.to_json}" %>,
+                                          <% end %>                                    
+                                          }
+                                      }
+                                  }
+                            }
+                        ],
+                    "transferList": [
+                      ],
+                    "executeList": [ 
+                       {
+                              "name": "copy-dbclient-local",
+                              "sourceFile": "if [ ! -e ${defaultHostTargetTmpDirectory}/dbclient ]; then cp -pr ${stageRootDir}/dbclient ${defaultHostTargetTmpDirectory} ; fi",
+                              "properties": [
+                              {
+                                  "name": "scaleout",
+                                  "value": "true"
+                              }
+                              ],
+                              "executeWhenList": [ "pre-binaries" ],
+                              "hostIdentifierList": [ "<%= @gcmoch['hostnameList'][0] %>" ]
+                          },
+                          {
+                             "name": "copy-tnsnames",
+                             "sourceFile": "if [ ! -e ${basedomainpath}/dbclient/network/admin/tnsnames.ora ]; then cp -pr ${stageRootDir}/custom/environments/${environmentName}/tnsnames.ora ${basedomainpath}/dbclient/network/admin ; else cd ${basedomainpath}/dbclient/network/admin; cp -pr tnsnames.ora tnsnames.ora.`date +%Y-%m-%d` ; cp -pr ${stageRootDir}/custom/environments/${environmentName}/tnsnames.ora ${basedomainpath}/dbclient/network/admin ; fi",
+                             "properties": [
+                              {
+                                 "name": "scaleout",
+                                 "value": "true"
+                              }
+                              ],
+                             "executeWhenList": [ "post-binaries" ],
+                             "hostIdentifierList": [ "<%= @gcmoch['hostnameList'][0] %>" ]
+                          },
+                          {
+                             "name": "permissions_to_directories",
+                             "sourceFile": "if [ -e ${basedomainpath} ]; then cd /oracle/app ; chmod -R 755 runtime ; chmod -R 755 ${javainstallpath}; fi",
+                             "properties": [
+                              {
+                                 "name": "scaleout",
+                                 "value": "true"
+                              }
+                              ],
+                             "executeWhenList": [ "post-binaries" ],
+                             "hostIdentifierList": [ "<%= @gcmoch['hostnameList'][0] %>" ]
+                          },
+                          {
+                                "name": "mwadm-stop",
+                                "sourceFile": "cd ${basedomainpath}/siebel/siebsrvr; . ./siebenv.sh ; mwadm stop ;",
+                                "properties": [
+                                {
+                                  "name": "scaleout",
+                                  "value": "true"
+                                }
+                                ],
+                                "executeWhenList": [ "post-stop" ],
+                                "hostIdentifierList": [ "<%= @gcmoch['hostnameList'][0] %>" ]
+                          },
+                          {
+                            "name": "stop-connector",
+                            "sourceFile": "if [[ -n $(lsof -t -i:8642) ]]; then kill -9 $(lsof -t -i:8642) ; fi",
+                            "properties": [
+                            {
+                              "name": "scaleout",
+                              "value": "true"
+                            }
+                            ],
+                            "executeWhenList": [ "post-stop" ],
+                            "hostIdentifierList": [ "<%= @gcmoch['hostnameList'][0] %>" ]
+                          },
+                          {
+                            "name": "clean-shutdown",
+                            "sourceFile": "cd ${siebelinstallpath}/siebsrvr/sys; rm osdf.backup ; mv *osdf.*.*_Srvr_* osdf.backup ; cd ${siebelinstallpath}/siebsrvr/admin ; rm *shm* ; echo $? ; ",
+                            "properties": [
+                            {
+                              "name": "scaleout",
+                              "value": "true"
+                            }
+                            ],
+                            "executeWhenList": [ "post-stop" ],
+                            "hostIdentifierList": [ "<%= @gcmoch['hostnameList'][0] %>" ]
+                          },
+                          {
+                              "name": "oedq-connector",
+                              "sourceFile": "cd ${siebelinstallpath}/siebsrvr/SiebelConnector; nohup sh -c \"( ( ${javainstallpath}/jre/bin/java -jar ${siebelinstallpath}/siebsrvr/SiebelConnector/connector.jar -p 8642 ) & )\"",
+                              "properties": [
+                               {
+                                  "name": "scaleout",
+                                  "value": "true"
+                                }
+                                ],
+                                "executeWhenList": [ "post-start" ],
+                                "hostIdentifierList": [ "<%= @gcmoch['hostnameList'][0] %>" ]
+                          },                                                  
+                          {
+                               "name": "Updating_Siebenv",
+                               "sourceFile": "if ( ! (cat ${basedomainpath}/siebel/siebsrvr/siebenv.sh | grep AMQ_DONT_USE_SELECT_FOR_SOCKMTX) ); then cd ${basedomainpath}/siebel/siebsrvr; cp -pr siebenv.sh siebenv.sh_mint; cat ${ochCustomStage}/siebenv_update.txt >> siebenv.sh ; fi",
+                               "properties": [
+                                 {
+                                 "name": "scaleout",
+                                 "value": "true"
+                                 }
+                               ],
+                               "executeWhenList": [ "post-online" ],
+                               "hostIdentifierList": [ "<%= @gcmoch['hostnameList'][0] %>" ]
+                          },
+                          {
+                               "name": "Removing_Libraries",
+                               "sourceFile": "if [ -e ${basedomainpath}/siebel/siebsrvr/mw/lib/libxcb.so.1 ]; then mkdir -p  ${backupFolder} ; chmod -R 755 ${backupFolder}; mv ${basedomainpath}/siebel/siebsrvr/mw/lib/libxcb.so.1  ${backupFolder}; mv ${basedomainpath}/siebel/siebsrvr/mw/lib/libXau.so.6 ${backupFolder} ; fi",
+                               "properties": [
+                                 {
+                                 "name": "scaleout",
+                                 "value": "true"
+                                 }
+                               ],
+                               "executeWhenList": [ "post-configure" ],
+                               "hostIdentifierList": [ "<%= @gcmoch['hostnameList'][0] %>" ]
+                            },
+                            {
+                              "name": "OracleRecommendations",
+                              "hostIdentifierList": [
+                              "<%= @gcmoch['hostnameList'][0] %>"
+                              ],
+                              "sourceFile": "if ( ! (cat ${siebelinstallpath}/siebsrvr/bin/siebmtshw | grep SIEBEL_OSD_PTHREAD_STACK_SIZE) ); then cd ${siebelinstallpath}/siebsrvr/bin/;cp -f siebmtshw siebmtshw_b4_20_10_SR_recommendations;cp -f siebprocw siebprocw_b4_20_10_SR_recommendations; head -n -1 siebmtshw >> file.tmp ; echo 'export SIEBEL_OSD_PTHREAD_STACK_SIZE=1048576' >> file.tmp; tail -1 siebmtshw >> file.tmp ; mv file.tmp siebmtshw; head -n -1 siebprocw >> file.tmp ; echo 'export SIEBEL_OSD_PTHREAD_STACK_SIZE=1048576' >> file.tmp; tail -1 siebprocw >> file.tmp ; mv file.tmp siebprocw; chmod 755 sieb*; fi",
+                              "properties": [
+                                 {
+                                    "name": "scaleout",
+                                    "value": "true"
+                                 }
+                              ],
+                              "executeWhenList": [
+                                "post-configure"
+                               ]
+                            },
+                            {
+                              "name": "RetryPatch",
+                              "hostIdentifierList": [
+                              "<%= @gcmoch['hostnameList'][0] %>"
+                              ],
+                              "sourceFile": "cd ${ai_installpath}/applicationcontainer/webapps/siebel/WEB-INF/lib/;mv ai.jar ${backupFolder}/ai.jar.`date +%Y-%m-%d`; mv SiebelUtils.jar ${backupFolder}/SiebelUtils.jar.`date +%Y-%m-%d` ; cp -pr ${ochCustomStage}/ai.jar .; cp -pr ${ochCustomStage}/SiebelUtils.jar .; cd ${ai_installpath}/applicationcontainer/webapps; cp -pr siebel.war siebel.war.`date +%Y-%m-%d`; cp -pr ${ochCustomStage}/siebel_external/siebel.war .;",
+                              "properties": [
+                                 {
+                                    "name": "scaleout",
+                                    "value": "true"
+                                 }
+                             ],
+                            "executeWhenList": [
+                                "post-configure"
+                               ]
+                            },
+                            {
+                              "name": "OraclePatch",
+                              "hostIdentifierList": [
+                              "<%= @gcmoch['hostnameList'][0] %>"
+                              ],
+                              "sourceFile": "cd ${siebelinstallpath}/applicationcontainer/webapps; cp -pr siebel.war siebel.war.`date +%Y-%m-%d`; rm siebel.war; while [ -d ${siebelinstallpath}/applicationcontainer/webapps/siebel ]; do sleep 5; done; echo 'siebelfolder is deleted'; ${siebelinstallpath}/applicationcontainer/bin/shutdown.sh ; sleep 10; cp -pr ${ochCustomStage}/siebel.war ${siebelinstallpath}/applicationcontainer/webapps ;  ${siebelinstallpath}/applicationcontainer/bin/startup.sh ;",
+                              "properties": [
+                                 {
+                                    "name": "scaleout",
+                                    "value": "true"
+                                 }
+                             ],
+                            "executeWhenList": [
+                                "post-configure"
+                               ]
+                            },
+                            {
+                              "name": "Replaceenufolder",
+                              "hostIdentifierList": [
+                              "<%= @gcmoch['hostnameList'][0] %>"
+                              ],
+                              "sourceFile": "cd ${ai_installpath}/applicationcontainer/siebelwebroot/;mv enu ${backupFolder}/enu.`date +%Y-%m-%d`; cp -pr ${ochCustomStage}/enu .;",
+                              "properties": [
+                                 {
+                                    "name": "scaleout",
+                                  "value": "true"
+                                 }
+                             ],
+                            "executeWhenList": [
+                                "post-configure"
+                               ]
+                            },
+                            {
+                              "name": "ModifySetEnv",
+                              "hostIdentifierList": [
+                              "<%= @gcmoch['hostnameList'][0] %>"
+                              ],
+                              "sourceFile": "if ( ! (cat ${siebelinstallpath}/applicationcontainer/bin/setenv.sh | grep FlightRecorder) ); then cd ${siebelinstallpath}/applicationcontainer/bin/;cp -f setenv.sh setenv.sh.`date +%Y-%m-%d`; sed -i '$s/\\\\(.*\\\\)\"/\\\\1\ -XX:+UnlockCommercialFeatures -XX:+FlightRecorder -Xms12288M -Xmx12288M\"/' setenv.sh ; cd ${ai_installpath}/applicationcontainer/bin/;cp -pr setenv.sh setenv.sh.`date +%Y-%m-%d`; sed -i '$s/\\\\(.*\\\\)\"/\\\\1\ -XX:+UnlockCommercialFeatures -XX:+FlightRecorder -Xms12288M -Xmx12288M\"/' setenv.sh; fi",
+                              "properties": [
+                                 {
+                                    "name": "scaleout",
+                                  "value": "true"
+                                 }
+                             ],
+                            "executeWhenList": [
+                                "post-configure"
+                               ]
+                            },
+                            {
+                              "name": "JMS-ModifySetEnv",
+                              "hostIdentifierList": [
+                              "<%= @gcmoch['hostnameList'][0] %>"
+                              ],
+                              "sourceFile": "if ( ! (cat ${siebelinstallpath}/applicationcontainer/bin/setenv.sh | grep CLASSPATH) ); then cd ${siebelinstallpath}/applicationcontainer/bin/;cp -f setenv.sh setenv.sh.`date +%Y-%m-%d`; sed -i 's|$PRGDIR/./../../jre|/oracle/app/runtime/gcmoch/siebel/jre/1.8.0|g' setenv.sh ; sed -i '$e cat ${ochCustomStage}/classpath.txt' setenv.sh ; sed -i '$ s/.$//' setenv.sh ; sed -i '$ s/.$/\ -Dcom.ibm.mq.cfg.useIBMCipherMappings=false -Djms.max.msg.per.con=100\"/' setenv.sh; fi",
+                              "properties": [
+                                 {
+                                    "name": "scaleout",
+                                  "value": "true"
+                                 }
+                             ],
+                            "executeWhenList": [
+                                "post-online"
+                               ]
+                            },
+                            {
+                              "name": "configagent",
+                              "hostIdentifierList": [
+                              "<%= @gcmoch['hostnameList'][0] %>"
+                              ],
+                              "sourceFile": "if ( ! (cat ${siebelinstallpath}/applicationcontainer/webapps/configagent.properties | grep JBSSessKeepAlive) ); then cd ${siebelinstallpath}/applicationcontainer/webapps; cp -f configagent.properties configagent.properties.mint; cat ${ochCustomStage}/configagent.txt >> configagent.properties; fi",
+                              "properties": [
+                                 {
+                                    "name": "scaleout",
+                                  "value": "true"
+                                 }
+                             ],
+                            "executeWhenList": [
+                                "post-online"
+                               ]
+                            },
+                            {
+                              "name": "RewriteRuleChanges",
+                              "hostIdentifierList": [
+                              "<%= @gcmoch['hostnameList'][0] %>"
+                              ],
+                              "sourceFile": "if ( ! (cat ${ai_installpath}/applicationcontainer/webapps/ROOT/WEB-INF/rewrite.config | grep WBC*) ); then cd ${ai_installpath}/applicationcontainer/webapps/ROOT/WEB-INF/;cp -f rewrite.config rewrite.config.mint; cat ${ochCustomStage}/rules.txt >> rewrite.config; fi",
+                              "properties": [
+                                 {
+                                    "name": "scaleout",
+                                  "value": "true"
+                                 }
+                             ],
+                            "executeWhenList": [
+                                "post-configure"
+                               ]
+                            },
+                            {
+                              "name": "MaxThreads",
+                              "hostIdentifierList": [
+                              "<%= @gcmoch['hostnameList'][0] %>"
+                              ],
+                              "sourceFile": "cd ${siebelinstallpath}/applicationcontainer/conf/;cp -f server.xml server.xml.mint;sed -i -e 's|maxThreads=\"150\"|maxThreads=\"2000\"|g' server.xml;cd ${ai_installpath}/applicationcontainer/conf/;cp -f server.xml server.xml.mint;sed -i -e 's|maxThreads=\"150\"|maxThreads=\"2000\"|g' server.xml; chmod 755 server.xml ;",
+                              "properties": [
+                                 {
+                                    "name": "scaleout",
+                                  "value": "true"
+                                 }
+                            ],
+                            "executeWhenList": [
+                                "post-configure"
+                               ]
+                          },
+                          {
+                              "name": "Log4j-Fix",
+                              "hostIdentifierList": [
+                              "<%= @gcmoch['hostnameList'][0] %>"
+                              ],
+                              "sourceFile": "if [ ! -e ${siebelinstallpath}/applicationcontainer/webapps/siebel/WEB-INF/lib/log4j-core-2.9.1.jar_b4_CVE-2021-44228 ]; then cd ${siebelinstallpath}/applicationcontainer/webapps/siebel/WEB-INF/lib;cp -p log4j-core-2.9.1.jar log4j-core-2.9.1.jar_b4_CVE-2021-44228; zip -q -d log4j-core-2.9.1.jar org/apache/logging/log4j/core/lookup/JndiLookup.class ; cd ${ai_installpath}/applicationcontainer/webapps/siebel/WEB-INF/lib;cp -p log4j-core-2.9.1.jar log4j-core-2.9.1.jar_b4_CVE-2021-44228; zip -q -d log4j-core-2.9.1.jar org/apache/logging/log4j/core/lookup/JndiLookup.class ; fi",
+                              "properties": [
+                                 {
+                                    "name": "scaleout",
+                                  "value": "true"
+                                 }
+                            ],
+                            "executeWhenList": [
+                                "post-configure"
+                               ]
+                          },
+                          {
+                            "name": "Vulnerability-Fix",
+                            "hostIdentifierList": [
+                            "<%= @gcmoch['hostnameList'][0] %>"
+                            ],
+                            "sourceFile": "if ( ! (cat ${siebelinstallpath}/applicationcontainer/conf/web.xml | grep gcm) ); then cd ${ai_installpath}/applicationcontainer/conf ;cp -f web.xml web.xml.mint ; sed -i 's/index/gcm/g' web.xml; cd ${ai_installpath}/applicationcontainer/webapps/ROOT; cp -pr ${ochCustomStage}/gcm.jsp .; cd ${siebelinstallpath}/applicationcontainer/conf ;cp -f web.xml web.xml.mint ; sed -i 's/index/gcm/g' web.xml; cd ${siebelinstallpath}/applicationcontainer/webapps/ROOT; cp -pr ${ochCustomStage}/gcm.jsp .; fi",
+                            "properties": [
+                               {
+                                  "name": "scaleout",
+                                "value": "true"
+                               }
+                          ],
+                          "executeWhenList": [
+                              "post-configure"
+                             ]
+                          },
+                          {
+                              "name": "Siebel-EDQ",
+                              "hostIdentifierList": [
+                              "<%= @gcmoch['hostnameList'][0] %>"
+                              ],
+                              "sourceFile": "if [ ! -e ${basedomainpath}/siebel/siebsrvr/SiebelConnector ]; then cd ${basedomainpath}/siebel/siebsrvr ; mkdir SDQConnector; cp -p ${ochCustomStage}/dnd.parms ${basedomainpath}/siebel/siebsrvr/SDQConnector ; mkdir SiebelConnector ; chmod -R 755 ${basedomainpath}/siebel/siebsrvr/SiebelConnector ; cd ${basedomainpath}/siebel/siebsrvr/SiebelConnector ; cp -pr ${ochCustomStage}/siebelconnector.zip . ;  unzip siebelconnector.zip  ; cp -p ${basedomainpath}/siebel/siebsrvr/SiebelConnector/native/linux/libdnd.so ${basedomainpath}/siebel/siebsrvr/lib ; cp -p ${ochCustomStage}/dnd.properties . ; cd ${basedomainpath}/siebel/siebsrvr/admin; cp -pr ${ochCustomStage}/ifb/*.ifb . ; fi",
+                              "properties": [
+                                 {
+                                    "name": "scaleout",
+                                  "value": "true"
+                                 }
+                            ],
+                            "executeWhenList": [
+                                "post-configure"
+                               ]
+                          },
+                          {
+                            "name": "cacerts-EDQ",
+                            "hostIdentifierList": [
+                            "<%= @gcmoch['hostnameList'][0] %>"
+                            ],
+                            "sourceFile": "cd ${javainstallpath}/jre/lib/security; cp -f cacerts cacerts.`date +%Y-%m-%d`; ${javainstallpath}/bin/keytool -import -alias EDQ -file ${stageRootDir}/certs/${environmentName}/edq.cer -keystore cacerts -storepass changeit; ${javainstallpath}/bin/keytool -import -alias EDQ_F5 -file ${stageRootDir}/certs/${environmentName}/edq_f5.cer -keystore cacerts -storepass changeit;",
+                            "properties": [
+                               {
+                                  "name": "scaleout",
+                                "value": "true"
+                               }
+                          ],
+                          "executeWhenList": [
+                              "post-online"
+                             ]
+                          },
+                          {
+                              "name": "SiebelProperties",
+                              "hostIdentifierList": [
+                              "<%= @gcmoch['hostnameList'][0] %>"
+                              ],
+                              "sourceFile": "cd ${ai_installpath}/applicationcontainer/webapps/siebel/WEB-INF/classes; cp -pr siebel.properties siebel.properties.mint ; cp -pr ${ochCustomStage}/siebel.properties .;",
+                              "properties": [
+                                 {
+                                    "name": "scaleout",
+                                  "value": "true"
+                                 }
+                            ],
+                            "executeWhenList": [
+                                "post-configure"
+                               ]
+                          },
+                          {
+                              "name": "tomcat_users",
+                              "hostIdentifierList": [
+                              "<%= @gcmoch['hostnameList'][0] %>"
+                              ],
+                              "sourceFile": "cp -f ${ochCustomStage}/tomcat-users.xml ${siebelinstallpath}/applicationcontainer/conf/tomcat-users.xml; cp -f ${ochCustomStage}/tomcat-users.xml ${ai_installpath}/applicationcontainer/conf/tomcat-users.xml; chmod 755 ${siebelinstallpath}/applicationcontainer/conf/tomcat-users.xml ;",
+                              "properties": [
+                                 {
+                                    "name": "scaleout",
+                                  "value": "true"
+                                 }
+                            ],
+                            "executeWhenList": [
+                                "post-configure"
+                               ]
+                          },
+                          {
+                            "name": "LatestJRE",
+                            "hostIdentifierList": [
+                            "<%= @gcmoch['hostnameList'][0] %>"
+                            ],
+                            "sourceFile": "cd ${siebelinstallpath}/jre;mv 1.8.0 1.8.0.`date +%Y-%m-%d`; cp -pr ${ochCustomStage}/1.8.0 .;",
+                            "properties": [
+                               {
+                                  "name": "scaleout",
+                                "value": "true"
+                               }
+                           ],
+                          "executeWhenList": [
+                              "post-configure"
+                             ]
+                          },
+                          {
+                            "name": "batch-ucmadmin",
+                            "hostIdentifierList": <%= @gcmoch['batserver_hostnameList'].to_s %>,
+                            "sourceFile": "cp -pr ${ochCustomStage}/ucmadmin ${siebelinstallpath}; chmod -R 755 ${siebelinstallpath}/ucmadmin ;",
+                            "properties": [
+                               {
+                                  "name": "scaleout",
+                                "value": "false"
+                               }
+                           ],
+                          "executeWhenList": [
+                              "post-configure"
+                             ]
+                          },
+                          {
+                            "name": "Hayleysrule-link",
+                            "hostIdentifierList": [
+                            "<%= @gcmoch['hostnameList'][0] %>"
+                            ],
+                            "sourceFile": "cd ${siebelinstallpath}/siebsrvr/lib ; ln -s libxerces-c.so libxerces-c.so.28 ; ",
+                            "properties": [
+                               {
+                                  "name": "scaleout",
+                                "value": "true"
+                               }
+                           ],
+                          "executeWhenList": [
+                              "post-configure"
+                             ]
+                          },
+                          {
+                              "name": "LDAP-Wallet",
+                              "hostIdentifierList": <%= @gcmoch['appserver_hostnameList'].to_s %>,
+                              "sourceFile": "if [ ! -e ${siebelinstallpath}/siebsrvr/bin/owm ]; then cd ${siebelinstallpath}/siebsrvr/bin ; mkdir -p owm/wallets; cd ${siebelinstallpath}/siebsrvr/bin/owm/wallets; cp -pr ${stageRootDir}/certs/${environmentName}/siebelkeystore.jks .; ${javainstallpath}/bin/keytool -import -keystore siebelkeystore.jks -file ${stageRootDir}/custom/och/*.pem -alias Test_CA -storepass ${execute.storepass} -noprompt; /oracle/app/runtime/gcmoch/dbclient/bin/orapki wallet create -wallet ${siebelinstallpath}/siebsrvr/bin/owm/wallets -pwd ${execute.wallet} -auto_login; /oracle/app/runtime/gcmoch/dbclient/bin/orapki wallet jks_to_pkcs12 -wallet ${siebelinstallpath}/siebsrvr/bin/owm/wallets -pwd ${execute.wallet} -keystore siebelkeystore.jks -jkspwd ${execute.storepass} ; chmod -R 755 ${siebelinstallpath}/siebsrvr/bin/owm; fi",
+                              "properties": [
+                                {
+                                  "name": "execute.wallet",
+                                  "target": "execute.wallet",
+                                  "value": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'cwallet.sso' ) %>"    
+                                 },
+                                 {
+                                  "name": "execute.storepass",
+                                  "target": "execute.storepass",
+                                  "value": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, 'siebelkeystore.jks') %>" 
+                                 },
+                                 {
+                                    "name": "scaleout",
+                                  "value": "false"
+                                 }
+                            ],
+                            "executeWhenList": [
+                                "post-configure"
+                               ]
+                          },
+                          {
+                             "name": "jms-changes",
+                             "sourceFile": "if [ ! -e /oracle/app/JMS ]; then mkdir /oracle/app/JMS ; chmod -R 755 /oracle/app/JMS; cd /oracle/app/JMS ; cp -pr ${ochCustomStage}/JMS/* . ; fi",
+                             "properties": [
+                              {
+                                 "name": "scaleout",
+                                 "value": "true"
+                              }
+                              ],
+                             "executeWhenList": [ "post-online" ],
+                             "hostIdentifierList": [ "<%= @gcmoch['hostnameList'][0] %>" ]
+                          },
+                          {
+                             "name": "bindings-copy",
+                             "sourceFile": "if [ -e ${stageRootDir}/custom/environments/${environmentName}/.bindings ]; then cp -pr ${stageRootDir}/custom/environments/${environmentName}/.bindings . ; fi",
+                             "properties": [
+                              {
+                                 "name": "scaleout",
+                                 "value": "true"
+                              }
+                              ],
+                             "executeWhenList": [ "post-online" ],
+                             "hostIdentifierList": [ "<%= @gcmoch['hostnameList'][0] %>" ]
+                          },
+                          {
+                              "name": "sync-comps",
+                            "sourceFile": "export SIEBEL_DEBUG_FLAGS=16; env | grep sort ; cd ${basedomainpath}/siebel/siebsrvr; . ./siebenv.sh; export ORACLE_HOME=/oracle/app/runtime/gcmoch/dbclient; export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ORACLE_HOME/lib; export LIBPATH=$LD_LIBRARY_PATH; export PATH=$PATH:$ORACLE_HOME/bin ; srvrmgr -g ${gtwysrvr}:20920 -e ${ent_name} -u sadmin -p ${execute.sadminpassword} -c 'sync comps';",
+                            "properties": [
+                               {
+                                "name": "execute.sadminpassword",
+                                "target": "execute.sadminpassword",
+                                "value": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, @gcmoch['siebel']['username']) %>" 
+                               },
+                               {
+                                  "name": "scaleout",
+                                "value": "false"
+                               }
+                           ],
+                           "executeWhenList": [ "post-online" ],
+                           "hostIdentifierList": [ "<%= @gcmoch['hostnameList'][0] %>" ]
+                          },
+                          {
+                              "name": "gateway-ZookeeperChanges",
+                              "hostIdentifierList": <%= @gcmoch['gtgw_hostnameList'].to_s %>,
+                              "sourceFile": "if ( ! (cat ${siebelinstallpath}/gtwysrvr/zookeeper/conf/zoo1.cfg | grep Session) ); then cd ${siebelinstallpath}/gtwysrvr/zookeeper/conf;cp -f zoo1.cfg zoo1.cfg.mint;sed -i -e 's/tickTime=2000/tickTime=10000/g' zoo1.cfg;sed -i -e '$ a snapCount=100000' zoo1.cfg; sed -i -e '$ a maxSessionTimeout=60000' zoo1.cfg; sed -i -e '$ a minSessionTimeout=30000' zoo1.cfg; chmod 755 zoo1.cfg; fi",
+                              "properties": [
+                                 {
+                                    "name": "scaleout",
+                                  "value": "false"
+                                 }
+                            ],
+                            "executeWhenList": [
+                                "post-online"
+                               ]
+                            }
+                     ]
+                  }
+              ]
+          }
+       ],                      
+                                                       
+       "databaseList": [
+            {
+                "name": "<%= environment_name %><%= asset_code %>db",
+                "port": "<%= @gcmoch['database']['listen_port'] %>",
+                "serviceName": "<%= @gcmoch['database']['service_name'] %>",
+                "properties": [
+                    {
+                        "name": "rcu.datafile.initialsize",
+                        "value": "200M",
+                        "target": "rcu.datafile.initialsize"
+                    },
+                    {
+                        "name": "rcu.datafile.prefix",
+                        "value": "<%= asset_code %>",
+                        "target": "rcu.datafile.prefix"
+                    },
+                    {
+                        "name": "rcu.datafile.autonaming",
+                        "value": "false",
+                        "target": "rcu.datafile.autonaming"
+                    },
+                    {
+                        "name": "jdbcUrl",
+                        "value": "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(Host=${_.host.address})(Port=${_.port}))(CONNECT_DATA=(SERVICE_NAME=${_.serviceName})))"
+                    }
+                  ],
+              "hostIdentifier": "db_server",
+                "schemaList": [
+                    {
+                        "name": "${databaseSysUsername}",
+                        "password": "${databaseSysUserPassword}"
+                    }
+                ]
+            }
+     ],
+    }
+}

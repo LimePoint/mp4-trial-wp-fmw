@@ -1,0 +1,129 @@
+{
+  "obpipm": {
+    "scaleup_host_list": {
+      "*": [
+        "cix1ipm01",
+        "cix1ipm02",
+        "cix1ipm03",
+        "cix1ipm04"
+      ],
+      "ucm_server*": [
+        "cix1ucm01",
+        "cix1ucm02",
+        "cix1ucm03",
+        "cix1ucm04"
+      ],
+      "ipm_server*": [
+        "cix1ipm01",
+        "cix1ipm02",
+        "cix1ipm03",
+        "cix1ipm04"
+      ]
+    },
+    "scaleup_base_host_list": {
+      "*": [
+        "cix1ipm01",
+        "cix1ipm02",
+        "cix1ipm03",
+        "cix1ipm04"
+      ],
+      "ucm_server*": [
+        "cix1ipm01",
+        "cix1ipm02",
+        "cix1ipm03",
+        "cix1ipm04"
+      ],
+      "ipm_server*": [
+        "cix1ipm01",
+        "cix1ipm02",
+        "cix1ipm03",
+        "cix1ipm04"
+      ]
+    },
+    "scaleup_cluster_nodes": {
+      "*": 4,
+      "ucm_server*": 4,
+      "ipm_server*": 4
+    },
+    "scaleup_nodes_per_host": {
+      "*": 1
+    },
+    "port_increment": true
+  },
+  "obpsoa": {
+    "scaleup_host_list": {
+      "*": [
+        "cix1soa01",
+        "cix1soa02",
+        "cix1soa03",
+        "cix1soa04",
+        "cix1soa05",
+        "cix1soa06"
+      ],
+      "soa_server*": [
+        "cix1soa01",
+        "cix1soa02",
+        "cix1soa03",
+        "cix1soa04",
+        "cix1soa05",
+        "cix1soa06"
+      ],
+      "obphumantask_server*": [
+        "cix1obt01",
+        "cix1obt02",
+        "cix1obt03",
+        "cix1obt04",
+        "cix1obt05",
+        "cix1obt06"
+      ],
+      "bam_server*": [
+        "cix1bam01",
+        "cix1bam02"
+      ]
+    },
+    "scaleup_base_host_list": {
+      "*": [
+        "cix1soa01",
+        "cix1soa02",
+        "cix1soa03",
+        "cix1soa04",
+        "cix1soa05",
+        "cix1soa06"
+      ],
+      "soa_server*": [
+        "cix1soa01",
+        "cix1soa02",
+        "cix1soa03",
+        "cix1soa04",
+        "cix1soa05",
+        "cix1soa06"
+      ],
+      "obphumantask_server*": [
+        "cix1soa01",
+        "cix1soa02",
+        "cix1soa03",
+        "cix1soa04",
+        "cix1soa05",
+        "cix1soa06"
+      ],
+      "bam_server*": [
+        "cix1soa01",
+        "cix1soa02",
+        "cix1soa03",
+        "cix1soa04",
+        "cix1soa05",
+        "cix1soa06"
+      ]
+    },
+    "scaleup_cluster_nodes": {
+      "*": 12,
+      "soa_server*": 12,
+      "obphumantask_server*": 12,
+      "bam_server*": 4
+    },
+    "scaleup_nodes_per_host": {
+      "*": 1
+    },
+    "port_increment": true
+  }
+}

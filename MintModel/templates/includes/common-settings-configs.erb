@@ -1,0 +1,91 @@
+                                    {
+                                        "resourceName": "AdminStartupParameters",
+                                        "type": "StartupParameter",
+                                        "targets": [
+                                            {
+                                                "type": "SERVER",
+                                                "names": [
+                                                    "AdminServer"
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "resourceName": "WeblogicUser_wlsmonitor",
+                                        "type": "User",
+                                        "properties": [
+                                            {
+                                                "name": "authenticatorName",
+                                                "value": "DefaultAuthenticator"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "resourceName": "WeblogicUser_odemmon",
+                                        "type": "User",
+                                        "properties": [
+                                            {
+                                                "name": "authenticatorName",
+                                                "value": "DefaultAuthenticator"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "resourceName": "AdminServerExtChannel",
+                                        "type": "NetworkAccessPoint",
+                                        "properties": [
+                                            {
+                                                "name": "serverName",
+                                                "value": "AdminServer"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "resourceName": "AdminServerSettings",
+                                        "type": "Server",
+                                        "properties": [
+                                            {
+                                                "name": "serverName",
+                                                "value": "AdminServer"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "resourceName": "DomainWebappConfig",
+                                        "type": "WebAppContainer"
+                                    },
+                                    {
+                                        "resourceName": "DomainAdministrationPortConfiguration",
+                                        "type": "Domain"
+                                    },
+                                    {
+                                        "resourceName": "DomainLogConfiguration",
+                                        "type": "DomainLog"
+                                    },
+                                    {
+                                        "resourceName": "DomainSecurityConfiguration",
+                                        "type": "SecurityConfiguration"
+                                    },
+                                    {
+                                        "resourceName": "defaultCoherenceCluster",
+                                        "type": "CoherenceClusterSystemResource"
+                                    }
+                                    <% unless defined? @nodatabase %>
+                                    ,{
+                                        "resourceName": "JdbcCommonSettings",
+                                        "type": "JDBCSystemResource",
+                                        "properties":
+                                        [
+                                            {
+                                                "name": "dataSourceName",
+                                                "value": "*"
+                                            },
+                                            {
+                                                "name": "noTarget",
+                                                "value": "true"
+                                            }
+                                        ],
+                                        "targets": []
+                                    }
+                                    <% end %>
+

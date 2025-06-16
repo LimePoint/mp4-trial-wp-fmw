@@ -1,0 +1,32 @@
+	{
+        "name": "GIDAuthenticator",
+        "type": "AuthenticationProvider",
+        "attributes": {
+          "subType": "weblogic.security.providers.authentication.NovellAuthenticator",
+          "ControlFlag": "SUFFICIENT",
+          "SSLEnabled": "true",
+          "PropagateCauseForLoginException": "true",
+          "UseRetrievedUserNameAsPrincipal": "true",
+          "Host": "<%= @hostname %>",
+          "Port": "<%= @port %>",
+          "Principal": "<%= @username %>",
+          "Credential": "<%= @password %>",
+          "UserNameAttribute": "cn",
+          "UserFromNameFilter": "<%= @user_from_name_filter %>",
+          "KeepAliveEnabled": "true",
+          "AllUsersFilter": "<%= @all_users_filter %>",
+          "AllGroupsFilter": "<%= @all_groups_filter %>",
+          "GroupFromNameFilter": "<%= @group_from_name_filter %>",
+          "GuidAttribute": "guid",
+          "GroupBaseDN": "<%= @group_base_dn %>",
+          "UserBaseDN": "<%= @user_base_dn %>",
+          "ConnectionPoolSize": "<%= @common['gidldap']['ConnectionPoolSize'] %>",
+          "ConnectTimeout": "<%= @common['gidldap']['ConnectTimeout'] %>",
+          "ConnectionRetryLimit": "<%= @common['gidldap']['ConnectionRetryLimit'] %>",
+          "ParallelConnectDelay": "<%= @common['gidldap']['ParallelConnectDelay'] %>",
+          "ResultsTimeLimit": "<%= @common['gidldap']['ResultsTimeLimit'] %>",
+          "CacheSize": "<%= @common['gidldap']['CacheSize'] %>",
+          "CacheTTL": "<%= @common['gidldap']['CacheTTL'] %>",
+          "GroupMembershipSearching": "limited"
+        }
+	}

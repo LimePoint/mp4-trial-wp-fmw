@@ -1,0 +1,276 @@
+            {
+                "name": "WeblogicUser_wlsmonitor",
+                "type": "User",
+                "attributes": {
+                    "name": "wlsmonitor",
+                    "password": "<%= PasswordVault.get_password(@password_vault_name +'/'+  @asset_code, 'wlsmonitor' ) %>",
+                    "description": "User with Weblogic Monitor Role",
+                    "groupList": "monitors"
+                }
+            },
+            {
+                "name": "WeblogicUser_odemmon",
+                "type": "User",
+                "attributes": {
+                    "name": "odemmon",
+                    "password": "<%= PasswordVault.get_password(@password_vault_name +'/'+ 'oemmonitoring', 'odemmon' ) %>",
+                    "description": "OEM User with Weblogic Monitor Role",
+                    "groupList": "monitors"
+                }
+            },
+            {
+                "name": "AdminServerExtChannel",
+                "type": "NetworkAccessPoint",
+                "attributes": {
+                    "Name": "AdminServerExtChannel",
+                    "CustomPrivateKeyAlias": "None",
+                    "Protocol": "<%= @frontend['protocol'] %>",
+                    "ListenAddress": "<%= @frontend['admin_host'] %>",
+                    "ListenPort": "<%= @frontend['admin_port'].to_i - 1 %>",
+                    "ClientCertificateEnforced": "false",
+                    "Enabled": "true",
+                    "TunnelingEnabled": "false",
+                    "TwoWaySSLEnabled": "false",
+                    "ChannelIdentityCustomized": "false",
+                    "HttpEnabledForThisProtocol": "true",
+                    "OutboundEnabled": "false",
+                    "CustomPrivateKeyPassPhrase": "None"
+                }
+            },
+            {
+                "name": "DomainWebappConfig",
+                "type": "WebAppContainer",
+                "attributes": {
+                    "WeblogicPluginEnabled": "true",
+                    "XPoweredByHeaderLevel": "NONE"
+                }
+            },
+            {
+                "name": "defaultCoherenceCluster",
+                "type": "CoherenceClusterSystemResource",
+                "params": [
+                  {
+                    "type": "CoherenceClusterResource",
+                    "params": [
+                      {
+                        "type": "CoherenceClusterParams",
+                        "attributes": {
+                          "SecurityFrameworkEnabled": "true"
+                        }
+                      }
+                    ]
+                  }
+                ]
+            },
+            {
+                "name": "DomainLogConfiguration",
+                "type": "DomainLog",
+                "attributes": {
+                    "NumberOfFilesLimited": "true",
+                    "FileMinSize": "10000",
+                    "RotationTime": "05:00",
+                    "FileTimeSpan": "24",
+                    "RotateLogOnStartup": "true",
+                    "RotationType": "byTime",
+                    "FileCount": "5",
+                    "FileName": "<%= @log_location_path %>/<%= @domain_name %>.log"
+                }
+            },
+            {
+                "name": "DomainSecurityConfiguration",
+                "type": "SecurityConfiguration",
+                "attributes": {
+                  "ConnectionLoggerEnabled": "true",
+                  "ConnectionFilter": "weblogic.security.net.ConnectionFilterImpl"
+                },
+                "params":
+                [
+                    {
+                        "type": "Realm",
+                        "name": "myrealm",
+                        "attributes":
+                        {
+                            "DelegateMBeanAuthorization": "true"
+                        },
+                        "params": [
+                          {
+                            "type": "UserLockoutManager",
+                            "attributes": {
+                              "LockoutThreshold": "3",
+                              "LockoutDuration": "15",
+                              "LockoutResetDuration": "15"
+                            }
+                          },
+                          {
+                            "type": "PasswordValidator",
+                            "name": "SystemPasswordValidator:com.bea.security.providers.authentication.passwordvalidator.SystemPasswordValidator",
+                            "attributes": {
+                              "MinPasswordLength": "15",
+                              "MinUppercaseCharacters": "1",
+                              "MinLowercaseCharacters": "1",
+                              "MinNumericCharacters": "1",
+                              "MinNonAlphanumericCharacters": "1"
+                            }
+                          }
+                        ]
+                    },
+                    {
+                        "type" : "CertRevoc",
+                        "name" : "<%= @domain_name %>",
+                        "attributes" : {
+                          "CheckingEnabled" : "true"
+                        }
+                    }
+                ]
+            }
+            ,
+            <%= render "common-server-settings.erb",
+                :variables => {
+                    :environment_name => @environment_name,
+                    :password_vault_name => @password_vault_name,
+                    :asset_code => @asset_code,
+                    :name => 'AdminServerSettings',
+                    :domain_name => @domain_name,
+                    :log_location_path => @log_location_path,
+                    :certs_location_path => @certs_location_path,
+                    :keystore_alias => @admin_kestore_alias,
+                    :keystore_name => @keystore_name,
+                    :truststore => @common['trustStore']
+                }
+            %>
+            ,
+            <% if @environment_name =~ /^(svp|nft|prd)/ %>
+            <%= render "common-server-settings.erb",
+                :variables => {
+                    :environment_name => @environment_name,
+                    :password_vault_name => @password_vault_name,
+                    :asset_code => @asset_code,
+                    :name => 'GenericServerSettings_auto_1',
+                    :domain_name => @domain_name,
+                    :log_location_path => @log_location_path,
+                    :certs_location_path => @certs_location_path,
+                    :keystore_alias => @managed_keystore_alias,
+                    :keystore_name => @keystore_name,
+                    :truststore => @common['trustStore']
+                }
+            %>
+            ,
+            <%= render "common-server-settings.erb",
+                :variables => {
+                    :environment_name => @environment_name,
+                    :password_vault_name => @password_vault_name,
+                    :asset_code => @asset_code,
+                    :name => 'GenericServerSettings_auto_2',
+                    :domain_name => @domain_name,
+                    :log_location_path => @log_location_path,
+                    :certs_location_path => @certs_location_path,
+                    :keystore_alias => @managed_keystore_alias,
+                    :keystore_name => @keystore_name,
+                    :truststore => @common['trustStore']
+                }
+            %>
+            ,
+            <%= render "common-server-settings.erb",
+                :variables => {
+                    :environment_name => @environment_name,
+                    :password_vault_name => @password_vault_name,
+                    :asset_code => @asset_code,
+                    :name => 'GenericServerSettings_auto_3',
+                    :domain_name => @domain_name,
+                    :log_location_path => @log_location_path,
+                    :certs_location_path => @certs_location_path,
+                    :keystore_alias => @managed_keystore_alias,
+                    :keystore_name => @keystore_name,
+                    :truststore => @common['trustStore']
+                }
+            %>
+            <% else %>
+            <%= render "common-server-settings.erb",
+                :variables => {
+                    :environment_name => @environment_name,
+                    :password_vault_name => @password_vault_name,
+                    :asset_code => @asset_code,
+                    :name => 'GenericServerSettings_auto_1',
+                    :domain_name => @domain_name,
+                    :log_location_path => @log_location_path,
+                    :certs_location_path => @certs_location_path,
+                    :keystore_alias => @managed_keystore_alias,
+                    :keystore_name => @keystore_name,
+                    :truststore => @common['trustStore']
+                }
+            %>
+            <% end %>
+            <% if defined? @database %>
+            ,
+            {
+                "name": "JdbcCommonSettings",
+                "type": "JDBCSystemResource",
+                "params": [
+                    {
+                        "type": "JDBCResource",
+                        "params": [
+                            {
+                                "type": "JDBCOracleParams",
+                                "attributes": {
+                                "OnsNodeList": "<%= @database['ons_node_list'] %>",
+                                "FanEnabled": "true"
+                                }
+                            },
+                            {
+                                "type": "JDBCConnectionPoolParams",
+                                "attributes": {
+                                    "MinCapacity": "<%= @common['jdbc']['min_capacity'] %>",
+                                    "TestConnectionsOnReserve": "true",
+                                    <% if ['obpdoc','obpipm','obpoam','obpidm','obpoim','obpcim','obpurm'].include?@asset_code %>
+                                    "TestTableName": "SQL SELECT 1 FROM DUAL"
+                                    <% else %>
+                                    "TestTableName": "SQL ISVALID"
+                                    <% end %>,
+                                    <% if ['obpobh','obposb'].include?@asset_code %>
+                                    "WrapTypes": "false"
+                                    <% end %>
+                                }
+                            },
+                            {
+                                "type": "JDBCDriverParams",
+                                "attributes": {
+                                <% if @set_dual_site_url == "true" %>
+                                    <% if @enable_dbssl == "true" %>
+                                        <% if @asset_code == 'obpobh' or @asset_code == 'obpbat' %>
+                                            "Url": "<%= @database['sysconfig_url_ssl'] %>"
+                                        <% elsif @asset_code == 'obpobu' %>
+                                            "Url": "<%= @database['ui_db_url_ssl'] %>"
+                                        <% elsif @asset_code == 'obpdoc' %>
+                                            "Url": "<%= @database['doc_db_url_ssl'] %>"
+                                        <% else %>
+                                            "Url": "jdbc:oracle:thin:@(DESCRIPTION_LIST=(LOAD_BALANCE=OFF)(FAILOVER=ON)(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=<%= @database['scan_address'] %>)(PORT=<%= @database['listen_port_ssl'] %>))(CONNECT_DATA=(SERVICE_NAME=<%= @database['service_name'] %>))(SECURITY=(SSL_SERVER_CERT_DN=<%= @common['jdbc']['ssl_dn'] %>)))(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=<%= @database['secondary_scan_address'] %>)(PORT=<%= @database['listen_port_ssl'] %>))(CONNECT_DATA=(SERVICE_NAME=<%= @database['service_name'] %>))(SECURITY=(SSL_SERVER_CERT_DN=<%= @common['jdbc']['secondary_ssl_dn'] %>))))"
+                                        <% end %>
+                                    <% else %>
+                                        "Url": "jdbc:oracle:thin:@(DESCRIPTION_LIST=(LOAD_BALANCE=OFF)(FAILOVER=ON)(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=<%= @database['scan_address'] %>)(PORT=<%= @database['listen_port'] %>))(CONNECT_DATA=(SERVICE_NAME=<%= @database['service_name'] %>)))(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=<%= @database['secondary_scan_address'] %>)(PORT=<%= @database['listen_port'] %>))(CONNECT_DATA=(SERVICE_NAME=<%= @database['service_name'] %>))))"
+                                    <% end %>
+                                <% else %>
+                                    <% if @enable_dbssl == "true" %>
+                                        "Url": "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=<%= @database['scan_address'] %>)(PORT=<%= @database['listen_port_ssl'] %>))(CONNECT_DATA=(SERVICE_NAME=<%= @database['service_name'] %>))(SECURITY=(SSL_SERVER_CERT_DN=<%= @common['jdbc']['ssl_dn'] %>)))"
+                                    <% else %>
+                                        "Url": "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=<%= @database['scan_address'] %>)(PORT=<%= @database['listen_port'] %>))(CONNECT_DATA=(SERVICE_NAME=<%= @database['service_name'] %>)))"
+                                    <% end %>
+                                <% end %>
+                                },
+                                "properties": {
+                                    "javax.net.ssl.trustStoreType": "JKS",
+                                    "encrypted:javax.net.ssl.trustStorePassword": "<%= PasswordVault.get_password(@password_vault_name +'/'+ @asset_code, 'truststorepass' ) %>",
+                                    "oracle.net.ssl_cipher_suites": "(TLS_RSA_WITH_AES_256_CBC_SHA256)",
+									"oracle.net.ssl_version": "1.2",
+                                    "javax.net.ssl.trustStore": "<%= @certs_location_path %>/<%= @common['trustStore'] %>",
+                                    <% if @asset_code == 'obpsoa' %>
+                                    "oracle.jdbc.ReadTimeout": "180000"
+                                    <% else %>
+                                    "oracle.jdbc.ReadTimeout": "300000"
+                                    <% end %>
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+            <% end %>

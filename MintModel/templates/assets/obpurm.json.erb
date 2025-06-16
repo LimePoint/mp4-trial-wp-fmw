@@ -1,0 +1,782 @@
+<% environment_name = @environment['name'] %>
+<% password_vault_name = @common['password_vault_name'] %>
+<% dns_domain = @obpurm["dns_domain_name"] ; if dns_domain.nil? then dns_domain=".mintpress.io" end %>
+<% asset_code = 'obpurm' %>
+
+<% base_install_path = '/oracle/app/binaries/' + asset_code  %>
+<% base_domain_path  = '/oracle/app/runtime/' + asset_code + '/domains' %>
+<% urmVaultDirectory  = '/oracle/app/runtime/' + asset_code + '/' + environment_name %>
+
+<% log_location_path   = '/oracle/app/logs/' + asset_code %>
+<% certs_location_path = '/oracle/app/runtime/' + environment_name + '/certs' %>
+
+<% oracle_install_path      = base_install_path + '/dbclient' %>
+<% java_install_path      = base_install_path + '/java' %>
+<% jdk_version            = '8' %>
+
+<% fmw_install_path           = base_install_path + '/fmw' %>
+<% inventory_install_path = base_install_path + '/oraInventory' %>
+<% temp_location          = base_install_path + '/tmp' %>
+
+<% urm_admin_server_top   = base_domain_path %>
+<% urm_managed_server_top = '/oracle/app/binaries/runtime/' + asset_code + '/domains'  %>
+
+<% node_manager_top       = fmw_install_path + '/wlserver/common/nodemanager' %>
+
+{
+    "internalVariables":
+    {
+        "environmentName": "<%= environment_name %>",
+        "assetCode": "<%= asset_code %>",
+        "stageRootDir": "/oracle/stage",
+        "urmVaultDirectory": "<%= urmVaultDirectory %>"
+    },
+    "projectName": "<%= environment_name %>_<%= asset_code %>",
+    "site": {
+        "hostList": [
+            {
+                "id": "<%= @obpurm['hostnameList'][0] %>",
+                "address": "${_.basename}<%= @obpurm['dns_domain_name'] %>",
+                "groupRefs":
+                [
+                    "Common_Host_Details",
+                    "List_Of_TVT_Tests"
+                ],
+                "attributes": {
+                    "basename": "<%= @obpurm['hostnameList'][0] %>"
+                }
+            },
+            {
+                "id": "db_server",
+                "address": "<%= @obpurm['database']['scan_address'] %>",
+                "groupRefs":
+                [
+                    "Common_Host_Details"
+                ],
+                "attributes": {
+                    "scaleout": "false"
+                }
+            }
+        ],
+        "installationList": [
+            {
+                "name": "jdk",
+                "product": "OracleJava",
+                "version": "1.8.0_411",
+                "installPath": "<%= java_install_path %>",
+                "softwareStage": "${stageRootDir}/jdk/jdk-8u411-linux-x64.tar.gz",
+                "groupRefs":
+                [
+                    "Common_Installation_Details"
+                ]
+            },
+            {
+                "name": "fmwinfra",
+                "product": "OracleFMWInfrastructure",
+                "version": "12.2.1.4",
+                "softwareStage": "${stageRootDir}/fmwinfra/12.2.1.4/fmw_12.2.1.4.0_infrastructure.jar",
+                "installPath": "<%= fmw_install_path %>",
+                "dependsonList": [
+                    "jdk"
+                ],
+                "patchset": [
+                    {
+                        "targetOracleHome": "${_.installPath}",
+                        "softwareStage": "${stageRootDir}/fmwinfra/12.2.1.4/patches",
+                        "name": "33639718",
+                        "aru": "33639718",
+                        "attributes": {
+                            "opatch.minimum.version": "13.9.4.2.10",
+                            "opatch.binary.location": "${stageRootDir}/common_patches/OPatch/1394210/6880880",
+                            "opatch.update.usegeneric": "true",
+                            "patchWhen": "post-binaries"
+                        }
+                    },
+                    {
+                        "targetOracleHome": "${_.installPath}",
+                        "softwareStage": "${stageRootDir}/fmwinfra/12.2.1.4/patches",
+                        "name": "33877829",
+                        "aru": "33877829",
+                        "attributes": {
+                            "opatch.minimum.version": "13.9.4.2.10",
+                            "opatch.binary.location": "${stageRootDir}/common_patches/OPatch/1394210/6880880",
+                            "opatch.update.usegeneric": "true",
+                            "patchWhen": "post-binaries"
+                        }
+                    }
+                ],
+                "attributes": {
+                    "newworld": "true",
+                    "fmw_home": "<%= fmw_install_path %>",
+                    "inventory_location": "<%= inventory_install_path %>",
+                    "owner": "oracle",
+                    "group": "oinstall"
+                }
+            },
+            {
+                "name": "oracleclient",
+                "product": "OracleDatabaseClient",
+                "version": "19.3.0.0",
+                "installPath": "<%= oracle_install_path %>",
+                "softwareStage": "${stageRootDir}/rdbms/Linux-x86_64/19.3.0.0/client",
+                "dependsonList": [
+                    "jdk"
+                ], ,
+                "attributes": {
+                    "newworld": "true",
+                    "inventory_location": "<%= inventory_install_path %>",
+                    "owner": "oracle",
+                    "group": "oinstall",
+                    "OracleDatabaseClient": {
+                        "oracle_home": "<%= oracle_install_path %>",
+                        "oracle_base": "<%= base_install_path %>",
+                        "install_type": "Administrator"
+                    }
+                }
+            },
+            {
+                "name": "wcc",
+                "product": "OracleWebCenter::ContentInstallation",
+                "version": "12.2.1.4",
+                "installPath": "<%= fmw_install_path %>/wcc",
+                "softwareStage": "${stageRootDir}/wcc/12.2.1.4/fmw_12.2.1.4.0_wccontent.jar",
+                "dependsonList": [
+                    "fmwinfra",
+                    "oracleclient"
+                ],
+                "patchset": [
+                    {
+                        "targetOracleHome": "${_.installPath}",
+                        "softwareStage": "${stageRootDir}/wcc/12.2.1.4/patches",
+                        "name": "32712052",
+                        "aru": "32712052",
+                        "attributes": {
+                            "opatch.minimum.version": "13.9.4.2.10",
+                            "opatch.binary.location": "${stageRootDir}/common_patches/OPatch/1394210/6880880",
+                            "opatch.update.usegeneric": "true",
+                            "patchWhen": "post-binaries"
+                        }
+                    }
+                ],
+                "attributes": {
+                    "newworld": "true",
+                    "inventory_location": "<%= inventory_install_path %>",
+                    "owner": "oracle",
+                    "group": "oinstall"
+                }
+            }
+        ],
+        "environmentName":  "<%= environment_name %>",
+                        "topologyName":  "<%= asset_code %>",
+
+                        "nodeManagerList": [
+                            {
+                                "name": "nm-<%= @obpurm['hostnameList'][0] %>",
+                                "listenAddress": "<%= @obpurm['nm']['listen_address'] %><%= @obpurm['dns_domain_name'] %>",
+                                "listenPort": "<%= @obpurm['nm']['listen_port'] %>",
+                                "hostIdentifier": "<%= @obpurm['hostnameList'][0] %>",
+                                "groupRefs": [
+                                    "Node_Manager_Common_Config",
+                                    "Node_Manager_SSL_Config"
+                                ],
+                                "attributes": {
+                                    "wls.nodemanager.log.path": "<%= log_location_path %>/${/host.basename}",
+                                    "wls.nodemanager.identityname": "${/host.basename}",
+                                    "wls.nodemanager.identitystorefile": "<%= certs_location_path %>/<%= @obpurm['hostnameList'][0][0...-2] %>.jks",
+                                    "wls.nodemanager.usejsse": "true"
+                                }
+                            }
+                        ],
+                        "domainList": [
+                            {
+                                "name": "<%= @obpurm['wls_domain_name'] %>",
+                                "locationPath": "<%= urm_admin_server_top %>",
+                                "adminUser": "<%= @obpurm['wls_admin_user'] %>",
+                                "adminPassword": "<%= PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpurm['wls_admin_user'] ) %>",
+                                "adminServer": {
+                                    "name": "AdminServer",
+                                    "machineName": "Machine-<%= @obpurm['hostnameList'][0] %>",
+                                    "listenAddress": "<%= @obpurm['admin']['listen_address'] %><%= @obpurm['dns_domain_name'] %>",
+                                    "listenAddressPort": "<%= @obpurm['admin']['listen_port'] %>",
+                                    "listenAddressPortSSL": "<%= @obpurm['admin']['listen_port_ssl'] %>",
+                                    "targetName": "<%= asset_code[3..-1] %>AdminServer"
+                                },
+                                "machineList": [
+                                    {
+                                        "name": "Machine-<%= @obpurm['hostnameList'][0] %>",
+                                        "nodeManagerName": "nm-<%= @obpurm['hostnameList'][0] %>"
+                                    }
+                                ],
+                                "clusterList": [
+                                  {
+                                    "name": "<%= @obpurm['urm_server']['cluster_name'] %>",
+                                    "messageMode": "Unicast"
+                                  }
+                                ],
+                                "managedServerList": [
+                                    {
+                                        "name": "UCM_server1",
+                                        "machineName": "Machine-<%= @obpurm['hostnameList'][0] %>",
+                                        "clusterName": "<%= @obpurm['urm_server']['cluster_name'] %>",
+                                        "listenAddress": "<%=  @obpurm['urm_server']['listen_address'] %><%= @obpurm['dns_domain_name'] %>",
+                                        "listenAddressPort": "<%=  @obpurm['urm_server']['listen_port'] %>",
+                                        "listenAddressPortSSL": "<%=  @obpurm['urm_server']['listen_port_ssl'] %>",
+                                        "targetName": "${_.name}"
+                                    }
+                                ],
+                                "middlewareList": [
+                                    {
+                                        "installationName": "wcc",
+                                        "targetList": [
+                                            {
+                                              "type": "Cluster",
+                                              "names":
+                                              [
+                                                "<%= @obpurm['urm_server']['cluster_name'] %>"
+                                              ]
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "configurationList": [
+
+                                     <%= render "common-settings-configs.erb"  %>
+                                    ,
+                                    {
+                                        "resourceName": "GenericServerSettings_auto_1",
+                                        "type": "Server",
+                                        "attributes": {
+                                            "serverName": "UCM_server1"
+                                        }
+                                    },
+                                    {
+                                        "resourceName": "URMClusterStartupParameters",
+                                        "type": "StartupParameter",
+                                        "targets": [
+                                            {
+                                                "type": "CLUSTER",
+                                                "names": [
+                                                    "<%= @obpurm['urm_server']['cluster_name'] %>"
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "resourceName": "OAMIdentityAsserter",
+                                        "type": "AuthenticationProvider",
+                                        "attributes": {
+                                            "realmName": "myrealm"
+                                        }
+                                    },
+                                    {
+                                        "resourceName": "UseKSSForDemo",
+                                        "type": "SecurityConfiguration"
+                                    },
+                                    {
+                                        "resourceName": "OIDAuthenticator",
+                                        "type": "AuthenticationProvider",
+                                        "attributes": {
+                                            "realmName": "myrealm"
+                                        }
+                                    },
+                                    {
+                                        "resourceName": "DefaultAuthenticator",
+                                        "type": "AuthenticationProvider",
+                                        "attributes": {
+                                            "realmName": "myrealm"
+                                        }
+                                    }
+                                    <% if !is_running_on_cloud %>
+                                    ,
+                                    {
+                                        "resourceName": "GIDAuthenticator",
+                                        "type": "AuthenticationProvider",
+                                        "attributes": {
+                                            "realmName": "myrealm"
+                                        }
+                                    }
+                                    <% end %>
+                                ],
+                                "templateList": [
+                                    {
+                                        "name": "OracleWebCenter::ContentTemplateSet",
+                                            "attributes": {
+                                                "OracleWebCenter::ContentTemplateSet": {
+                                                    "intradoc_directory": "${urmVaultDirectory}/ucm/cs/",
+                                                    "vault_directory": "${urmVaultDirectory}/ucm/cs/vault/",
+                                                    "weblayout_directory": "${urmVaultDirectory}/ucm/cs/weblayout/",
+                                                    "profiles_directory": "${urmVaultDirectory}/ucm/cs/data/users/profiles/",
+                                                    "intradoc_server_port": "<%= @obpurm['urm_server']['intradoc_port'] %>",
+                                                    "socket_host_address_security_filter": "127.0.0.1|*.*.*.*|0:0:0:0:0:0:0:1",
+                                                    "http_server_address": "<%= @obpurm['frontend']['otd_vip_name'] %>:<%= @obpurm['frontend']['urm_port'] %>",
+                                                    "use_ssl": "true",
+                                                    "idc_name": "<%= environment_name %>-Cluster-<%= @obpurm['urm_server']['cluster_name'] %>-",
+                                                    "instance_menu_label": "<%= environment_name %>-Cluster-<%= @obpurm['urm_server']['cluster_name'] %>-",
+                                                    "instance_description": "<%= environment_name %>-Cluster-<%= @obpurm['urm_server']['cluster_name'] %>-",
+                                                    "auto_number_prefix": "<%= environment_name %>-<%= @obpurm['urm_server']['cluster_name'] %>-",
+                                                }
+                                            }
+                                    }
+                                ],
+                                "repositoryList": [
+                                    {
+                                        "componentList": [
+                                            "CONTENT",
+                                            "OPSS",
+                                            "STB",
+                                            "WLS"
+                                        ],
+                                        "id": "rcu01",
+                                        "dbName": "<%= environment_name %><%= asset_code %>db",
+                                        "prefix": "<%= @obpurm['database']['rcu_schema_prefix'].upcase %>",
+                                        "dbUser": "<%= @obpurm['database']['sysdba_username'].upcase %>",
+                                        "schemaPassword": "<%= PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpurm['database']['rcu_schema_prefix'].upcase ) %>",
+                                        "defaultRepository": "true"
+                                    }
+                                ],
+                                "attributes": {
+                                    "newworld": "true",
+                                    "serverStartMode": "prod",
+                                    "wls.production.mode": "prod",
+                                    "backupEnvironmentName": "<%= environment_name %>",
+                                    "environment.name": "<%= environment_name %>",
+                                    "tlogsLocationPath": "<%= base_domain_path %>/${/domain.name}",
+                                    "wls.tlogs.location.path": "<%= base_domain_path %>/${/domain.name}",
+                                    "odlLogLocation": "<%= log_location_path %>/${/domain.name}",
+                                    "wls.odl.log.location": "<%= log_location_path %>/${/domain.name}",
+                                    "wls.odl.log.retentionPeriod": "<%= @common['odl_log_retentionPeriod'] %>",
+                                    "defaultJMSLogLocation": "<%= log_location_path %>/${/domain.name}",
+                                    "wls.admin.listen.port.admin": "<%= @obpurm['admin']['listen_port_admin'] %>",
+                                    "managedTopLocation": "<%= urm_managed_server_top %>",
+                                    "wls.domain.managed.top": "<%= urm_managed_server_top %>",
+                                    "mintpress.startup_parallel": "10"
+                                }
+                            }
+                        ],
+                        "hostInstallationList": [
+                            {
+                                "installationName": "wcc",
+                                "hostIdentifierList": [
+                                    "<%= @obpurm['hostnameList'][0] %>"
+                                ]
+                            }
+                        ],
+                        "transferList": [
+
+                            <%= render "common-certs-transfer.erb",
+                                :variables => {
+                                    :host_identifier => @obpurm['hostnameList'][0],
+                                    :environment_name => environment_name,
+                                    :asset_code => asset_code,
+                                    :keystore_name => @obpurm['hostnameList'][0][0...-2],
+                                    :certs_source_path => @common['certs_source'],
+                                    :cert_destination_path => certs_location_path,
+                                    :truststore => @common['trustStore']
+                                }
+                            %>
+                            ,
+                            <%= render "common-jdk-policy-transfer.erb",
+                                :variables => {
+                                    :host_identifier => @obpurm['hostnameList'][0],
+                                    :environment_name => environment_name,
+                                    :asset_code => asset_code,
+                                    :jdk_version => jdk_version,
+                                    :java_install_path => java_install_path
+                                }
+                            %>                            ,
+                            <%= render "common-transfer-ovd-keystore.erb",
+                                :variables => {
+                                    :host_identifier => @obpurm['hostnameList'][0],
+                                    :environment_name => environment_name,
+                                    :certs_source_path => @common['certs_source'] ,
+                                    :admin_server_top => urm_admin_server_top,
+                                    :domain_name => @obpurm['wls_domain_name']
+                                }
+                            %>,
+                            {
+                                "name": "HealthCheckFileCopy",
+                                "hostIdentifierList": [
+                                  "<%= @obpurm['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "<%= "#{@common['custom_source']}/common/HealthCheck.war" %>",
+                                "destinationFile": "<%= "#{base_domain_path}/applications/#{@obpurm['wls_domain_name']}/HealthCheck.war" %>",
+                                "permissions": "755",
+                                "transferWhenList": [
+                                  "pre-online"
+                                ],
+                                "attributes": {
+                                    "scaleout": "false"
+                                }
+                            }
+                        ],
+                        "executeList": [
+                            {
+                                "name": "ConfigureRecordsReportFeature",
+                                "hostIdentifierList": [
+                                    "<%= @obpurm['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "cinc-client -c $HOME/chef/client.rb -o 'recipe[obp-environmint-custom::obpurm-rec-reports]' -l info",
+                                "executeWhenList": [
+                                    "post-configure"
+                                ],
+                                "attributes": {
+                                    "scaleout": "true"
+                                }
+                            },
+							{
+                                "name": "security-config",
+                                "hostIdentifierList": [
+                                    "<%= @obpurm['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "cinc-client -c $HOME/chef/client.rb -o 'recipe[obp-environmint-custom::security_config_param]' -l info",
+                                "executeWhenList": [
+                                    "post-online"
+                                ],
+                                "attributes": {
+                                    "scaleout": "false"
+                                }
+                            },
+                            {
+                                "name": "custom-threshold",
+                                "hostIdentifierList": [
+                                    "<%= @obpurm['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "cinc-client -c $HOME/chef/client.rb -o 'recipe[obp-environmint-custom::custom-threshold-config]' -l info",
+                                "executeWhenList": [
+                                    "post-online"
+                                ],
+                                "attributes": {
+                                    "scaleout": "true"
+                                }
+                            },
+                            {
+                                "name": "XdoRuntimeLibraryReferenceCheck",
+                                "hostIdentifierList": [
+                                    "<%= @obpurm['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "cinc-client -c $HOME/chef/client.rb -o 'recipe[obp-environmint-custom::obpurm-check-library-ref]' -l info",
+                                "executeWhenList": [
+                                    "post-binaries"
+                                ],
+                                "attributes": {
+                                    "scaleout": "true"
+                                }
+                            },
+                            <%= render "common-enable-sso.erb",
+                                :variables => {
+                                    :host_identifier => @obpurm['hostnameList'][0],
+                                    :fmw_install_path => "#{fmw_install_path}",
+                                    :t3_connect_url => "t3://#{@obpurm['admin']['listen_address']}#{@obpurm['dns_domain_name']}:#{@obpurm['admin']['listen_port']}",
+                                    :admin_username => @obpurm['wls_admin_user'],
+                                    :admin_password => PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpurm['wls_admin_user']),
+                                    :domain_home => "#{urm_admin_server_top}/#{@obpurm['wls_domain_name']}",
+                                    :logout_url => @common['OAMLogoutURL']
+                                }
+                            %>
+                            ,
+                            <%= render "common-deploy-healthcheck.erb",
+                                :variables => {
+                                    :host_identifier => @obpurm['hostnameList'][0],
+                                    :asset_code => asset_code,
+                                    :custom_source => @common['custom_source'],
+                                    :fmw_install_path => fmw_install_path,
+                                    :t3_connect_url => "t3://#{@obpurm['admin']['listen_address']}#{@obpurm['dns_domain_name']}:#{@obpurm['admin']['listen_port']}",
+                                    :admin_username => @obpurm['wls_admin_user'],
+                                    :admin_password => PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpurm['wls_admin_user'] ),
+                                    :app_target => "#{@obpurm['urm_server']['cluster_name']}",
+                                    :app_path => "#{base_domain_path}/applications/#{@obpurm['wls_domain_name']}"
+                                }
+                            %>
+                            ,
+                            <%= render "common-run-wlst.erb",
+                              :variables => {
+                                    :name => "securityJMXAuthEnable",
+                                    :host_identifier => @obpurm['hostnameList'][0],
+                                    :wlst_command => "#{fmw_install_path}/oracle_common/common/bin/wlst.sh",
+                                    :script => "#{@common['custom_source']}/common/securityAccessAndRoles.py",
+                                    :t3_connect_url => "t3://#{@obpurm['admin']['listen_address']}#{@obpurm['dns_domain_name']}:#{@obpurm['admin']['listen_port']}",
+                                    :admin_username => @obpurm['wls_admin_user'],
+                                    :admin_password => PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpurm['wls_admin_user']),
+                                    :args => 'JMXAuth true',
+                                    :when => 'post-configure'
+                                }
+                            %>
+                            ,
+                            <%= render "common-run-wlst.erb",
+                                  :variables => {
+                                      :name => "deleteDefaultAuditor",
+                                      :host_identifier => @obpurm['hostnameList'][0],
+                                      :wlst_command => "#{fmw_install_path}/oracle_common/common/bin/wlst.sh",
+                                      :script => "#{@common['custom_source']}/common/deleteDefaultAuditor.py",
+                                      :t3_connect_url => "t3://#{@obpurm['admin']['listen_address']}#{@obpurm['dns_domain_name']}:#{@obpurm['admin']['listen_port']}",
+                                      :admin_username => @obpurm['wls_admin_user'],
+                                      :admin_password => PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpurm['wls_admin_user']),
+                                      :args => "#{@obpurm['wls_domain_name']}",
+                                      :when => 'pre-online'
+                              }
+                            %>
+                            ,
+                            <% if environment_name =~ /^svp/ or environment_name =~ /^nft/ or environment_name =~ /^prd/ %>
+                            <%= render "common-run-wlst.erb",
+                                :variables => {
+                                  :name => "updateJpsConfig",
+                                  :host_identifier => @obpurm['hostnameList'][0],
+                                  :wlst_command => "#{fmw_install_path}/oracle_common/common/bin/wlst.sh",
+                                  :script => "#{@common['custom_source']}/common/updateJpsConfig.py",
+                                  :t3_connect_url => "t3://#{@obpurm['admin']['listen_address']}#{@obpurm['dns_domain_name']}:#{@obpurm['admin']['listen_port']}",
+                                  :admin_username => @obpurm['wls_admin_user'],
+                                  :admin_password => PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpurm['wls_admin_user']),
+                                  :args => "'jdbc:oracle:thin:@(DESCRIPTION_LIST=(LOAD_BALANCE=OFF)(FAILOVER=ON)(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=#{@obpurm['database']['scan_address']})(PORT=#{@obpurm['database']['listen_port']}))(CONNECT_DATA=(SERVICE_NAME=#{@obpurm['database']['service_name']})))(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=#{@obpurm['database']['secondary_scan_address']})(PORT=#{@obpurm['database']['listen_port']}))(CONNECT_DATA=(SERVICE_NAME=#{@obpurm['database']['service_name']}))))'",
+                                  :when => 'pre-online'
+                              }
+                            %>,
+                            <% end %>
+                            <%= render "common-run-wlst.erb",
+                                    :variables => {
+                                    :name => "jmsMsgView",
+                                    :host_identifier => @obpurm['hostnameList'][0],
+                                    :wlst_command => "#{fmw_install_path}/oracle_common/common/bin/wlst.sh",
+                                    :script => "#{@common['custom_source']}/common/securityAccessAndRoles.py",
+                                    :t3_connect_url => "t3://#{@obpurm['admin']['listen_address']}#{@obpurm['dns_domain_name']}:#{@obpurm['admin']['listen_port']}",
+                                    :admin_username => @obpurm['wls_admin_user'],
+                                    :admin_password => PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpurm['wls_admin_user']),
+                                    :args => 'JMSView',
+                                    :when => 'post-online'
+                                }
+                            %>
+                            ,
+                            <%= render "common-run-wlst.erb",
+                                    :variables => {
+                                    :name => "updateSIEMAuditor",
+                                    :host_identifier => @obpurm['hostnameList'][0],
+                                    :wlst_command => "#{fmw_install_path}/oracle_common/common/bin/wlst.sh",
+                                    :script => "#{@common['custom_source']}/common/updateSIEMAuditor.py",
+                                    :t3_connect_url => "t3://#{@obpurm['admin']['listen_address']}#{@obpurm['dns_domain_name']}:#{@obpurm['admin']['listen_port']}",
+                                    :admin_username => @obpurm['wls_admin_user'],
+                                    :admin_password => PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpurm['wls_admin_user']),
+                                    :args => "#{@obpurm['wls_domain_name']} #{asset_code}",
+                                    :when => 'post-online'
+                                }
+                            %>
+                            ,
+                            {
+                                "name": "DeleteurmVaultDirectory",
+                                "hostIdentifierList": [
+                                    "<%= @obpurm['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "rm -rf <%= urmVaultDirectory %>",
+                                "executeWhenList": [
+                                    "post-clobber"
+                                ]
+                            <% if is_running_on_cloud %>,
+                            "attributes": {
+                                "scaleout": "false"
+                            }
+                            },
+                            {
+                                "name": "ensure-oid-users-are-available",
+                                "hostIdentifierList": [
+                                    "<%= @obpurm['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "<%= "RESULT=1 ; while [ $RESULT != 0 ]; do ldapsearch -h #{@obpoid['frontend']['managed_host']} -p 17001 -D cn=obpurm_readonly,cn=serviceaccounts,cn=users,dc=limepoint,dc=com,dc=au -w ${execute.obpurmReadonlyPassword} -b dc=limepoint,dc=com,dc=au cn=obpurm_readonly > /dev/null 2>&1 ; RESULT=$? ; if [ $RESULT != 0 ]; then echo 'sleeping'; sleep 5 ; fi ; done ;  /bin/true" %> ",
+                                "executeWhenList": [
+                                    "pre-online"
+                                ]
+                            <% end %>,
+                            "attributes": {
+                                "execute.obpurmReadonlyPassword": "<%= PasswordVault.get_password(password_vault_name + '/' + 'obpoid', 'obpurm_readonly' ) %>",
+                                "scaleout": "false"
+                            }
+                            }
+                        ]
+                    ,
+        "databaseList": [
+            {
+                "name": "<%= environment_name %><%= asset_code %>db",
+                "port": "<%= @obpurm['database']['listen_port'] %>",
+                "serviceName": "<%= @obpurm['database']['service_name'] %>",
+                "hostIdentifier": "db_server",
+                "schemaList": [
+                  {
+                    "name": "<%= @obpurm['database']['sysdba_username'].upcase %>",
+                    "password": "<%= PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpurm['database']['sysdba_username'].upcase) %>"
+                  }
+                ],
+                "attributes": {
+                    "rcu.datafile.initialsize": "200M",
+                    "jdbcUrl": "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(Host=${_.host.address})(Port=${_.port}))(CONNECT_DATA=(SERVER = DEDICATED)(SERVICE_NAME=${_.serviceName})))",
+                    "rcu.extra.parameters": " -encryptTablespace <%= @obpurm['database'].key?('encryption') ? @obpurm['database']['encryption'] : 'false' %>"
+                }
+            }
+        ],
+        "resourceList": [
+
+            <%= render "common-settings-resources.erb",
+                :variables => {
+                    :environment_name => environment_name,
+                    :password_vault_name => password_vault_name,
+                    :asset_code => asset_code,
+                    :domain_name => @obpurm['wls_domain_name'],
+                    :log_location_path => log_location_path,
+                    :certs_location_path => certs_location_path,
+                    :admin_kestore_alias => @obpurm['hostnameList'][0],
+                    :managed_keystore_alias => '%ListenAddress/noprefix%',
+                    :keystore_name => @obpurm['hostnameList'][0][0...-2],
+                    :common => @common,
+                    :frontend => @obpurm['frontend'],
+                    :database => @obpurm['database'],
+                    :set_dual_site_url => @obpurm['database'].key?('set_dual_site_url') ? @obpurm['database']['set_dual_site_url'].downcase : "false",
+                    :enable_dbssl => @common.key?('enable_dbssl') ? @common['enable_dbssl'].downcase : "false"
+                }
+            %>
+            ,
+            <%= render "common-oid-authenticator.erb",
+                :variables => {
+                    :name => 'OIDAuthenticator',
+                    :hostname => @obpoid['frontend']['managed_host'],
+                    :port => @obpoid['frontend']['ldap_port'],
+                    :username => 'cn=obpurm_readonly,cn=serviceaccounts,cn=users,dc=limepoint,dc=com,dc=au',
+                    :password => PasswordVault.get_password(password_vault_name + '/' + 'obpoid', 'obpurm_readonly'),
+                    :group_base_dn => 'ou=urm,ou=apps,dc=limepoint,dc=com,dc=au',
+                    :user_base_dn => 'cn=users,dc=limepoint,dc=com,dc=au',
+                    :common => @common
+                }
+            %>
+            ,
+            {
+                "name": "OAMIdentityAsserter",
+                "type": "AuthenticationProvider",
+                "attributes": {
+                    "subType": "oracle.security.wls.oam.providers.asserter.OAMIdentityAsserter",
+                    "ControlFlag": "OPTIONAL"
+                }
+            },
+            {
+                "name": "UseKSSForDemo",
+                "type": "SecurityConfiguration",
+                "attributes": {
+                    "UseKSSForDemo": "false"
+                }
+            },
+            {
+                "name": "DefaultAuthenticator",
+                "type": "AuthenticationProvider",
+                "attributes": {
+                    "subType": "null",
+                    "ControlFlag": "SUFFICIENT"
+                }
+            }
+            ,
+            <% if !is_running_on_cloud %>
+            <%= render "common-gid-authenticator.erb",
+                :variables => {
+                    :hostname => @common['gidldap']['gidhost'],
+                    :port => @common['gidldap']['gidport'],
+                    :username => @common['gidldap']['gidaccountusername'],
+                    :password => PasswordVault.get_password(password_vault_name + '/' + 'all', 'gidaccountpassword'),
+                    :group_base_dn => @common['gidldap']['gid_group_base_dn'],
+                    :user_base_dn => @common['gidldap']['gid_user_base_dn'],
+                    :all_users_filter => @common['gidldap']['all_users_filter'],
+                    :all_groups_filter => @common['gidldap']['all_groups_filter'],
+                    :user_from_name_filter => @common['gidldap']['user_from_name_filter'],
+                    :group_from_name_filter => @common['gidldap']['group_from_name_filter'],
+                    :common => @common
+                }
+            %>,
+            <% end %>
+            {
+                "name": "AdminStartupParameters",
+                "type": "StartupParameter",
+                "attributes": {
+                    "1": "-Xms<%= @obpurm["admin"]['ms_heap'] %> -Xmx<%= @obpurm["admin"]['mx_heap']  %> -XX:MaxPermSize=1048m",
+                    "2": "<%= "-javaagent:/oracle/app/binaries/contrast_agent/contrast.jar" if @common['enable_contrastagent'] == "true" %>",
+                    <% if @common['migrate_appd_agent'] == "true" %>
+                    "3": "<%= "-javaagent:#{@common['appd_agent_home']}/javaagent.jar -Dappagent.install.dir=#{@common['appd_agent_home']} -Dappdynamics.agent.nodeName=%ListenAddress/noprefix%#{@obpobh['dns_domain_name']}:%ListenPort+1000%" if @common['enable_appdynamics'] == "true" %>",
+                    <% else %>
+                    "3": "<%= "-javaagent:#{@common['appdynamics_agent']} -Dappagent.install.dir=/oracle/app/binaries/appdynamics/javaagent -Dappdynamics.agent.nodeName=%ListenAddress/noprefix%#{@obpobh['dns_domain_name']}:%ListenPort+1000%" if @common['enable_appdynamics'] == "true" %>",
+                    <% end %>
+                    "4": "-Dweblogic.ProductionModeEnabled=true",
+                    <% if environment_name =~ /^svp3w/ or environment_name =~ /^prd3w/ or environment_name =~ /^nft1w/ %>
+                    "5": "-Dappdynamics.agent.tierName=OBP-ADMIN-WSDC",
+                    <% else %>
+                    "5": "-Dappdynamics.agent.tierName=OBP-ADMIN",
+                    <% end %>
+                    <%= render "common-startup-params.erb",
+                        :variables => {
+                            :log_location_path => log_location_path,
+                            :certs_location_path => certs_location_path,
+                            :truststore => @common['trustStore']
+                        }
+                    %>
+                }
+            },
+            {
+                "name": "URMClusterStartupParameters",
+                "type": "StartupParameter",
+                "attributes": {
+                    "1": "-Xms<%= @obpurm['urm_server']['ms_heap'] %> -Xmx<%= @obpurm['urm_server']['mx_heap'] %>",
+                    "2": "-XX:+UseG1GC -XX:+DisableExplicitGC -XX:+UseStringDeduplication -XX:MaxGCPauseMillis=150 -XX:ReservedCodeCacheSize=256M -XX:-TieredCompilation -XX:+PrintGCApplicationConcurrentTime -XX:+PrintGCApplicationStoppedTime -XX:-UseBiasedLocking -XX:+UnlockDiagnosticVMOptions -XX:GuaranteedSafepointInterval=0 -XX:-OmitStackTraceInFastThrow",
+                    <% if @common['migrate_appd_agent'] == "true" %>
+                    "3": "<%= "-javaagent:#{@common['appd_agent_home']}/javaagent.jar -Dappagent.install.dir=#{@common['appd_agent_home']} -Dappdynamics.agent.nodeName=%ListenAddress/noprefix%#{@obpurm['dns_domain_name']}:%ListenPort+1000%" if @common['enable_appdynamics'] == "true" %>",
+                    <% else %>
+                    "3": "<%= "-javaagent:#{@common['appdynamics_agent']} -Dappagent.install.dir=/oracle/app/binaries/appdynamics/javaagent -Dappdynamics.agent.nodeName=%ListenAddress/noprefix%#{@obpurm['dns_domain_name']}:%ListenPort+1000%" if @common['enable_appdynamics'] == "true" %>",
+                    <% end %>
+                    "4": "<%= "-javaagent:/oracle/app/binaries/contrast_agent/contrast.jar" if @common['enable_contrastagent'] == "true" %>",
+                    "5": "-Dweblogic.utils.cmm.lowertier.ServiceDisabled=true -Dweblogic.ProductionModeEnabled=true -XX:+CMSParallelRemarkEnabled -XX:-UseContainerSupport -Dweblogic.MuxerClass=weblogic.socket.PosixSocketMuxer -Doracle.net.disableOob=true",
+                    <% if environment_name =~ /^svp3w/ or environment_name =~ /^prd3w/ or environment_name =~ /^nft1w/ %>
+                    "6": "-Dappdynamics.agent.tierName=OBP-URM-WSDC",
+                    <% else %>
+                    "6": "-Dappdynamics.agent.tierName=OBP-URM",
+                    <% end %>
+					<%= render "odi-urm-managed-server-startups.erb",
+                        :variables => {
+                            :log_location_path => log_location_path,
+                            :certs_location_path => certs_location_path,
+                            :truststore => @common['trustStore']
+                        }
+                    %>
+                }
+            },
+            {
+                "name": "DomainAdministrationPortConfiguration",
+                "type": "Domain",
+                "attributes": {
+                    "AdministrationPort": "<%= @obpurm['admin']['listen_port_admin'] %>",
+                    "AdministrationPortEnabled": "false"
+                }
+            }
+        ],
+        "propertyGroupList":
+        [
+            <%= render "common-config-groups.erb",
+                :variables => {
+                    :environment_name => environment_name,
+                    :asset_code => asset_code,
+                    :inventory_install_path => inventory_install_path,
+                    :fmw_install_path => fmw_install_path,
+                    :temp_location => temp_location
+                }
+            %>
+            ,
+            {
+                "name": "Node_Manager_Common_Config",
+                "description": "Common Node Manager configuration",
+                "attributes": {
+                    "wls.nodemanager.shared.domain.dir": "true",
+                    "wlInstallationName": "fmwinfra",
+                    "nodemanagerTop": "<%= node_manager_top %>",
+                    "wls.nodemanager.top": "<%= node_manager_top %>"
+                }
+            },
+            <%= render "common-nm-ssl-config.erb",
+                :variables => {
+                    :environment_name => environment_name,
+                    :password_vault_name => password_vault_name,
+                    :asset_code => asset_code,
+                    :certs_location_path => certs_location_path,
+                    :truststore => @common['trustStore']
+                }
+            %>
+        ]
+    }
+}

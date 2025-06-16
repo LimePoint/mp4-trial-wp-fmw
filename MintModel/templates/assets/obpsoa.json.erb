@@ -1,0 +1,1518 @@
+<% environment_name = @environment['name'] %>
+<% password_vault_name = @common['password_vault_name'] %>
+<% dns_domain = @obpsoa["dns_domain_name"] ; if dns_domain.nil? then dns_domain=".mintpress.io" end %>
+<% asset_code = 'obpsoa' %>
+
+<% base_install_path = '/oracle/app/binaries/' + asset_code  %>
+<% base_domain_path  = '/oracle/app/runtime/' + asset_code + '/domains' %>
+
+<% log_location_path   = '/oracle/app/logs/' + asset_code %>
+<% certs_location_path = '/oracle/app/runtime/' + environment_name + '/certs' %>
+
+<% oracle_install_path      = base_install_path + '/dbclient' %>
+<% java_install_path      = base_install_path + '/java' %>
+<% jdk_version            = '8' %>
+
+<% fmw_install_path           = base_install_path + '/fmw' %>
+<% inventory_install_path = base_install_path + '/oraInventory' %>
+<% temp_location          = '/oracle/app/binaries/tmp' %>
+
+<% soa_admin_server_top   = base_domain_path %>
+<% soa_managed_server_top = soa_admin_server_top %>
+<% node_manager_top       = fmw_install_path + '/wlserver/common/nodemanager' %>
+
+
+{
+    "internalVariables":
+    {
+        "environmentName": "<%= environment_name %>",
+        "assetCode": "<%= asset_code %>",
+        <% if environment_name =~ /^(svp|nft|prd)/ %>
+        "disableRollingPatch": "true",
+        "newworldTransfer": "true",
+        <% end %>
+        "stageRootDir": "/oracle/stage"
+    },
+    "projectName": "<%= environment_name %>_<%= asset_code %>",
+    "site": {
+        "hostList": [
+            {
+                "id": "<%= @obpsoa['hostnameList'][0] %>",
+                "address": "${_.basename}<%= @obpsoa['dns_domain_name'] %>",
+                "groupRefs":
+                [
+                    "Common_Host_Details",
+                    "List_Of_TVT_Tests"
+                ],
+                "attributes": {
+                    "basename": "<%= @obpsoa['hostnameList'][0] %>"
+                }
+            },
+            {
+                "id": "db_server",
+                "address": "<%= @obpsoa['database']['scan_address'] %>",
+                "groupRefs":
+                [
+                    "Common_Host_Details"
+                ],
+                "attributes": {
+                    "scaleout": "false"
+                }
+            }
+        ],
+        "installationList": [
+            {
+                "name": "jdk",
+                "product": "OracleJava",
+                "version": "1.8.0_411",
+                "installPath": "<%= java_install_path %>",
+                "softwareStage": "${stageRootDir}/jdk/jdk-8u411-linux-x64.tar.gz",
+                "groupRefs":
+                [
+                    "Common_Installation_Details"
+                ]
+            },
+            {
+                "name": "fmwinfra",
+                "product": "OracleFMWInfrastructure",
+                "version": "12.2.1.4",
+                "softwareStage": "${stageRootDir}/fmwinfra/12.2.1.4/fmw_12.2.1.4.0_infrastructure.jar",
+                "installPath": "<%= fmw_install_path %>",
+                "dependsonList": [
+                    "jdk"
+                ],
+                "patchset": [
+                    {
+                        "targetOracleHome": "${_.installPath}",
+                        "softwareStage": "${stageRootDir}/fmwinfra/12.2.1.4/patches",
+                        "name": "33639718",
+                        "aru": "33639718",
+                        "attributes": {
+                            "opatch.minimum.version": "13.9.4.2.10",
+                            "opatch.binary.location": "${stageRootDir}/common_patches/OPatch/1394210/6880880",
+                            "opatch.update.usegeneric": "true",
+                            "patchWhen": "post-binaries"
+                        }
+                    },
+                    {
+                        "targetOracleHome": "${_.installPath}",
+                        "softwareStage": "${stageRootDir}/fmwinfra/12.2.1.4/patches",
+                        "name": "33877829",
+                        "aru": "33877829",
+                        "attributes": {
+                            "opatch.minimum.version": "13.9.4.2.10",
+                            "opatch.binary.location": "${stageRootDir}/common_patches/OPatch/1394210/6880880",
+                            "opatch.update.usegeneric": "true",
+                            "patchWhen": "post-binaries"
+                        }
+                    }
+                ],
+                "attributes": {
+                    "newworld": "true",
+                    "fmw_home": "<%= fmw_install_path %>",
+                    "inventory_location": "<%= inventory_install_path %>",
+                    "owner": "oracle",
+                    "group": "oinstall"
+                }
+            },
+            {
+                "name": "oracleclient",
+                "product": "OracleDatabaseClient",
+                "version": "19.3.0.0",
+                "installPath": "<%= oracle_install_path %>",
+                "softwareStage": "${stageRootDir}/rdbms/Linux-x86_64/19.3.0.0/client",
+                "dependsonList": [
+                    "jdk"
+                ],
+                "attributes": {
+                    "newworld": "true",
+                    "inventory_location": "<%= inventory_install_path %>",
+                    "owner": "oracle",
+                    "group": "oinstall",
+                    "OracleDatabaseClient": {
+                        "oracle_home": "<%= oracle_install_path %>",
+                        "oracle_base": "<%= base_install_path %>",
+                        "install_type": "Administrator"
+                    }
+                }
+            },
+            {
+                "name": "soa",
+                "product": "OracleSOASuite",
+                "version": "12.2.1.4",
+                "installPath": "<%= fmw_install_path %>/soa",
+                "softwareStage": "${stageRootDir}/soa/12.2.1.4/fmw_12.2.1.4.0_soa.jar",
+                "dependsonList": [
+                    "fmwinfra"
+                ],
+                "patchset": [
+					          {
+                        "targetOracleHome": "${_.installPath}",
+                        "softwareStage": "${stageRootDir}/soa/12.2.1.4/patches",
+                        "name": "34195608",
+                        "aru": "34195608",
+                        "attributes": {
+                            "patchWhen": "post-binaries"
+                        }
+                    }
+                ],
+                "attributes": {
+                    "newworld": "true",
+                    "inventory_location": "<%= inventory_install_path %>",
+                    "owner": "oracle",
+                    "group": "oinstall"
+                }
+            },
+            {
+                "name": "obp-soa",
+                "product": "OracleBankingPlatform::SOAInstallation",
+                "version": "2.7.1.0.0",
+                "installPath": "<%= fmw_install_path %>/obpinstall",
+                "softwareStage": "${stageRootDir}/obp/2.7.1/obp-soa/obpinstall-soa",
+                "dependsonList": [
+                    "soa",
+                    "oracleclient"
+                ],
+                    "attributes": {
+                        "newworld": "true",
+                        "inventory_location": "<%= inventory_install_path %>",
+                        "owner": "oracle",
+                        "group": "oinstall"
+                    }
+            }
+        ],
+        "environmentName":  "<%= environment_name %>",
+                        "topologyName":  "<%= asset_code %>",
+
+                        "nodeManagerList": [
+                            {
+                                "name": "nm-<%= @obpsoa['hostnameList'][0] %>",
+                                "listenAddress": "<%= @obpsoa['nm']['listen_address'] %><%= @obpsoa['dns_domain_name'] %>",
+                                "listenPort": "<%= @obpsoa['nm']['listen_port'] %>",
+                                "hostIdentifier": "<%= @obpsoa['hostnameList'][0] %>",
+                                "groupRefs": [
+                                    "Node_Manager_Common_Config",
+                                    "Node_Manager_SSL_Config"
+                                ]<% if environment_name =~ /^svp/ or environment_name =~ /^nft/ or environment_name =~ /^prd/ %><% else %><% end %>,
+                                "attributes": {
+                                    "wls.nodemanager.log.path": "<%= log_location_path %>/${/host.basename}",
+                                    "wls.nodemanager.identityname": "${/host.basename}",
+                                    "wls.nodemanager.identitystorefile": "<%= certs_location_path %>/<%= @obpsoa['hostnameList'][0][0...-2] %>.jks"
+                                }
+                            }
+                        ],
+                        "domainList": [
+                            {
+                                "name": "<%= @obpsoa['wls_domain_name'] %>",
+                                "locationPath": "<%= soa_admin_server_top %>",
+                                "adminUser": "<%= @obpsoa['wls_admin_user'] %>",
+                                "adminPassword": "<%= PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpsoa['wls_admin_user'] ) %>",
+                                "adminServer": {
+                                    "name": "AdminServer",
+                                    "machineName": "Machine-<%= @obpsoa['hostnameList'][0] %>",
+                                    "listenAddress": "<%= @obpsoa['admin']['listen_address'] %><%= @obpsoa['dns_domain_name'] %>",
+                                    "listenAddressPort": "<%= @obpsoa['admin']['listen_port'] %>",
+                                    "listenAddressPortSSL": "<%= @obpsoa['admin']['listen_port_ssl'] %>",
+                                    "targetName": "<%= asset_code[3..-1] %>AdminServer"
+                                },
+                                "machineList": [
+                                    {
+                                        "name": "Machine-<%= @obpsoa['hostnameList'][0] %>",
+                                        "nodeManagerName": "nm-<%= @obpsoa['hostnameList'][0] %>"
+                                    }
+                                ],
+                                "clusterList": [
+                                  {
+                                    "name": "<%= @obpsoa['soa_server']['cluster_name'] %>",
+                                    "messageMode": "Unicast"
+                                  },
+                                  {
+                                    "name": "<%= @obpsoa['obphumantask_server']['cluster_name'] %>",
+                                    "messageMode": "Unicast"
+                                  },
+                                  {
+                                    "name": "<%= @obpsoa['bam_server']['cluster_name'] %>",
+                                    "messageMode": "Unicast"
+                                  }
+                                ],
+                                "managedServerList": [
+                                    {
+                                        "name": "soa_server1",
+                                        "machineName": "Machine-<%= @obpsoa['hostnameList'][0] %>",
+                                        "clusterName": "<%= @obpsoa['soa_server']['cluster_name'] %>",
+                                        "listenAddress": "<%=  @obpsoa['soa_server']['listen_address'] %><%= @obpsoa['dns_domain_name'] %>",
+                                        "listenAddressPort": "<%=  @obpsoa['soa_server']['listen_port'] %>",
+                                        "listenAddressPortSSL": "<%=  @obpsoa['soa_server']['listen_port_ssl'] %>",
+                                        "targetName": "${_.name}"
+                                    },
+                                    {
+                                        "name": "obphumantask_server1",
+                                        "machineName": "Machine-<%= @obpsoa['hostnameList'][0] %>",
+                                        "clusterName": "<%= @obpsoa['obphumantask_server']['cluster_name'] %>",
+                                        <% if @obpsoa['obphumantask_server'].has_key?('baseHostnameList') %>
+                                        "listenAddress": "<%=  @obpsoa['soa_server']['listen_address'] %><%= @obpsoa['dns_domain_name'] %>",
+                                        <% else %>
+                                        "listenAddress": "<%=  @obpsoa['obphumantask_server']['listen_address'] %><%= @obpsoa['dns_domain_name'] %>",
+                                        <% end %>
+                                        "listenAddressPort": "<%=  @obpsoa['obphumantask_server']['listen_port'] %>",
+                                        "listenAddressPortSSL": "<%=  @obpsoa['obphumantask_server']['listen_port_ssl'] %>",
+                                        "targetName": "${_.name}"
+                                    },
+                                    {
+                                        "name": "bam_server1",
+                                        "machineName": "Machine-<%= @obpsoa['hostnameList'][0] %>",
+                                        "clusterName": "<%= @obpsoa['bam_server']['cluster_name'] %>",
+                                        <% if @obpsoa['bam_server'].has_key?('baseHostnameList') %>
+                                        "listenAddress": "<%=  @obpsoa['soa_server']['listen_address'] %><%= @obpsoa['dns_domain_name'] %>",
+                                        <% else %>
+                                        "listenAddress": "<%=  @obpsoa['bam_server']['listen_address'] %><%= @obpsoa['dns_domain_name'] %>",
+                                        <% end %>
+                                        "listenAddressPort": "<%=  @obpsoa['bam_server']['listen_port'] %>",
+                                        "listenAddressPortSSL": "<%=  @obpsoa['bam_server']['listen_port_ssl'] %>",
+                                        "targetName": "${_.name}"
+                                    }
+                                ],
+                                "middlewareList": [
+                                    {
+                                        "installationName": "obp-soa",
+                                        "targetList": [
+                                            {
+                                              "type": "Cluster",
+                                              "names":
+                                              [
+                                                "<%= @obpsoa['soa_server']['cluster_name'] %>",
+                                                "<%= @obpsoa['obphumantask_server']['cluster_name'] %>",
+                                                "<%= @obpsoa['bam_server']['cluster_name'] %>"
+                                              ]
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "configurationList": [
+
+                                     <%= render "common-settings-configs.erb"  %>
+                                    ,
+                                    <% if environment_name =~ /^(svp|nft|prd)/ %>
+                                    {
+                                        "resourceName": "GenericServerSettings_auto_1",
+                                        "type": "Server",
+                                        "attributes": {
+                                            "serverName": "soa_server1"
+                                        }
+                                    },
+                                    {
+                                        "resourceName": "GenericServerSettings_auto_2",
+                                        "type": "Server",
+                                        "attributes": {
+                                            "serverName": "obphumantask_server1"
+                                        }
+                                    },
+                                    {
+                                        "resourceName": "GenericServerSettings_auto_3",
+                                        "type": "Server",
+                                        "attributes": {
+                                            "serverName": "bam_server1"
+                                        }
+                                    },
+                                    <% else %>
+                                    {
+                                        "resourceName": "GenericServerSettings_auto_1",
+                                        "type": "Server",
+                                        "attributes": {
+                                            "serverName": "soa_server1,obphumantask_server1,bam_server1"
+                                        }
+                                    },
+                                    <% end %>
+                                    {
+                                        "resourceName": "SOAClusterStartupParameters",
+                                        "type": "StartupParameter",
+                                        "targets": [
+                                             {
+                                                "type": "CLUSTER",
+                                                "names": [
+                                                  "<%= @obpsoa['soa_server']['cluster_name'] %>"
+                                                ]
+                                              }
+                                        ]
+                                    },
+                                    {
+                                        "resourceName": "HTClusterStartupParameters",
+                                        "type": "StartupParameter",
+                                        "targets": [
+                                             {
+                                                "type": "CLUSTER",
+                                                "names": [
+                                                  "<%= @obpsoa['obphumantask_server']['cluster_name'] %>"
+                                                ]
+                                              }
+                                        ]
+                                    },
+                                    {
+                                        "resourceName": "BAMClusterStartupParameters",
+                                        "type": "StartupParameter",
+                                        "targets": [
+                                             {
+                                                "type": "CLUSTER",
+                                                "names": [
+                                                  "<%= @obpsoa['bam_server']['cluster_name'] %>"
+                                                ]
+                                              }
+                                        ]
+                                    },
+                                    {
+                                        "resourceName": "CrossDomainSecurityConfiguration",
+                                        "type": "SecurityConfiguration"
+                                    },
+									{
+                                        "resourceName": "UseKSSForDemo",
+                                        "type": "SecurityConfiguration"
+                                    },
+
+                                    {
+                                        "resourceName": "OBP_SYS_CONFIG",
+                                        "type": "JDBCSystemResource",
+                                        "targets": [
+                                            {
+                                                "type": "CLUSTER",
+                                                "names": [
+                                                    "<%= @obpsoa['obphumantask_server']['cluster_name'] %>"
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "resourceName": "SOADataSource",
+                                        "type": "JDBCSystemResource",
+                                        "targets": [
+                                            {
+                                                "type": "CLUSTER",
+                                                "names": [
+                                                    "<%= @obpsoa['soa_server']['cluster_name'] %>"
+                                                ]
+                                            }
+                                        ]
+                                    },
+			                        {
+				                        "resourceName": "ClusterClassPathParameters",
+				                        "type": "ClassPath",
+				                        "targets": [
+					                        {
+						                        "type": "CLUSTER",
+						                        "names": [
+							                        "<%= @obpsoa['obphumantask_server']['cluster_name'] %>"
+						                        ]
+					                        }
+				                        ]
+			                        },
+                                    {
+                                        "resourceName": "SOAClusterClassPathParameters",
+                                        "type": "ClassPath",
+                                        "targets": [
+                                            {
+                                                "type": "CLUSTER",
+                                                "names": [
+                                                    "<%= @obpsoa['soa_server']['cluster_name'] %>"
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "resourceName": "BAMClusterClassPathParameters",
+                                        "type": "ClassPath",
+                                        "targets": [
+                                            {
+                                                "type": "CLUSTER",
+                                                "names": [
+                                                    "<%= @obpsoa['bam_server']['cluster_name'] %>"
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "resourceName": "OAMIdentityAsserter",
+                                        "type": "AuthenticationProvider",
+                                        "attributes": {
+                                            "realmName": "myrealm"
+                                        }
+                                    },
+                                    {
+                                        "resourceName": "OIDAuthenticator",
+                                        "type": "AuthenticationProvider",
+                                        "attributes": {
+                                            "realmName": "myrealm"
+                                        }
+                                    },
+                                    {
+                                        "resourceName": "CIDAuthenticator",
+                                        "type": "AuthenticationProvider",
+                                        "attributes": {
+                                            "realmName": "myrealm"
+                                        }
+                                    },
+                                    {
+                                        "resourceName": "DefaultAuthenticator",
+                                        "type": "AuthenticationProvider",
+                                        "attributes": {
+                                            "realmName": "myrealm"
+                                        }
+                                    },
+                                    <% if !is_running_on_cloud %>
+                                    {
+                                        "resourceName": "GIDAuthenticator",
+                                        "type": "AuthenticationProvider",
+                                        "attributes": {
+                                            "realmName": "myrealm"
+                                        }
+                                    },
+                                    <% end %>
+                                    {
+                                        "resourceName": "JpsConfigSettings",
+                                        "type": "JpsConfig",
+                                        "attributes": {
+                                            "serverInstance": "idstore.ldap"
+                                        }
+                                    },
+                                    {
+                                        "resourceName": "CredentialMap_Origination",
+                                        "type": "FmwCredentials"
+                                    },
+                                    {
+                                        "resourceName": "WeblogicPolicyPermission_1",
+                                        "type": "WeblogicPolicyPermission"
+                                    },
+                                    {
+                                        "resourceName": "WeblogicPolicyPermission_2",
+                                        "type": "WeblogicPolicyPermission"
+                                    },
+                                    {
+                                        "resourceName": "LocalUser_SA_OBP_BAM_MANAGE_USER",
+                                        "type": "User",
+                                        "attributes": {
+                                            "authenticatorName": "DefaultAuthenticator"
+                                        }
+                                    },
+                                    {
+                                        "resourceName": "JTASettings",
+                                        "type": "JTA"
+                                    },
+                                    {
+                                        "resourceName": "soa_cluster_settings",
+                                        "type": "Cluster",
+                                        "attributes": {
+                                            "clusterName": "soa_cluster"
+                                        }
+                                    },
+                                    {
+                                        "resourceName": "hwf_cluster_settings",
+                                        "type": "Cluster",
+                                        "attributes": {
+                                            "clusterName": "hwf_cluster"
+                                        }
+                                    },
+                                    {
+                                        "resourceName": "bam_cluster_settings",
+                                        "type": "Cluster",
+                                        "attributes": {
+                                            "clusterName": "bam_cluster"
+                                        }
+                                    }
+                                ]<% unless environment_name =~ /^svp/ or environment_name =~ /^nft/ or environment_name =~ /^prd/ %><% end %>,
+                                "templateList": [
+                                    {
+                                        "name": "OracleBankingPlatform::SOATemplateSet",
+                                            "attributes": {
+                                                "OracleBankingPlatform::SOATemplateSet": {
+                                                    "bank_code": "03",
+                                                    "transaction_bank_code": "032050",
+                                                    "target_unit": "PBWP",
+                                                    "foreign_provider_username": "<%= @obpsoa['soa_admin_user'] %>",
+                                                    "foreign_provider_password": "<%= PasswordVault.get_password(password_vault_name + '/' + 'obpoid', @obpsoa['soa_admin_user'] ) %>",
+                                                    "jndi_url": "<%= "t3s://#{@obpsoa['frontend']['otd_vip_name']}:#{@obpsoa['frontend']['tcp_proxy_port']}" %>",
+                                                    "process_url": "<%= "https://#{@obpsoa['frontend']['otd_vip_name']}:#{@obpsoa['frontend']['soa_port']}" %>",
+                                                    "batch_server_url": "<%= "https://#{@obpobh['frontend']['otd_vip_name']}:#{@obpobh['frontend']['obh_port']}" %>",
+                                                    "deploy_soa_composites": "false",
+                                                    "ht_frontend_host": "<%= @obpsoa['frontend']['friendly_name'] %>",
+                                                    "ht_frontend_port_ssl": "<%= @obpsoa['frontend']['friendly_port'] %>",
+                                                    "ht_frontend_timeout": "600",
+                                                    "ra_soa_outbound_username": "<%= @obpsoa['soa_admin_user'] %>",
+                                                    "ra_soa_outbound_password": "<%= PasswordVault.get_password(password_vault_name + '/' + 'obpoid', @obpsoa['soa_admin_user'] ) %>",
+                                                    "ra_ipm_username": "<%= @obpipm['ipm_admin_user'] %>",
+                                                    "ra_ipm_password": "<%= PasswordVault.get_password(password_vault_name + '/' + 'obpoid', @obpipm['ipm_admin_user'] ) %>"
+                                                }
+                                            }
+                                    }
+                                ],
+                                "repositoryList": [
+                                    {
+                                        "componentList": [
+                                            "SOAINFRA",
+                                            "STB",
+                                            "WLS"
+                                        ],
+                                        "id": "rcu01",
+                                        "dbName": "<%= environment_name %><%= asset_code %>db",
+                                        "prefix": "<%= @obpsoa['database']['rcu_schema_prefix'].upcase %>",
+                                        "dbUser": "<%= @obpsoa['database']['sysdba_username'].upcase %>",
+                                        "schemaPassword": "<%= PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpsoa['database']['rcu_schema_prefix'].upcase ) %>",
+                                        "defaultRepository": "true"
+                                    }
+                                ],
+                                "attributes": {
+                                    "newworld": "true",
+                                    "exclude_fmwinfra_template": "true",
+                                    "serverStartMode": "prod",
+                                    "wls.production.mode": "prod",
+                                    "backupEnvironmentName": "<%= environment_name %>",
+                                    "environment.name": "<%= environment_name %>",
+                                    "tlogsLocationPath": "<%= base_domain_path %>/${/domain.name}",
+                                    "wls.tlogs.location.path": "<%= base_domain_path %>/${/domain.name}",
+                                    "odlLogLocation": "<%= log_location_path %>/${/domain.name}",
+                                    "wls.odl.log.location": "<%= log_location_path %>/${/domain.name}",
+                                    "wls.odl.log.retentionPeriod": "<%= @common['odl_log_retentionPeriod'] %>",
+                                    "defaultJMSLogLocation": "<%= log_location_path %>/${/domain.name}",
+                                    "wls.admin.listen.port.admin": "<%= @obpsoa['admin']['listen_port_admin'] %>",
+                                    "mintpress.startup_parallel": "10"
+                                }
+                            }
+                        ],
+                        "hostInstallationList": [
+                            {
+                                "installationName": "obp-soa",
+                                "hostIdentifierList": [
+                                    "<%= @obpsoa['hostnameList'][0] %>"
+                                ]
+                            }
+                        ],
+                        "transferList": [
+
+                            <%= render "common-certs-transfer.erb",
+                                :variables => {
+                                    :host_identifier => @obpsoa['hostnameList'][0],
+                                    :environment_name => environment_name,
+                                    :asset_code => asset_code,
+                                    :keystore_name => @obpsoa['hostnameList'][0][0...-2],
+                                    :certs_source_path => @common['certs_source'],
+                                    :cert_destination_path => certs_location_path,
+                                    :truststore => @common['trustStore']
+                                }
+                            %>
+                            ,
+                            <% if environment_name.match?(/^(nft|svp|prd)/) %>
+                            <%= render "common-certs-transfer.erb",
+                                :variables => {
+                                    :host_identifier => @obpsoa['hostnameList'][0].gsub('obpr','obpw'),
+                                    :environment_name => environment_name,
+                                    :asset_code => asset_code,
+                                    :keystore_name => @obpsoa['hostnameList'][0][0...-2],
+                                    :certs_source_path => @common['certs_source'],
+                                    :cert_destination_path => certs_location_path,
+                                    :truststore => @common['trustStore']
+                                }
+                            %>
+                            ,
+                            <% end %>
+                            <%= render "common-jdk-policy-transfer.erb",
+                                :variables => {
+                                    :host_identifier => @obpsoa['hostnameList'][0],
+                                    :environment_name => environment_name,
+                                    :asset_code => asset_code,
+                                    :jdk_version => jdk_version,
+                                    :java_install_path => java_install_path
+                                }
+                            %>
+                            ,
+                            <%= render "common-transfer-ovd-keystore.erb",
+                                :variables => {
+                                    :environment_name => environment_name,
+                                    :host_identifier => @obpsoa['hostnameList'][0],
+                                    :certs_source_path => @common['certs_source'] ,
+                                    :admin_server_top => soa_admin_server_top,
+                                    :domain_name => @obpsoa['wls_domain_name']
+                                }
+                            %>,
+                            {
+				                "name": "bpmTimeoutFile",
+				                "hostIdentifierList": [
+				                  "<%= @obpsoa['hostnameList'][0] %>"
+				                ],
+				                "sourceFile": "<%= "#{@common['custom_source']}/common/bpm_plan.xml" %>",
+				                "destinationFile": "<%= "#{base_domain_path}/#{@obpsoa['wls_domain_name']}/bpm_plan.xml" %>",
+				                "permissions": "755",
+				                "transferWhenList": [
+				                  "pre-configure",
+                                  "pre-online"
+				                ],
+                                "attributes": {
+                                    "scaleout": "false"
+                                }
+				            },
+                            {
+                                "name": "default.jfc",
+                                "hostIdentifierList": [
+                                  "<%= @obpsoa['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "<%= "${stageRootDir}/custom/csh/common/default.jfc" %>",
+                                "destinationFile": "<%= "#{base_install_path}/java/jre/lib/jfr/default.jfc" %>",
+                                "permissions": "644",
+                                "transferWhenList": [
+                                  "post-binaries",
+                                  "pre-online"
+                                ],
+                                "attributes": {
+                                    "scaleout": "true"
+                                }
+                            },
+                            {
+                                "name": "weblogicCustomAccessLog",
+                                "hostIdentifierList": [
+                                  "<%= @obpsoa['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "<%= "#{@common['custom_source']}/common/weblogicCustomAccessLog.jar" %>",
+                                "destinationFile": "<%= "#{base_domain_path}/applications/#{@obpsoa['wls_domain_name']}/weblogicCustomAccessLog.jar" %>",
+                                "permissions": "755",
+                                "transferWhenList": [
+                                  "pre-online"
+                                ],
+                                "attributes": {
+                                    "scaleout": "false"
+                                }
+                            },
+                            {
+                                "name": "HealthCheckFileCopy",
+                                "hostIdentifierList": [
+                                  "<%= @obpsoa['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "<%= "#{@common['custom_source']}/common/obpsoa/HealthCheck.war" %>",
+                                "destinationFile": "<%= "#{base_domain_path}/applications/#{@obpsoa['wls_domain_name']}/HealthCheck.war" %>",
+                                "permissions": "755",
+                                "transferWhenList": [
+                                  "pre-online"
+                                ],
+                                "attributes": {
+                                    "scaleout": "false"
+                                }
+                            }
+                        ],
+                        "executeList": [
+                            {
+                                "name": "UpdateAdaptersOSXml",
+                                "hostIdentifierList": [
+                                    "<%= @obpsoa['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "cinc-client -c $HOME/chef/client.rb -o 'recipe[obp-environmint-custom::update-wls-ldap-adapters]' -l info",
+                                "executeWhenList": [
+                                    "post-online"
+                                ],
+                                "attributes": {
+                                    "scaleout": "false"
+                                }
+                            },
+                            {
+                                "name": "custom-threshold",
+                                "hostIdentifierList": [
+                                    "<%= @obpsoa['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "cinc-client -c $HOME/chef/client.rb -o 'recipe[obp-environmint-custom::custom-threshold-config]' -l info",
+                                "executeWhenList": [
+                                    "post-online"
+                                ],
+                                "attributes": {
+                                    "scaleout": "false"
+                                }
+                            },
+							{
+                                "name": "security-config",
+                                "hostIdentifierList": [
+                                    "<%= @obpsoa['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "cinc-client -c $HOME/chef/client.rb -o 'recipe[obp-environmint-custom::security_config_param]' -l info",
+                                "executeWhenList": [
+                                    "post-online"
+                                ],
+                                "attributes": {
+                                    "scaleout": "false"
+                                }
+                            },
+							{
+                                "name": "infra-soa-db-update",
+                                "hostIdentifierList": [
+                                    "<%= @obpsoa['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "cinc-client -c $HOME/chef/client.rb -o 'recipe[obp-environmint-custom::infra-soa-db-update]' -l info",
+                                "executeWhenList": [
+                                    "post-online"
+                                ],
+                                "attributes": {
+                                    "scaleout": "false"
+                                }
+                            },
+                            {
+                                "name": "UpdateJpsConfigParams",
+                                "hostIdentifierList": [
+                                    "<%= @obpsoa['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "cinc-client -c $HOME/chef/client.rb -o 'recipe[obp-environmint-custom::update-jps-config]' -l info",
+                                "executeWhenList": [
+                                    "pre-online"
+                                ],
+                                "attributes": {
+                                    "scaleout": "false"
+                                }
+                            },
+							{
+                                "name": "UpdateJDBCConnectionPool",
+                                "hostIdentifierList": [
+                                    "<%= @obpsoa['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "cinc-client -c $HOME/chef/client.rb -o 'recipe[obp-environmint-custom::updateJDBCParamTuning]' -l info",
+                                "executeWhenList": [
+                                    "post-online"
+                                ],
+                                "attributes": {
+                                    "scaleout": "false"
+                                }
+                            },
+                            {
+                                "name": "commonserverosupdate",
+                                "hostIdentifierList": [
+                                    "<%= @obpsoa['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "cinc-client -c $HOME/chef/client.rb -o 'recipe[obp-environmint-custom::common-server-os-update]' -l info",
+                                "executeWhenList": [
+                                    "post-online"
+                                ],
+                                "attributes": {
+                                    "scaleout": "false"
+                                }
+                            },
+                            <% if !is_running_on_cloud %>
+                                {
+                                    "name": "updateSoaAdapters",
+                                    "hostIdentifierList": [
+                                        "<%= @obpsoa['hostnameList'][0] %>"
+                                    ],
+                                    "sourceFile": "cinc-client -c $HOME/chef/client.rb -o 'recipe[obp-environmint-custom::update-soa-adapters]' -l info",
+                                    "executeWhenList": [
+                                        "post-online"
+                                    ],
+                                    "attributes": {
+                                        "scaleout": "false"
+                                    }
+                                },
+                                {
+                                    "name": "commonUpdateMBeans",
+                                    "hostIdentifierList": [
+                                        "<%= @obpsoa['hostnameList'][0] %>"
+                                    ],
+                                    "sourceFile": "cinc-client -c $HOME/chef/client.rb -o 'recipe[obp-environmint-custom::common-update-MBeans]' -l info",
+                                    "executeWhenList": [
+                                        "post-online"
+                                    ],
+                                    "attributes": {
+                                        "scaleout": "false"
+                                    }
+                                },
+                            <% end %>
+                            <%= render "common-run-wlst.erb",
+                                  :variables => {
+                                      :name => "updateSIEMAuditor",
+                                      :host_identifier => @obpsoa['hostnameList'][0],
+                                      :wlst_command => "#{fmw_install_path}/oracle_common/common/bin/wlst.sh",
+                                      :script => "#{@common['custom_source']}/common/updateSIEMAuditor.py",
+                                      :t3_connect_url => "t3://#{@obpsoa['admin']['listen_address']}#{@obpsoa['dns_domain_name']}:#{@obpsoa['admin']['listen_port']}",
+                                      :admin_username => @obpsoa['wls_admin_user'],
+                                      :admin_password => PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpsoa['wls_admin_user']),
+                                      :args => "#{@obpsoa['wls_domain_name']} #{asset_code}",
+                                      :when => 'post-online'
+                              }
+                            %>
+                            ,
+                            <%= render "common-enable-sso.erb",
+                                 :variables => {
+                                   :host_identifier => @obpsoa['hostnameList'][0],
+                                   :fmw_install_path => "#{fmw_install_path}",
+                                   :t3_connect_url => "t3://#{@obpsoa['admin']['listen_address']}#{@obpsoa['dns_domain_name']}:#{@obpsoa['admin']['listen_port']}",
+                                   :admin_username => @obpsoa['wls_admin_user'],
+                                   :admin_password => PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpsoa['wls_admin_user']),
+                                   :domain_home => "#{soa_admin_server_top}/#{@obpsoa['wls_domain_name']}",
+                                   :logout_url => @common['OAMLogoutURL']
+                                 }
+                            %>,
+                            <%= render "common-deploy-healthcheck.erb",
+                                :variables => {
+                                    :host_identifier => @obpsoa['hostnameList'][0],
+                                    :asset_code => asset_code,
+                                    :custom_source => @common['custom_source'],
+                                    :fmw_install_path => fmw_install_path,
+                                    :t3_connect_url => "t3://#{@obpsoa['admin']['listen_address']}#{@obpsoa['dns_domain_name']}:#{@obpsoa['admin']['listen_port']}",
+                                    :admin_username => @obpsoa['wls_admin_user'],
+                                    :admin_password => PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpsoa['wls_admin_user'] ),
+                                    :app_target => "#{@obpsoa['soa_server']['cluster_name']},#{@obpsoa['obphumantask_server']['cluster_name']},#{@obpsoa['bam_server']['cluster_name']}",
+                                    :app_path => "#{base_domain_path}/applications/#{@obpsoa['wls_domain_name']}"
+                                }
+                            %>
+                            ,
+                            <% if environment_name =~ /^svp/ or environment_name =~ /^nft/ or environment_name =~ /^prd/ %>
+                            <%= render "common-run-wlst.erb",
+                                :variables => {
+                                  :name => "updateJpsConfig",
+                                  :host_identifier => @obpsoa['hostnameList'][0],
+                                  :wlst_command => "#{fmw_install_path}/oracle_common/common/bin/wlst.sh",
+                                  :script => "#{@common['custom_source']}/common/updateJpsConfig.py",
+                                  :t3_connect_url => "t3://#{@obpsoa['admin']['listen_address']}#{@obpsoa['dns_domain_name']}:#{@obpsoa['admin']['listen_port']}",
+                                  :admin_username => @obpsoa['wls_admin_user'],
+                                  :admin_password => PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpsoa['wls_admin_user']),
+                                  :args => "'#{@obpsoa['database']['soa_db_url']}'",
+                                  :when => 'pre-online'
+                              }
+                            %>,
+                            {
+                                "name": "UpdateLoggingXmls",
+                                "hostIdentifierList": [
+                                    "<%= @obpsoa['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "cinc-client -c $HOME/chef/client.rb -o 'recipe[obp-environmint-custom::update-fmw-logging-xml]' -l info",
+                                "executeWhenList": [
+                                    "post-online"
+                                ],
+                                "attributes": {
+                                    "scaleout": "false"
+                                }
+                            },
+                            <% end %>
+                            <% unless environment_name =~ /^svp/ or environment_name =~ /^nft/ or environment_name =~ /^prd/ %>
+                            <%= render "common-run-wlst.erb",
+                                  :variables => {
+                                      :name => "CreateOBPHTLogger",
+                                      :host_identifier => @obpsoa['hostnameList'][0],
+                                      :wlst_command => "#{fmw_install_path}/oracle_common/common/bin/wlst.sh",
+                                      :script => "#{@common['custom_source']}/common/createOBPODLLoggers.py",
+                                      :t3_connect_url => "t3://#{@obpsoa['admin']['listen_address']}#{@obpsoa['dns_domain_name']}:#{@obpsoa['admin']['listen_port']}",
+                                      :admin_username => @obpsoa['wls_admin_user'],
+                                      :admin_password => PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpsoa['wls_admin_user']),
+                                      :args => "#{log_location_path}/#{@obpsoa['wls_domain_name']}",
+                                      :when => 'post-online'
+                                }
+                            %>,
+                            {
+                                "name": "UpdateODLLogLevel",
+                                "hostIdentifierList": [
+                                  "<%= @obpsoa['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "cinc-client -c $HOME/chef/client.rb -o 'recipe[obp-environmint-custom::update-odl-log-level]' -l info",
+                                "executeWhenList": [
+                                  "post-online"
+                                ],
+                                "attributes": {
+                                    "scaleout": "false"
+                                }
+                            },
+                            <% end %>
+                            {
+                                "name": "updateBPMTimeout",
+                                "hostIdentifierList": [
+                                  "<%= @obpsoa['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "<%= "#{@common['custom_source']}/common/updateBPMTimeout.sh #{fmw_install_path} #{base_domain_path}/#{@obpsoa['wls_domain_name']}/bpm_plan.xml weblogic ${execute.weblogicAdminPassword} t3://#{@obpsoa['admin']['listen_address']}#{@obpsoa['dns_domain_name']}:#{@obpsoa['admin']['listen_port']}" %>",
+                                "executeWhenList": [
+                                  "post-configure"
+                                ],
+                                "attributes": {
+                                    "execute.weblogicAdminPassword": "<%= PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpsoa['wls_admin_user'] ) %>",
+                                    "scaleout": "false"
+                                }
+                            },
+                            {
+                                "name": "Create_WFTASK_Trigger",
+                                "hostIdentifierList": [
+                                  "<%= @obpsoa['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "cinc-client -c $HOME/chef/client.rb -o 'recipe[obp-environmint-custom::obpsoa-db-update]' -l info",
+                                "executeWhenList": [
+                                  "post-configure"
+                                ],
+                                "attributes": {
+                                    "scaleout": "false"
+                                }
+                            },
+                            <%= render "common-run-wlst.erb",
+                              :variables => {
+                                  :name => "securityJMXAuthEnable",
+                                  :host_identifier => @obpsoa['hostnameList'][0],
+                                  :wlst_command => "#{fmw_install_path}/oracle_common/common/bin/wlst.sh",
+                                  :script => "#{@common['custom_source']}/common/securityAccessAndRoles.py",
+                                  :t3_connect_url => "t3://#{@obpsoa['admin']['listen_address']}#{@obpsoa['dns_domain_name']}:#{@obpsoa['admin']['listen_port']}",
+                                  :admin_username => @obpsoa['wls_admin_user'],
+                                  :admin_password => PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpsoa['wls_admin_user']),
+                                  :args => 'JMXAuth true',
+                                  :when => 'post-configure'
+                              }
+                            %>
+                            ,
+                            <%= render "common-run-wlst.erb",
+                                 :variables => {
+                                   :name => "jmsMsgView",
+                                   :host_identifier => @obpsoa['hostnameList'][0],
+                                   :wlst_command => "#{fmw_install_path}/oracle_common/common/bin/wlst.sh",
+                                   :script => "#{@common['custom_source']}/common/securityAccessAndRoles.py",
+                                   :t3_connect_url => "t3://#{@obpsoa['admin']['listen_address']}#{@obpsoa['dns_domain_name']}:#{@obpsoa['admin']['listen_port']}",
+                                   :admin_username => @obpsoa['wls_admin_user'],
+                                   :admin_password => PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpsoa['wls_admin_user']),
+                                   :args => 'JMSView',
+                                   :when => 'post-online'
+                                 }
+                            %>,
+                            <%= render "common-run-wlst.erb",
+                                :variables => {
+                                  :name => "weblogicAdminRole",
+                                  :host_identifier => @obpsoa['hostnameList'][0],
+                                  :wlst_command => "#{fmw_install_path}/oracle_common/common/bin/wlst.sh",
+                                  :script => "#{@common['custom_source']}/common/securityAccessAndRoles.py",
+                                  :t3_connect_url => "t3://#{@obpsoa['admin']['listen_address']}#{@obpsoa['dns_domain_name']}:#{@obpsoa['admin']['listen_port']}",
+                                  :admin_username => @obpsoa['wls_admin_user'],
+                                  :admin_password => PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpsoa['wls_admin_user']),
+                                  :args => 'AdminRole obpsoa_administrators',
+                                  :when => 'post-online'
+                                  }
+                             %>,
+                            {
+                                "name": "setSOACallBackURL",
+                                "hostIdentifierList": [
+                                    "<%= @obpsoa['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "cinc-client -c $HOME/chef/client.rb -o 'recipe[obp-environmint-custom::obpsoa-mbean-update]' -l info",
+                                "executeWhenList": [
+                                    "post-online"
+                                ],
+                                "attributes": {
+                                    "scaleout": "false"
+                                }
+                            },
+                            {
+                                "name": "updateTPJars",
+                                "hostIdentifierList": [
+                                  "<%= @obpsoa['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "cinc-client -c $HOME/chef/client.rb -o 'recipe[csh-deployments::obpsoa-tpjars-copy]' -l info",
+                                "executeWhenList": [
+                                  "pre-online"
+                                ],
+                                "attributes": {
+                                    "scaleout": "true"
+                                }
+                            },
+                            {
+                                "name": "updateSoainfraEJBTimeoutDepPlan",
+                                "hostIdentifierList": [
+                                  "<%= @obpsoa['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "cinc-client -c $HOME/chef/client.rb -o 'recipe[obp-environmint-custom::obpsoa-app-update]' -l info",
+                                "executeWhenList": [
+                                  "post-configure"
+                                ],
+                                "attributes": {
+                                    "scaleout": "false"
+                                }
+                            },
+                            {
+                                "name": "updateBAMCommandConfigXml",
+                                "hostIdentifierList": [
+                                  "<%= @obpsoa['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "cinc-client -c $HOME/chef/client.rb -o 'recipe[obp-environmint-custom::bam-command-config]' -l info",
+                                "executeWhenList": [
+                                  "post-configure"
+                                ],
+                                "attributes": {
+                                    "scaleout": "true"
+                                }
+                            },
+                            <%= render "common-run-wlst.erb",
+                                  :variables => {
+                                      :name => "deleteDefaultAuditor",
+                                      :host_identifier => @obpsoa['hostnameList'][0],
+                                      :wlst_command => "#{fmw_install_path}/oracle_common/common/bin/wlst.sh",
+                                      :script => "#{@common['custom_source']}/common/deleteDefaultAuditor.py",
+                                      :t3_connect_url => "t3://#{@obpsoa['admin']['listen_address']}#{@obpsoa['dns_domain_name']}:#{@obpsoa['admin']['listen_port']}",
+                                      :admin_username => @obpsoa['wls_admin_user'],
+                                      :admin_password => PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpsoa['wls_admin_user']),
+                                      :args => "#{@obpsoa['wls_domain_name']}",
+                                      :when => 'pre-online'
+                                  }
+                            %>,
+                            {
+                                "name": "FMW-App-Role-Mapping",
+                                "hostIdentifierList": [
+                                    "<%= @obpsoa['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "cinc-client -c $HOME/chef/client.rb -o 'recipe[obp-environmint-custom::fmw-app-role-mapping]' -l info",
+                                "executeWhenList": [
+                                    "post-online"
+                                ],
+                                "attributes": {
+                                    "scaleout": "false"
+                                }
+                            },
+                            {
+                                "name": "FMW-Domain-Restart",
+                                "hostIdentifierList": [
+                                    "<%= @obpsoa['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "/bin/true",
+                                "executeWhenList": [
+                                    "post-online"
+                                ]
+                            }
+                        ]
+                    ,
+        "databaseList": [
+            {
+                "name": "<%= environment_name %><%= asset_code %>db",
+                "port": "<%= @obpsoa['database']['listen_port'] %>",
+                "serviceName": "<%= @obpsoa['database']['service_name'] %>",
+                "hostIdentifier": "db_server",
+                "schemaList": [
+                  {
+                    "name": "<%= @obpsoa['database']['sysdba_username'].upcase %>",
+                    "password": "<%= PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpsoa['database']['sysdba_username'].upcase) %>"
+                  }
+                ],
+                "attributes": {
+                    "rcu.datafile.initialsize": "200M",
+                    "rcu.extra.parameters": " -encryptTablespace <%= @obpsoa['database'].key?('encryption') ? @obpsoa['database']['encryption'] : 'false' %>",
+                    "jdbcUrl": "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(Host=${_.host.address})(Port=${_.port}))(CONNECT_DATA=(SERVER = DEDICATED)(SERVICE_NAME=${_.serviceName})))"
+                }
+            }
+        ],
+        "resourceList": [
+
+            <%= render "common-settings-resources.erb",
+                :variables => {
+                    :environment_name => environment_name,
+                    :password_vault_name => password_vault_name,
+                    :asset_code => asset_code,
+                    :domain_name => @obpsoa['wls_domain_name'],
+                    :log_location_path => log_location_path,
+                    :certs_location_path => certs_location_path,
+                    :admin_kestore_alias => @obpsoa['hostnameList'][0],
+                    :managed_keystore_alias => '%ListenAddress/noprefix%',
+                    :keystore_name => @obpsoa['hostnameList'][0][0...-2],
+                    :common => @common,
+                    :frontend => @obpsoa['frontend'],
+                    :database => @obpsoa['database'],
+                    :set_dual_site_url => @obpsoa['database'].key?('set_dual_site_url') ? @obpsoa['database']['set_dual_site_url'].downcase : "false",
+                    :enable_dbssl => @common.key?('enable_dbssl') ? @common['enable_dbssl'].downcase : "false"
+                }
+            %>
+            ,
+            <%= render "common-oid-authenticator.erb",
+                :variables => {
+                    :name => 'OIDAuthenticator',
+                    :hostname => @obpoid['frontend']['managed_host'],
+                    :port => @obpoid['frontend']['ldap_port'],
+                    :username => 'cn=obpsoa_readonly,cn=serviceaccounts,cn=users,dc=limepoint,dc=com,dc=au',
+                    :password => PasswordVault.get_password(password_vault_name + '/' + 'obpoid', 'obpsoa_readonly'),
+                    :group_base_dn => 'ou=apps,dc=limepoint,dc=com,dc=au',
+                    :user_base_dn => 'cn=users,dc=limepoint,dc=com,dc=au',
+                    :common => @common
+                }
+            %>
+            ,
+            <%= render "common-oid-authenticator.erb",
+                :variables => {
+                    :name => 'CIDAuthenticator',
+                    :hostname => @obpcid['frontend']['managed_host'],
+                    :port => @obpcid['frontend']['ldap_port'],
+                    :username => 'cn=obpsoa_readonly,cn=serviceaccounts,cn=users,dc=limepoint,dc=com,dc=au',
+                    :password => PasswordVault.get_password(password_vault_name + '/' + 'obpcid', 'obpsoa_readonly'),
+                    :group_base_dn => 'cn=customer,cn=groups,dc=limepoint,dc=com,dc=au',
+                    :user_base_dn => 'cn=customer,cn=users,dc=limepoint,dc=com,dc=au',
+                    :common => @common
+                }
+            %>
+            ,
+            {
+                "name": "OAMIdentityAsserter",
+                "type": "AuthenticationProvider",
+                "attributes": {
+                    "subType": "oracle.security.wls.oam.providers.asserter.OAMIdentityAsserter",
+                    "ControlFlag": "OPTIONAL"
+                 }
+            },
+            {
+                "name": "JpsConfigSettings",
+                "type": "JpsConfig",
+                "attributes": {
+                  "username.attr": "uid",
+                  "user.login.attr": "uid",
+                  "virtualize": "true",
+                  "java.naming.ldap.factory.socket": "javax.net.ssl.SSLSocketFactory"
+                }
+            },
+            {
+                "name": "CrossDomainSecurityConfiguration",
+                "type": "SecurityConfiguration",
+                "attributes": {
+                    "CrossDomainSecurityEnabled": "false",
+                    "Credential": "<%= PasswordVault.get_password(password_vault_name + '/' + 'obpobh', 'OBPCROSSDOMAIN') %>"
+                }
+            },
+			{
+                "name": "UseKSSForDemo",
+                "type": "SecurityConfiguration",
+                "attributes": {
+                    "UseKSSForDemo": "false"
+                }
+            },
+            {
+            "name": "OBP_SYS_CONFIG",
+            "type": "JDBCSystemResource",
+            "params": [
+              {
+                "type": "JDBCResource",
+                "params": [
+                 {
+                   "type": "JDBCConnectionPoolParams",
+                   "attributes": {
+                       "RemoveInfectedConnections": "true"
+                       }
+                  },
+                  {
+                    "type": "JDBCDriverParams",
+                    "attributes": {
+                        "DriverName": "oracle.jdbc.xa.client.OracleXADataSource",
+                        <% if @common['enable_dbssl'] == "true" %>
+                        "Url": "<%= @obpobh['database']['sysconfig_url_ssl'] %>",
+                        <% else %>
+                        "Url": "<%= @obpobh['database']['sysconfig_url'] %>",
+                        <% end %>
+                        "Password": "<%= PasswordVault.get_password(password_vault_name + '/' + 'obpobh', @obpobh['database']['rcu_schema_prefix'].upcase) %>"
+                    },
+                    "properties": {
+                      <% if @common['enable_dbssl'] == "true" %>
+                      "javax.net.ssl.trustStoreType": "JKS",
+                      "encrypted:javax.net.ssl.trustStorePassword": "<%= PasswordVault.get_password(password_vault_name + '/' + 'obpsoa', 'truststorepass') %>",
+                      "oracle.net.ssl_cipher_suites": "(TLS_RSA_WITH_AES_256_CBC_SHA256)",
+					  "oracle.net.ssl_version": "1.2",
+                        "javax.net.ssl.trustStore": "<%= certs_location_path %>/<%= @common['trustStore'] %>",
+                      <% end %>
+                      "user": "OBPHOST_OBP"
+                    }
+                  },
+                {
+                    "type": "JDBCXAParams",
+                    "attributes": {
+                        "XaSetTransactionTimeout": "true"
+                    }
+                },
+                {
+                    "type": "JDBCDataSourceParams",
+                    "attributes": {
+                        "JNDINames": "jdbc/FCBDataSourceConfig"
+                    }
+                }
+                ]
+              }
+            ]
+            },
+            {
+                "name": "SOADataSource",
+                "type": "JDBCSystemResource",
+                "params": [
+                    {
+                        "type": "JDBCResource",
+                        "params": [
+                            {
+                                "type": "JDBCXAParams",
+                                "attributes": {
+                                    "XaSetTransactionTimeout": "true"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "DefaultAuthenticator",
+                "type": "AuthenticationProvider",
+                "attributes": {
+                    "subType": "null",
+                    "ControlFlag": "SUFFICIENT"
+                }
+            }
+            ,
+            <% if !is_running_on_cloud %>
+            <%= render "common-gid-authenticator.erb",
+                :variables => {
+                    :hostname => @common['gidldap']['gidhost'],
+                    :port => @common['gidldap']['gidport'],
+                    :username => @common['gidldap']['gidaccountusername'],
+                    :password => PasswordVault.get_password(password_vault_name + '/' + 'all', 'gidaccountpassword'),
+                    :group_base_dn => @common['gidldap']['gid_group_base_dn'],
+                    :user_base_dn => @common['gidldap']['gid_user_base_dn'],
+                    :all_users_filter => @common['gidldap']['all_users_filter'],
+                    :all_groups_filter => @common['gidldap']['all_groups_filter'],
+                    :user_from_name_filter => @common['gidldap']['user_from_name_filter'],
+                    :group_from_name_filter => @common['gidldap']['group_from_name_filter'],
+                    :common => @common
+                }
+            %>,
+            <% end %>
+            {
+                "name": "WeblogicPolicyPermission_1",
+                "type": "WeblogicPolicyPermission",
+                "attributes": {
+                "permClass": "java.security.AllPermission",
+                "permTarget": "None",
+                "permActions": "None",
+                "codeBaseURL": "<%= "file:#{fmw_install_path}/-" %>"
+                }
+            },
+            {
+                "name": "WeblogicPolicyPermission_2",
+                "type": "WeblogicPolicyPermission",
+                "attributes": {
+                  "permClass": "java.security.AllPermission",
+                  "permTarget": "appId=*",
+                  "permActions": "issue",
+                    "codeBaseURL": "<%= "file:#{soa_admin_server_top}/#{@obpsoa['wls_domain_name']}/servers/-" %>"
+                }
+            },
+            {
+                "name": "AdminStartupParameters",
+                "type": "StartupParameter",
+                "attributes": {
+                    "1": "-Xms<%= @obpsoa["admin"]['ms_heap'] %> -Xmx<%= @obpsoa["admin"]['mx_heap']  %>",
+					"2": "<%= "-javaagent:/oracle/app/binaries/contrast_agent/contrast.jar" if @common['enable_contrastagent'] == "true" %>",
+                    <% if @common['migrate_appd_agent'] == "true" %>
+                    "3": "<%= "-javaagent:#{@common['appd_agent_home']}/javaagent.jar -Dappagent.install.dir=#{@common['appd_agent_home']} -Dappdynamics.agent.nodeName=%ListenAddress/noprefix%#{@obpobh['dns_domain_name']}:%ListenPort+1000%" if @common['enable_appdynamics'] == "true" %>",
+                    <% else %>
+                    "3": "<%= "-javaagent:#{@common['appdynamics_agent']} -Dappagent.install.dir=/oracle/app/binaries/appdynamics/javaagent -Dappdynamics.agent.nodeName=%ListenAddress/noprefix%#{@obpobh['dns_domain_name']}:%ListenPort+1000%" if @common['enable_appdynamics'] == "true" %>",
+                    <% end %>
+                    "4": "-Dweblogic.ProductionModeEnabled=true -XX:CompileThreshold=8000",
+                    <% if environment_name =~ /^svp3w/ or environment_name =~ /^prd3w/ or environment_name =~ /^nft1w/ %>
+                    "5": "-Dappdynamics.agent.tierName=OBP-ADMIN-WSDC",
+                    <% else %>
+                    "5": "-Dappdynamics.agent.tierName=OBP-ADMIN",
+                    <% end %>
+                    <%= render "common-startup-params.erb",
+                        :variables => {
+							:asset_code => asset_code,
+                            :log_location_path => log_location_path,
+                            :certs_location_path => certs_location_path,
+                            :truststore => @common['trustStore']
+                        }
+                    %>
+                }
+            },
+            {
+            "name": "CredentialMap_Origination",
+            "type": "FmwCredentials",
+            "attributes": {
+                "map": "oracle.wsm.security",
+                "key": "origination_owsm_key",
+                "username": "<%= @obpsoa['soa_credentialmap_user'] %>",
+                "password": "<%= PasswordVault.get_password(password_vault_name + '/' + 'obpoid', @obpsoa['soa_credentialmap_user']) %>",
+                "description": "Credentials of Principal to be used for Origination"
+                }
+            },
+            {
+                "name": "SOAClusterStartupParameters",
+                "type": "StartupParameter",
+                "attributes": {
+						"1": "-Xms<%= @obpsoa['soa_server']['ms_heap'] %> -Xmx<%= @obpsoa['soa_server']['mx_heap'] %>",
+						"2": "-XX:+UseG1GC -XX:MaxGCPauseMillis=150 -XX:G1HeapRegionSize=8M -XX:+UseStringDeduplication -XX:+PrintHeapAtGC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/oracle/app/logs -XX:ReservedCodeCacheSize=256M -XX:+ParallelRefProcEnabled -XX:+DisableExplicitGC -XX:-OmitStackTraceInFastThrow",
+						"3": "-Doracle.jdbc.autoCommitSpecCompliant=false -Djps.combiner.optimize.lazyeval=TRUE -Djps.combiner.optimize=TRUE -Djps.policystore.hybrid.mode=false -Djps.authz=ACC -XX:-UseBiasedLocking -XX:+UnlockDiagnosticVMOptions -XX:GuaranteedSafepointInterval=0 -XX:-TieredCompilation",
+						"4": "-Dweblogic.configuration.schemaValidationEnabled=false -Duser.home=<%= fmw_install_path %>/obpinstall/obp/config",
+						"5": "-Dfacade.security.check=false -Dcom.sun.jndi.ldap.connect.pool.protocol=ssl -Dcom.sun.jndi.ldap.connect.pool=true -Dcom.sun.jndi.ldap.connect.pool.initsize=10 -Dcom.sun.jndi.ldap.connect.pool.prefsize=20 -Dweblogic.oif.serialFilterMode=combine -Dweblogic.oif.serialFilterScope=weblogic -Dweblogic.oif.serialFilter=maxdepth=10000 -Dweblogic.utils.cmm.lowertier.ServiceDisabled=true -Dweblogic.ProductionModeEnabled=true",
+                        <% if @common['migrate_appd_agent'] == "true" %>
+						"6": "<%= "-javaagent:#{@common['appd_agent_home']}/javaagent.jar -Dappagent.install.dir=#{@common['appd_agent_home']} -Dappdynamics.agent.nodeName=%ListenAddress/noprefix%#{@obpsoa['dns_domain_name']}:%ListenPort+1000%" if @common['enable_appdynamics'] == "true" %>",
+                        <% else %>
+                        "6": "<%= "-javaagent:#{@common['appdynamics_agent']} -Dappagent.install.dir=/oracle/app/binaries/appdynamics/javaagent -Dappdynamics.agent.nodeName=%ListenAddress/noprefix%#{@obpsoa['dns_domain_name']}:%ListenPort+1000%" if @common['enable_appdynamics'] == "true" %>",
+                        <% end %>
+						"7": "<%= "-javaagent:/oracle/app/binaries/contrast_agent/contrast.jar" if @common['enable_contrastagent'] == "true" %>",
+						<% if environment_name =~ /^svp/ or environment_name =~ /^prd/ %>
+						"8":"-XX:FlightRecorderOptions=repository=/oracle/app/jfr_logs",
+						<% end %>
+                        "9":"-XX:+PrintGCApplicationStoppedTime -XX:+PrintGCApplicationConcurrentTime -XX:-UseContainerSupport -Dweblogic.MuxerClass=weblogic.socket.PosixSocketMuxer -XX:CompileCommand=exclude,weblogic/store/io/file/direct/DirectIONative,fillBuffer -Dweblogic.SocketReaders=8 -Dweblogic.log.DisplayPatchInfo=false -Ddisable-implicit-bean-discovery=true -Doracle.net.disableOob=true",
+                        <% if environment_name =~ /^svp3w/ or environment_name =~ /^prd3w/ or environment_name =~ /^nft1w/ %>
+                        "10": "-Dappdynamics.agent.tierName=OBP-SOA-WSDC",
+                        <% else %>
+                        "10": "-Dappdynamics.agent.tierName=OBP-SOA",
+                        <% end %>
+						<%= render "obp-startup-params.erb",
+						:variables => {
+							:log_location_path => log_location_path,
+							:certs_location_path => certs_location_path,
+							:truststore => @common['trustStore']
+						}
+						%>
+				}
+            },
+            {
+                "name": "HTClusterStartupParameters",
+                "type": "StartupParameter",
+                "attributes": {
+                    "1": "-Xms<%= @obpsoa['obphumantask_server']['ms_heap'] %> -Xmx<%= @obpsoa['obphumantask_server']['mx_heap'] %>",
+                    "2": "-XX:+UseG1GC -XX:MaxGCPauseMillis=150 -XX:G1HeapRegionSize=8M -XX:+PrintHeapAtGC  -XX:ReservedCodeCacheSize=512M -XX:+ParallelRefProcEnabled -XX:+DisableExplicitGC -XX:+UseStringDeduplication -XX:-OmitStackTraceInFastThrow",
+                    "3": "-Doracle.jdbc.autoCommitSpecCompliant=false -Djps.combiner.optimize.lazyeval=TRUE -Djps.combiner.optimize=TRUE -Djps.policystore.hybrid.mode=false -Djps.authz=ACC -XX:-UseBiasedLocking -XX:+UnlockDiagnosticVMOptions -XX:GuaranteedSafepointInterval=0 -XX:-TieredCompilation",
+                    "4": "-Dweblogic.configuration.schemaValidationEnabled=false -Duser.home=<%= fmw_install_path %>/obpinstall/obp/config",
+                    "5": "-Dfacade.security.check=false -Dobp.http.staleCheckEnabled=true -Dweblogic.servlet.DIDisabled=true -Dobp.http.idleTimeoutPollInterval=5000 -Dobp.http.maxRetryCount=3 -Dobp.http.socketBufferSize=262144 -Dobp.http.expireAndRetry=true -Djbo.ampool.doampooling=false -Dobp.http.connectionTimeout=10000 -Dobp.http.connectionRequestTimeout=10000 -Dobp.http.socketTimeout=300000 -Dobp.http.staleCheckInterval=600000 -Dobp.http.maxConnectionsPerHost=300 -Djavax.xml.parsers.DocumentBuilderFactory=com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl -Djavax.xml.transform.TransformerFactory=com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl -Djavax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl",
+                    "6": "-DOriginationUIPropertiesConstant:enableEnrichmentLink=false -Dcom.sun.jndi.ldap.connect.pool.protocol=ssl -Dcom.sun.jndi.ldap.connect.pool=true -Dcom.sun.jndi.ldap.connect.pool.initsize=10 -Dcom.sun.jndi.ldap.connect.pool.prefsize=20 -DAdapterFactories:UI_SECURITY_ADPT_MOCKED=false -Dweblogic.utils.cmm.lowertier.ServiceDisabled=true -Dsun.reflect.inflationThreshold=214748364 -Dweblogic.ProductionModeEnabled=true",
+                    <% if @common['migrate_appd_agent'] == "true" %>
+                    "7": "<%= "-javaagent:#{@common['appd_agent_home']}/javaagent.jar -Dappagent.install.dir=#{@common['appd_agent_home']} -Dappdynamics.agent.nodeName=%ListenAddress/noprefix%#{@obpsoa['dns_domain_name']}:%ListenPort+1000%" if @common['enable_appdynamics'] == "true" %>",
+                    <% else %>
+                    "7": "<%= "-javaagent:#{@common['appdynamics_agent']} -Dappagent.install.dir=/oracle/app/binaries/appdynamics/javaagent -Dappdynamics.agent.nodeName=%ListenAddress/noprefix%#{@obpsoa['dns_domain_name']}:%ListenPort+1000%" if @common['enable_appdynamics'] == "true" %>",
+                    <% end %>
+					"8": "<%= "-javaagent:/oracle/app/binaries/contrast_agent/contrast.jar" if @common['enable_contrastagent'] == "true" %>",
+                    "9": "-Dfile.encoding=UTF-8",
+					<% if environment_name =~ /^svp/ or environment_name =~ /^prd/ %>
+					"10":"-XX:FlightRecorderOptions=repository=/oracle/app/jfr_logs",
+					<% end %>
+                    "11":"-XX:+PrintGCApplicationStoppedTime -XX:+PrintGCApplicationConcurrentTime -XX:+PrintSafepointStatistics -XX:PrintSafepointStatisticsCount=1 -Dcom.sun.jndi.ldap.read.timeout=60000 -Dcom.sun.jndi.ldap.connect.timeout=60000 -XX:-UseContainerSupport -Dweblogic.MuxerClass=weblogic.socket.PosixSocketMuxer -XX:CompileCommand=exclude,weblogic/store/io/file/direct/DirectIONative,fillBuffer -Dweblogic.SocketReaders=8 -Dweblogic.log.DisplayPatchInfo=false -Ddisable-implicit-bean-discovery=true -Doracle.net.disableOob=true",
+                    <% if environment_name =~ /^svp3w/ or environment_name =~ /^prd3w/ or environment_name =~ /^nft1w/ %>
+                    "12": "-Dappdynamics.agent.tierName=OBP-SOA-HT-WSDC",
+                    <% else %>
+                    "12": "-Dappdynamics.agent.tierName=OBP-SOA-HT",
+                    <% end %>
+                    <%= render "obp-startup-params.erb",
+                            :variables => {
+                            :log_location_path => log_location_path,
+                            :certs_location_path => certs_location_path,
+                            :truststore => @common['trustStore']
+                        }
+                    %>
+                }
+            },
+            {
+                "name": "BAMClusterStartupParameters",
+                "type": "StartupParameter",
+                "attributes": {
+                    "1": "-Xms<%= @obpsoa['bam_server']['ms_heap'] %> -Xmx<%= @obpsoa['bam_server']['mx_heap'] %>",
+                    "2": "-XX:+DisableExplicitGC -XX:+UseG1GC -XX:MaxGCPauseMillis=150 -XX:G1HeapRegionSize=4M -XX:+UseStringDeduplication -XX:ReservedCodeCacheSize=256M -XX:+ParallelRefProcEnabled -XX:-OmitStackTraceInFastThrow -XX:-TieredCompilation -XX:+PrintGCApplicationConcurrentTime -XX:+PrintGCApplicationStoppedTime -XX:-UseBiasedLocking -XX:+UnlockDiagnosticVMOptions -XX:GuaranteedSafepointInterval=0",
+                    "3": "-Doracle.jdbc.autoCommitSpecCompliant=false -Dweblogic.utils.cmm.lowertier.ServiceDisabled=true -Dweblogic.ProductionModeEnabled=true -XX:-UseContainerSupport -XX:CompileCommand=exclude,weblogic/store/io/file/direct/DirectIONative,fillBuffer -Dweblogic.MuxerClass=weblogic.socket.PosixSocketMuxer -Doracle.net.disableOob=true",
+                    <% if @common['migrate_appd_agent'] == "true" %>
+                    "7": "<%= "-javaagent:#{@common['appd_agent_home']}/javaagent.jar -Dappagent.install.dir=#{@common['appd_agent_home']} -Dappdynamics.agent.nodeName=%ListenAddress/noprefix%#{@obpsoa['dns_domain_name']}:%ListenPort+1000%" if @common['enable_appdynamics'] == "true" %>",
+                    <% else %>
+                    "7": "<%= "-javaagent:#{@common['appdynamics_agent']} -Dappagent.install.dir=/oracle/app/binaries/appdynamics/javaagent -Dappdynamics.agent.nodeName=%ListenAddress/noprefix%#{@obpsoa['dns_domain_name']}:%ListenPort+1000%" if @common['enable_appdynamics'] == "true" %>",
+                    <% end %>
+                    "8": "<%= "-javaagent:/oracle/app/binaries/contrast_agent/contrast.jar" if @common['enable_contrastagent'] == "true" %>",
+                    <% if environment_name =~ /^svp3w/ or environment_name =~ /^prd3w/ or environment_name =~ /^nft1w/ %>
+                    "9": "-Dappdynamics.agent.tierName=OBP-SOA-BAM-WSDC",
+                    <% else %>
+                    "9": "-Dappdynamics.agent.tierName=OBP-SOA-BAM",
+                    <% end %>
+                    <%= render "obp-startup-params.erb",
+                            :variables => {
+                            :log_location_path => log_location_path,
+                            :certs_location_path => certs_location_path,
+                            :truststore => @common['trustStore']
+                        }
+                    %>
+                }
+            },
+            {
+                "attributes": {
+                    "AdministrationPort": "<%= @obpsoa['admin']['listen_port_admin'] %>",
+                    "AdministrationPortEnabled": "false"
+                },
+                "type": "Domain",
+                "name": "DomainAdministrationPortConfiguration"
+            },
+			{
+				"name": "ClusterClassPathParameters",
+				"type": "ClassPath",
+				"attributes": {
+					"Auto01": "<%= fmw_install_path %>/obpinstall/obp/ob.ui.web/ob.ui.sh/WEB-INF/lib/com.ofss.fc.lz.au.ui.OptionCC.jar:<%= fmw_install_path %>/obpinstall/obp/ob.ui.web/ob.ui.cz/WEB-INF/lib/com.ofss.fc.cz.ui.OptionCC.jar:<%= fmw_install_path %>/soa/soa/modules/chemistry-opencmis-client/chemistry-opencmis-commons-api-1.1.0.jar:<%= fmw_install_path %>/oracle_common/modules/oracle.wccore/oracle-portlet-api.jar:<%= base_domain_path %>/applications/obpsoa_domain/weblogicCustomAccessLog.jar"
+				}
+			},
+            {
+                "name": "SOAClusterClassPathParameters",
+                "type": "ClassPath",
+                "attributes": {
+                    "Auto01": "<%= fmw_install_path %>/oracle_common/modules/oracle.sdp.client/userprefs-api.jar:<%= fmw_install_path %>/soa/soa/modules/chemistry-opencmis-client/chemistry-opencmis-commons-api-1.1.0.jar:<%= base_domain_path %>/applications/obpsoa_domain/weblogicCustomAccessLog.jar"
+                }
+            },
+            {
+                "name": "BAMClusterClassPathParameters",
+                "type": "ClassPath",
+                "attributes": {
+                    "Auto01": "<%= base_domain_path %>/applications/obpsoa_domain/weblogicCustomAccessLog.jar"
+                }
+            },
+            {
+                "name": "LocalUser_SA_OBP_BAM_MANAGE_USER",
+                "type": "User",
+                "attributes": {
+                    "name": "SA_OBP_BAM_MANAGE_USER",
+                    "password": "<%= PasswordVault.get_password(password_vault_name + '/' + 'obpoid', 'SA_OBP_BAM_MANAGE_USER' ) %>",
+                    "description": "Temporary Local Service Account for BAM Admin Role",
+                    "groupList": "Administrators,OracleSystemGroup,BAMAdministrator,BAMContentCreator"
+                }
+            },
+            {
+                "name": "JTASettings",
+                "type": "JTA",
+                "attributes": {
+                    "TimeoutSeconds": "900"
+                }
+            },
+            {
+                "name": "soa_cluster_settings",
+                "type": "Cluster",
+                "attributes": {
+                "DefaultLoadAlgorithm": "round-robin-affinity"
+                }
+            },
+            {
+                "name": "hwf_cluster_settings",
+                "type": "Cluster",
+                "attributes": {
+                "DefaultLoadAlgorithm": "round-robin-affinity"
+                }
+            },
+            {
+                "name": "bam_cluster_settings",
+                "type": "Cluster",
+                "attributes": {
+                    "MigrationBasis": "Database",
+                    "DefaultLoadAlgorithm": "round-robin-affinity",
+                    "DataSourceForAutomaticMigration": "mbean:/JDBCSystemResources/BamLeasingDataSource",
+                    "DataSourceForJobScheduler": "mbean:/JDBCSystemResources/BamJobSchedDataSource"
+                }
+            }
+        ],
+        "propertyGroupList":
+        [
+            <%= render "common-config-groups.erb",
+                :variables => {
+                    :environment_name => environment_name,
+                    :asset_code => asset_code,
+                    :inventory_install_path => inventory_install_path,
+                    :fmw_install_path => fmw_install_path,
+                    :temp_location => temp_location
+                }
+            %>
+            ,
+            {
+                "name": "Node_Manager_Common_Config",
+                "description": "Common Node Manager configuration",
+                "attributes": {
+                    "wls.nodemanager.shared.domain.dir": "true",
+                    "wlInstallationName": "fmwinfra",
+                    "nodemanagerTop": "<%= node_manager_top %>",
+                    "wls.nodemanager.top": "<%= node_manager_top %>"
+                }
+            },
+            <%= render "common-nm-ssl-config.erb",
+                :variables => {
+                    :environment_name => environment_name,
+                    :password_vault_name => password_vault_name,
+                    :asset_code => asset_code,
+                    :certs_location_path => certs_location_path,
+                    :truststore => @common['trustStore']
+                }
+            %>
+		]
+    }
+}

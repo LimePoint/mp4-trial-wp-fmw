@@ -1,0 +1,422 @@
+                                    {
+                                        "configuration": "<%= @asset_name %>",
+                                        "properties": [
+                                            {
+                                                "target": "temp-path",
+                                                "value": "<%= @temp_location %>/<%= @asset_name %>"
+                                            },
+                                            {
+                                                "name": "LogProperties",
+                                                "target": "log-file",
+                                                "value": "<%= @log_location_path %>/${INSTANCE_NAME}/server.log"
+                                            },
+                                            {
+                                                "name": "TcpAccessLogProperties",
+                                                "target": "log-file",
+                                                "value": "<%= @log_location_path %>/${INSTANCE_NAME}/tcp-access.log"
+                                            },
+                                            {
+                                                "name": "HttpProperties",
+                                                "target": "max-unchunk-size",
+                                                "value": "0"
+                                            },
+											<% if ['obpoid','obpcid'].include?@asset_name %>
+                                            {
+                                                "name": "TcpThreadPoolProperties",
+                                                "target": "timeout",
+                                                "value": "1800"
+                                            },
+                                            <% else %>
+                                            {
+                                                "name": "TcpThreadPoolProperties",
+                                                "target": "timeout",
+                                                "value": "300"
+                                            },
+                                            <% end %>
+                                            <% if ['obpoid','obpcid','obp-sso','obpoim','obpcim'].include?@asset_name %>
+                                            {
+                                                "name": "SslSessionCacheProperties",
+                                                "target": "enabled",
+                                                "value": "false"
+                                            },
+                                            <% else %>
+                                            {
+                                                "name": "SslSessionCacheProperties",
+                                                "target": "enabled",
+                                                "value": "true"
+                                            },
+                                            {
+                                                "name": "SslSessionCacheProperties",
+                                                "target": "max-entries",
+                                                "value": "5000"
+                                            },
+                                            {
+                                                "name": "SslSessionCacheProperties",
+                                                "target": "max-ssl3-tls-session-age",
+                                                "value": "3600"
+                                            },
+                                            <% end %>
+                                            {
+                                                "name": "HttpProperties",
+                                                "target": "server-header",
+                                                "value": "LimePoint"
+                                            }
+                                            <% if ['obposb','obp-sso','obp-banker','obp-worklist','obpapi','obpobh','obpipm'].include?@asset_name %>
+                                            ,
+                                            {
+                                                "name": "HttpProperties",
+                                                "target": "request-header-buffer-size",
+                                                "value": "16384"
+                                            }
+                                            <% end %>
+                                        ],
+                                        "instanceList": [
+                                            {
+                                                "machine": "<%= @primaryMachine %>"
+                                            },
+                                            {
+                                                "machine": "<%= @backupMachine %>"
+                                            }
+                                        ],
+                                        "failoverGroupList": [
+                                            {
+                                                "virtualIp": "<%= @asset_vars['e_vip_name'] %>",
+                                                "primaryInstance": "<%= @primaryMachine %>",
+                                                "primaryNic": "<%= @eoibBond %>",
+                                                "backupInstance": "<%= @backupMachine %>",
+                                                "backupNic": "<%= @eoibBond %>",
+                                                "routerId": "<%= @router_id %>"
+                                            }
+                                        ],
+                                        "originServerPoolList": [
+
+                                            <% @asset_vars['origin_pool_list'].each_with_index do |origin_pool, index| %>
+
+                                                <%= "," if index > 0 %>
+
+                                                <% if origin_pool.key?('type') && origin_pool['type'] == 'ssl' %>
+                                                {
+                                                    "originServerPool": "<%= origin_pool['name'] %>-ssl-origin-server-pool",
+                                                    "originServerList": [
+                                                        <% origin_pool['members'].each_with_index do |member, index| %>
+                                                        <%= "," if index > 0 %>
+
+                                                        {
+                                                            "host": "<%= member['host'] %>",
+                                                            "port": "<%= member['port'] %>"
+                                                        }
+                                                        <% end %>
+                                                    ],
+                                                    "properties": [
+                                                        {
+                                                            "name": "OriginServerPoolSslProperties",
+                                                            "target": "enabled",
+                                                            "value": "true"
+                                                        },
+                                                        {
+                                                            "name": "OriginServerPoolSslProperties",
+                                                            "target": "validate-server-cert-hostname",
+                                                            "value": "true"
+                                                        },
+                                                        {
+                                                            "name": "OriginServerPoolSslProperties",
+                                                            "target": "tls11",
+                                                            "value": "false"
+                                                        },
+                                                        {
+                                                            "name": "HealthCheckProperties",
+                                                            "target": "request-uri",
+                                                            "value" : "<%= origin_pool['request_uri'] %>"
+                                                        }
+                                                    ],
+                                                    "groupRefs": [
+                                                        "Common_Health_Check_Props"
+                                                    ]
+                                                }
+                                                <% else %>
+                                                {
+                                                    "originServerPool": "<%= origin_pool['name'] %>-tcp-origin-server-pool",
+                                                    "type": "tcp",
+                                                    "originServerList": [
+                                                        <% origin_pool['members'].each_with_index do |member, index| %>
+                                                        <%= "," if index > 0 %>
+
+                                                        {
+                                                            "host": "<%= member['host'] %>",
+                                                            "port": "<%= member['port'] %>"
+                                                        }
+                                                        <% end %>
+                                                    ]
+                                                }
+                                                <% end %>
+
+                                            <% end %>
+                                        ],
+
+                                        "httpListenerList": [
+
+                                        <% counter = 0 %>
+                                        <% @asset_vars['server_pool_list'].each do |server_pool| %>
+
+                                            <% if server_pool.key?('ssl')  %>
+                                                <%= "," if counter > 0 %>
+                                                <% counter = 1 %>
+                                                {
+                                                    "httpListener": "<%= server_pool['name'] %>-e-https-listener",
+                                                    "port": "<%= server_pool['ssl']['e_listener_port'] %>",
+                                                    "serverName": "<%= @asset_vars['server_name'] %>",
+                                                    "defaultVirtualServer": "<%= server_pool['name'] %>-e-virtual-server",
+                                                    "ip": "<%= @asset_vars['e_vip_name'] %>",
+                                                    "properties": [
+                                                        {
+                                                            "name": "HttpListenerSslProperties",
+                                                            "target": "enabled",
+                                                            "value": "true"
+                                                        },
+                                                        {
+                                                            "name": "HttpListenerSslProperties",
+                                                            "target": "tls11",
+                                                            "value": "false"
+                                                        },
+                                                        {
+                                                            "name": "HttpListenerSslProperties",
+                                                            "target": "server-cert-alias",
+                                                            "value": "<%= @keystore_alias %>"
+                                                        }
+                                                        <% if server_pool['ssl'].key?('client-auth')  %>
+                                                        ,{
+                                                            "name": "HttpListenerSslProperties",
+                                                            "target": "client-auth",
+                                                            "value": "<%= server_pool['ssl']['client-auth'] %>"
+                                                        }
+                                                        <% end %>
+                                                    ]
+                                                }
+                                            <% end %>
+                                         <% end %>
+                                        ],
+                                        "virtualServerList": [
+
+                                        <% counter = 0 %>
+                                        <% @asset_vars['server_pool_list'].each do |server_pool| %>
+
+                                            <% if server_pool.key?('ssl')  %>
+                                                <%= "," if counter > 0 %>
+                                                <% counter = 1 %>
+                                                {
+                                                    "virtualServer": "<%= server_pool['name'] %>-e-virtual-server",
+                                                    "originServerPool": "<%= server_pool['ssl']['origin_pool'] %>-ssl-origin-server-pool",
+                                                    "host": "<%= @primaryMachine %>",
+                                                    "properties": [
+                                                        {
+                                                            "name": "VirtualServerAccessLog",
+                                                            "target": "log-file",
+                                                            "value": "<%= @log_location_path %>/${INSTANCE_NAME}/<%= server_pool['name'] %>-e-virtual-server/custom-access.log"
+                                                        },
+                                                        {
+                                                            "name": "VirtualServerAccessLog",
+                                                            "target": "format",
+                                                            "value": "%Ses->client.ip% - %Req->vars.auth-user% [%SYSDATE%] \"%Req->reqpb.clf-request%\" %Req->srvhdrs.clf-status% %Req->srvhdrs.content-length% %Req->vars.ecid% %Req->vars.rid% %Req->vars.origin-server% %duration%"
+                                                        }
+                                                    ]
+                                                    <% if server_pool['ssl'].key?('webgate')  %>
+                                                    ,
+                                                    "webgate": {
+                                                        "webgateIdentifier": "<%= server_pool['ssl']['webgate']['identifier'] %>",
+                                                        "autoCreatePolicy": "false",
+                                                        "logoutRedirectUrl": "<%= server_pool['ssl']['webgate']['logoutRedirectUrl'] %>",
+                                                        "agentName": "<%= server_pool['ssl']['webgate']['agentName'] %>",
+                                                        "hostIdentifier": "<%= server_pool['ssl']['webgate']['identifier'] %>"
+                                                    }
+                                                    <% end %>
+                                                    ,
+                                                    "routeList": [
+                                                        {
+                                                                "route": "default-route",
+                                                                "originServerPool": "<%= server_pool['ssl']['origin_pool'] %>-ssl-origin-server-pool",
+                                                                "properties": [
+                                                                    {
+                                                                        "name": "RouteProperties",
+                                                                        "target": "always-use-keep-alive",
+                                                                        "value": "true"
+                                                                    },
+                                                                    {
+                                                                        "name": "RouteProperties",
+                                                                        "target": "keep-alive-timeout",
+                                                                        "value": "60"
+                                                                    },
+                                                                    {
+                                                                        "name": "RouteProperties",
+                                                                        "target": "buffer-size",
+                                                                        "value": "24576"
+                                                                    },
+                                                                    {
+                                                                        "name": "RouteProperties",
+                                                                        "target": "timeout",
+                                                                        "value": "360"
+                                                                    }
+                                                                ]
+                                                        }
+                                                        <% if server_pool['ssl'].key?('routes')  %>
+                                                        <% server_pool['ssl']['routes'].each do |route| %>
+                                                            ,
+                                                            {
+                                                                "route": "<%= route['name'] %>",
+                                                                "condition": "<%= route['condition'] %>",
+                                                                "originServerPool": "<%= route['origin_pool'] %>-ssl-origin-server-pool",
+                                                                "properties": [
+                                                                    {
+                                                                        "name": "RouteProperties",
+                                                                        "target": "route-cookie",
+                                                                        "value": "<%= route['cookie_name'] %>"
+                                                                    },
+                                                                    {
+                                                                        "name": "RouteProperties",
+                                                                        "target": "always-use-keep-alive",
+                                                                        "value": "true"
+                                                                    },
+                                                                    {
+                                                                        "name": "RouteProperties",
+                                                                        "target": "keep-alive-timeout",
+                                                                        "value": "60"
+                                                                    },
+                                                                    {
+                                                                        "name": "RouteProperties",
+                                                                        "target": "buffer-size",
+                                                                        "value": "24576"
+                                                                    },
+                                                                    {
+                                                                        "name": "RouteProperties",
+                                                                        "target": "timeout",
+                                                                        "value": "360"
+                                                                    }
+                                                                ]
+                                                            }
+                                                        <% end %>
+                                                        <% end %>
+                                                    ]
+                                                    <% if server_pool['ssl'].key?('compression_rules')  %>
+                                                    ,
+                                                    "compressionRuleList": [
+                                                        <% compression_rule_counter = 0 %>
+                                                        <% server_pool['ssl']['compression_rules'].each do |compression_rule| %>
+                                                            <%= "," if compression_rule_counter > 0 %>
+                                                            <% compression_rule_counter = 1 %>
+                                                            {
+                                                                "compressionRule": "<%= compression_rule['name'] %>",
+                                                                "condition": "<%= compression_rule['condition'] %>",
+                                                                "properties": [
+                                                                    {
+                                                                        "name": "CompressionRuleProperties",
+                                                                        "target": "compression-level",
+                                                                        "value": "<%= compression_rule['compression_level'] %>"
+                                                                    },
+                                                                    {
+                                                                        "name": "CompressionRuleProperties",
+                                                                        "target": "condition",
+                                                                        "value": "<%= compression_rule['condition'] %>"
+                                                                    }
+                                                                ]
+                                                            }
+                                                        <% end %>
+                                                    ]
+                                                    <% end %>
+                                                    <% if server_pool['ssl'].key?('cache_rules')  %>
+                                                    ,
+                                                    "cacheRuleList": [
+                                                        <% cache_rule_counter = 0 %>
+                                                        <% server_pool['ssl']['cache_rules'].each do |cache_rule| %>
+                                                            <%= "," if cache_rule_counter > 0 %>
+                                                            <% cache_rule_counter = 1 %>
+                                                            {
+                                                                "cacheRule": "<%= cache_rule['name'] %>",
+                                                                "condition": "<%= cache_rule['condition'] %>",
+                                                                "properties": [
+                                                                    {
+                                                                        "name": "CacheRuleProperties",
+                                                                        "target": "cache-https-response",
+                                                                        "value": "<%= cache_rule['cache_https_response'] %>"
+                                                                    }
+                                                                    <% if cache_rule.key?('enabled')  %>
+                                                                    ,
+                                                                    {
+                                                                        "name": "CacheRuleProperties",
+                                                                        "target": "enabled",
+                                                                        "value": "<%= cache_rule['enabled'] %>"
+                                                                    }
+                                                                    <% end %>
+                                                                ]
+                                                            }
+                                                        <% end %>
+                                                    ]
+                                                    <% end %>
+                                                    <% if @appd_enabled == "true"  %>
+                                                        <% if server_pool['ssl'].key?('content_rules')  %>
+                                                        ,
+                                                        "contentRuleList": [
+                                                            <% content_rule_counter = 0 %>
+                                                            <% server_pool['ssl']['content_rules'].each do |content_rule| %>
+                                                                <%= "," if content_rule_counter > 0 %>
+                                                                <% content_rule_counter = 1 %>
+                                                                {
+                                                                    "contentRule": "<%= content_rule['name'] %>",
+                                                                    "uriPrefix": "<%= content_rule['uri_prefix'] %>",
+                                                                    "directoryPath": "<%= content_rule['directory_path'] %>"
+                                                                }
+                                                            <% end %>
+                                                        ]
+                                                        <% end %>
+                                                    <% end %>
+                                                }
+                                            <% end %>
+                                         <% end %>
+                                        ],
+
+                                        "tcpProxyList": [
+                                        <% counter = 0 %>
+                                        <% @asset_vars['server_pool_list'].each do |server_pool| %>
+
+                                            <% if server_pool.key?('tcp')  %>
+                                                <%= "," if counter > 0 %>
+                                                <% counter = 1 %>
+                                                {
+                                                    "tcpProxy": "<%= server_pool['name'] %>-e-tcp-proxy",
+                                                    "originServerPool": "<%= server_pool['tcp']['origin_pool'] %>-tcp-origin-server-pool"
+                                                }
+                                            <% end %>
+                                        <% end %>
+
+                                        ],
+                                        "tcpListenerList": [
+                                        <% counter = 0 %>
+                                        <% @asset_vars['server_pool_list'].each do |server_pool| %>
+                                            <% if server_pool.key?('tcp')  %>
+                                                <%= "," if counter > 0 %>
+                                                <% counter = 1 %>
+                                                {
+                                                    "tcpListener": "<%= server_pool['name'] %>-e-tcp-listener",
+                                                    "port": "<%= server_pool['tcp']['e_listener_port'] %>",
+                                                    "ip": "<%= @asset_vars['e_vip_name'] %>",
+                                                    "tcpProxy": "<%= server_pool['name'] %>-e-tcp-proxy"
+                                                }
+                                            <% end %>
+                                        <% end %>
+                                        ]
+                                        ,
+                                        "keyStoreList": [
+                                            {
+                                                "type": "JKS",
+                                                "permission": "false",
+                                                "aliases": "<%= @keystore_alias %>",
+                                                "keypasswords": "<%= PasswordVault.get_password(@password_vault_name +'/'+ @asset_name, 'keystorepass' ) %>",
+                                                "filepath": "<%= @certs_source_path %>/<%= @environment_name %>/<%= @keystore_name %>.jks"
+                                            },
+                                            {
+                                                "type": "JKS",
+                                                "permission": "false",
+                                                "aliases": "limepoint_sha2_ssl_ca,limepoint_sha2_root_ca",
+                                                "keypasswords": "<%= PasswordVault.get_password(@password_vault_name +'/'+  @asset_name, 'truststorepass' ) %>,<%= PasswordVault.get_password(@password_vault_name +'/'+ @asset_name, 'truststorepass' ) %>",
+                                                "filepath": "<%= @certs_source_path %>/<%= @environment_name %>/<%= @truststore %>"
+                                            }
+                                        ]
+                                    }

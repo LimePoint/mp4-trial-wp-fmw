@@ -1,0 +1,33 @@
+	{
+        "name": "<%= @name %>",
+        "type": "AuthenticationProvider",
+        "attributes": {
+          "subType": "weblogic.security.providers.authentication.OracleInternetDirectoryAuthenticator",
+          "ControlFlag": "SUFFICIENT",
+          "SSLEnabled": "true",
+          "PropagateCauseForLoginException": "true",
+          "UseRetrievedUserNameAsPrincipal": "true",
+          "Host": "<%= @hostname %>",
+          "Port": "<%= @port %>",
+          "Principal": "<%= @username %>",
+          "Credential": "<%= @password %>",
+          "UserNameAttribute": "uid",
+          "UserFromNameFilter": "(&(uid=%u)(objectclass=person))",
+          "KeepAliveEnabled": "true",
+          "ResultsTimeLimit": "60000",
+          "AllUsersFilter": "(&(uid=*)(objectclass=person))",
+          "AllGroupsFilter": "(&(cn=*)(|(objectclass=groupofUniqueNames)(objectclass=groupofurls)))",
+          "GroupFromNameFilter": "(|(&(cn=%g)(objectclass=groupofUniqueNames))(&(cn=%g)(objectclass=groupOfURLs)))",
+          "GuidAttribute": "orclguid",
+          "GroupBaseDN": "<%= @group_base_dn %>",
+          "UserBaseDN": "<%= @user_base_dn %>",
+          "ConnectionPoolSize": "<%= @common['oidldap']['ConnectionPoolSize'] %>",
+          "ConnectTimeout": "<%= @common['oidldap']['ConnectTimeout'] %>",
+          "ConnectionRetryLimit": "<%= @common['oidldap']['ConnectionRetryLimit'] %>",
+          "ParallelConnectDelay": "<%= @common['oidldap']['ParallelConnectDelay'] %>",
+          "ResultsTimeLimit": "<%= @common['oidldap']['ResultsTimeLimit'] %>",
+          "CacheSize": "<%= @common['oidldap']['CacheSize'] %>",
+          "CacheTTL": "<%= @common['oidldap']['CacheTTL'] %>",
+          "GroupMembershipSearching": "limited"
+        }
+	}

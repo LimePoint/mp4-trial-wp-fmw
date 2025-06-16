@@ -1,0 +1,13 @@
+export ORACLE_HOME=<%= @database_home %>
+export LD_LIBRARY_PATH=$ORACLE_HOME/lib
+export PATH=$ORACLE_HOME/bin:$PATH
+
+touch $ORACLE_HOME/network/admin/tnsnames.ora
+sed -i '/^OBP_DATAPUMP=/d' $ORACLE_HOME/network/admin/tnsnames.ora
+echo "<%= @tns_entry %>" >> $ORACLE_HOME/network/admin/tnsnames.ora
+
+<% if @remap_schema.length == 0 %>
+impdp \"<%= @database_sys_username %>/<%= @database_sys_userpassword %>@OBP_DATAPUMP as sysdba\" DIRECTORY=<%= @datapump_directory_name %> DUMPFILE="<%= @datapump_files %>" logfile="DATA_PUMP_DIR:<%= @environment_name %>_datapump_mintpress.log parallel=8"
+<% else %>
+impdp \"<%= @database_sys_username %>/<%= @database_sys_userpassword %>@OBP_DATAPUMP as sysdba\" DIRECTORY=<%= @datapump_directory_name %> DUMPFILE="<%= @datapump_files %>" logfile="DATA_PUMP_DIR:<%= @environment_name %>_datapump_mintpress.log parallel=8 REMAP_SCHEMA=<%= @remap_schema %>:<%= @target_schema %> REMAP_TABLESPACE=<%= @remap_tablespace %>:<%= @target_tablespace %>"
+<% end %>

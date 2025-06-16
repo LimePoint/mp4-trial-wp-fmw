@@ -1,0 +1,33 @@
+            {
+                "name": "Common_Host_Details",
+                "description": "Authentication details for hosts",
+								"attributes": {
+									"user": "oracle",
+									"oracle.install.username": "oinstall",
+									"password": "unused-key-auth",
+									"targetTempDir": "<%= @temp_location %>"
+								}
+            },
+            {
+                "name": "Common_Installation_Details",
+                "description": "Authentication details for hosts",
+								"attributes": {
+									"fmw_home": "<%= @fmw_install_path %>",
+									"inventory_location": "<%= @inventory_install_path %>",
+									"owner": "oracle",
+									"group": "oinstall",
+									"patch.java.params": "-Xms3g -Xmx3g"
+								}
+            },
+            {
+                "name": "Common_Installation_Details_1036",
+                "description": "Authentication details for weblogic 10.3.6",
+								"attributes": {
+									"fmw_home": "<%= @fmw_install_path %>",
+									"inventory_location": "<%= @inventory_install_path %>",
+									"owner": "oracle",
+									"group": "oinstall",
+									"patch.java.params": "-Xms3g -Xmx3g",
+									"postInstallScript": "cp -R /oracle/stage/wls/10.3.6/patches/27238412/bsu_update  <%= @fmw_install_path %>/utils/bsu/; cp /oracle/stage/wls/10.3.6/patches/27238412/bsu_update.sh  <%= @fmw_install_path %>/utils/bsu/; cd <%= @fmw_install_path %>/utils/bsu/; sh bsu_update.sh install"
+								}
+            }

@@ -1,0 +1,21 @@
+                            {
+                                "name": "<%= @name %>",
+                                "hostIdentifierList": [
+                                    "<%= @host_identifier %>"
+                                ],
+                                "sourceFile": "<%= @args %>",
+                                "properties": [
+                                    {
+                                        "name": "execute.weblogicAdminPassword",
+                                        "target": "execute.weblogicAdminPassword",
+                                        "value": "<%= @admin_password %>"
+                                    },
+                                    {
+                                        "name": "scaleout",
+                                        "value": "false"
+                                    }
+                                ],
+                                "executeWhenList": [
+                                    "<%= @when %>"
+                                ]
+                            }

@@ -1,0 +1,47 @@
+
+            {
+                "name": "Node_Manager_SSL_Config",
+                "description": "Node Manager SSL configuration",
+                "properties": [
+                    {
+                        "name": "type",
+                        "value": "SSL"
+                    },
+                    {
+                        "target": "wls.nodemanager.secure.listener",
+                        "value": "true"
+                    },
+                    {
+                        "target": "wls.nodemanager.setidentity",
+                        "value": "true"
+                    },
+                    {
+                        "target": "wls.nodemanager.usejsse",
+                        "value": "true"
+                    },
+                    {
+                        "target": "wls.nodemanager.crashrecovery",
+                        "value": "false"
+                    },
+                    {
+                        "target": "wls.nodemanager.umask",
+                        "value": "022"
+                    },
+                    {
+                        "value": "<%= @certs_location_path %>/<%= @truststore %>",
+                        "target": "wls.nodemanager.truststorefile"
+                    },
+                    {
+                        "value": "<%= PasswordVault.get_password(@password_vault_name +'/'+ @asset_code, 'keystorepass' ) %>",
+                        "target": "wls.nodemanager.identitystorekey"
+                    },
+                    {
+                        "value": "<%= PasswordVault.get_password(@password_vault_name +'/'+ @asset_code, 'truststorepass' ) %>",
+                        "target": "wls.nodemanager.truststorekey"
+                    },
+                    {
+                        "value": "<%= PasswordVault.get_password(@password_vault_name +'/'+  @asset_code, 'keystorepass' ) %>",
+                        "target": "wls.nodemanager.identitypassphrase"
+                    }
+                ]
+            }

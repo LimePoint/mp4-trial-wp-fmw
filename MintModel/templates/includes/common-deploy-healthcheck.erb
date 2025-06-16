@@ -1,0 +1,13 @@
+                             <%= render "common-run-wlst.erb",
+                                :variables => {
+                                    :name => 'DeployHealthCheck',
+                                    :host_identifier => @host_identifier,
+                                    :wlst_command => "#{@fmw_install_path}/oracle_common/common/bin/wlst.sh",
+                                    :script => "#{@custom_source}/common/deployApplication.py",
+                                    :t3_connect_url => @t3_connect_url,
+                                    :admin_username => @admin_username,
+                                    :admin_password => @admin_password,
+                                    :args => " HealthCheck #{@app_path}/HealthCheck.war #{@app_target} nostage 650",
+                                    :when => 'pre-online'
+                                }
+                            %>

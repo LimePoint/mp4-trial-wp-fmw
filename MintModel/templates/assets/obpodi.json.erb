@@ -1,0 +1,1047 @@
+<% environment_name = @environment['name'] %>
+<% password_vault_name = @common['password_vault_name'] %>
+<% dns_domain = @obpodi["dns_domain_name"] ; if dns_domain.nil? then dns_domain=".mintpress.io" end %>
+<% asset_code = 'obpodi' %>
+
+<% base_install_path = '/oracle/app/binaries/' + asset_code  %>
+<% oracle_install_path  = base_install_path + '/dbclient' %>
+<% base_domain_path  = '/oracle/app/runtime/' + asset_code + '/domains' %>
+<% odi_managed_server_top  = '/oracle/app/binaries/runtime/' + asset_code + '/domains' %>
+<% odi_batch_scripts_path  = '/oracle/app/batch/odi/scripts' %>
+
+<% log_location_path   = '/oracle/app/logs/' + asset_code %>
+<% certs_location_path = '/oracle/app/runtime/' + environment_name + '/certs' %>
+
+<% java_install_path      = base_install_path + '/java' %>
+<% jdk_version            = '8' %>
+
+<% oracle_client_install_path      = base_install_path + '/dbclient' %>
+
+<% fmw_install_path           = base_install_path + '/fmw' %>
+<% inventory_install_path = base_install_path + '/oraInventory' %>
+<% temp_location          = base_install_path + '/tmp' %>
+
+<% odi_admin_server_top   = base_domain_path %>
+<% node_manager_top       = odi_managed_server_top + '/' +  @obpodi['wls_domain_name'] +'/nodemanager' %>
+
+{
+    "internalVariables":
+    {
+        "environmentName": "<%= environment_name %>",
+        "assetCode": "<%= asset_code %>",
+        "stageRootDir": "/oracle/stage"
+    },
+    "projectName": "<%= environment_name %>_<%= asset_code %>",
+    "site": {
+        "hostList": [
+            {
+                "id": "<%= @obpodi['hostnameList'][0] %>",
+                "address": "${_.basename}<%= @obpodi['dns_domain_name'] %>",
+                "groupRefs":
+                [
+                    "Common_Host_Details",
+                    "List_Of_TVT_Tests"
+                ],
+                "attributes": {
+                    "basename": "<%= @obpodi['hostnameList'][0] %>"
+                }
+            },
+            {
+                "id": "db_server",
+                "address": "<%= @obpodi['database']['scan_address'] %>",
+                "groupRefs":
+                [
+                    "Common_Host_Details"
+                ],
+                "attributes": {
+                    "scaleout": "false"
+                }
+            }
+        ],
+        "installationList": [
+            {
+                "name": "jdk",
+                "product": "OracleJava",
+                "version": "1.8.0_411",
+                "installPath": "<%= java_install_path %>",
+                "softwareStage": "${stageRootDir}/jdk/jdk-8u411-linux-x64.tar.gz",
+                "groupRefs":
+                [
+                    "Common_Installation_Details"
+                ]
+            },
+            {
+                "name": "fmwinfra",
+                "product": "OracleFMWInfrastructure",
+                "version": "12.2.1.4",
+                "softwareStage": "${stageRootDir}/fmwinfra/12.2.1.4/fmw_12.2.1.4.0_infrastructure.jar",
+                "installPath": "<%= fmw_install_path %>",
+                "dependsonList": [
+                    "jdk"
+                ],
+                "patchset": [
+                    {
+                        "targetOracleHome": "${_.installPath}",
+                        "softwareStage": "${stageRootDir}/fmwinfra/12.2.1.4/patches",
+                        "name": "33639718",
+                        "aru": "33639718",
+                        "attributes": {
+                            "opatch.minimum.version": "13.9.4.2.10",
+                            "opatch.binary.location": "${stageRootDir}/common_patches/OPatch/1394210/6880880",
+                            "opatch.update.usegeneric": "true",
+                            "patchWhen": "post-binaries"
+                        }
+                    },
+                    {
+                        "targetOracleHome": "${_.installPath}",
+                        "softwareStage": "${stageRootDir}/fmwinfra/12.2.1.4/patches",
+                        "name": "33877829",
+                        "aru": "33877829",
+                        "attributes": {
+                            "opatch.minimum.version": "13.9.4.2.10",
+                            "opatch.binary.location": "${stageRootDir}/common_patches/OPatch/1394210/6880880",
+                            "opatch.update.usegeneric": "true",
+                            "patchWhen": "post-binaries"
+                        }
+                    }
+                ],
+                "attributes": {
+                    "newworld": "true",
+                    "fmw_home": "<%= fmw_install_path %>",
+                    "inventory_location": "<%= inventory_install_path %>",
+                    "owner": "oracle",
+                    "group": "oinstall"
+                }
+            },
+            {
+                "name": "oracleclient",
+                "product": "OracleDatabaseClient",
+                "version": "12.2.0.1",
+                "installPath": "<%= oracle_client_install_path %>",
+                "softwareStage": "${stageRootDir}/rdbms/12.2.0.1/client",
+                "dependsonList": [
+                    "jdk"
+                ],
+                "attributes": {
+                    "newworld": "true",
+                    "inventory_location": "<%= inventory_install_path %>",
+                    "owner": "oracle",
+                    "group": "oinstall",
+                    "OracleDatabaseClient": {
+                        "oracle_home": "<%= oracle_install_path %>",
+                        "oracle_base": "<%= base_install_path %>",
+                        "install_type": "Administrator"
+                    }
+                }
+            },
+            {
+                "name": "odi",
+                "product": "OracleDataIntegrator",
+                "version": "12.2.1.4",
+                "installPath": "<%= fmw_install_path %>/odi",
+                "softwareStage": "${stageRootDir}/odi/12.2.1.4/fmw_12.2.1.4.0_odi.jar",
+                "dependsonList": [
+                    "fmwinfra",
+                    "oracleclient"
+                ],
+                "patchset": [
+                    {
+                        "targetOracleHome": "${_.installPath}",
+                        "softwareStage": "${stageRootDir}/odi/12.2.1.4/patches",
+                        "name": "31510501",
+                        "aru": "31510501",
+                        "attributes": {
+                            "patchWhen": "post-binaries"
+                        }
+                    }
+                ],
+                "attributes": {
+                    "newworld": "true",
+                    "inventory_location": "<%= inventory_install_path %>",
+                    "owner": "oracle",
+                    "group": "oinstall"
+                }
+            }
+        ],
+        "environmentName":  "<%= environment_name %>",
+                        "topologyName":  "<%= asset_code %>",
+
+                        "nodeManagerList": [
+                            {
+                                "name": "nm-<%= @obpodi['hostnameList'][0] %>",
+                                "listenAddress": "<%= @obpodi['nm']['listen_address'] %><%= @obpodi['dns_domain_name'] %>",
+                                "listenPort": "<%= @obpodi['nm']['listen_port'] %>",
+                                "hostIdentifier": "<%= @obpodi['hostnameList'][0] %>",
+                                "groupRefs": [
+                                    "Node_Manager_Common_Config",
+                                    "Node_Manager_SSL_Config"
+                                ],
+                                "attributes": {
+                                    "wls.nodemanager.log.path": "<%= log_location_path %>/${/host.basename}",
+                                    "wls.nodemanager.identityname": "${/host.basename}",
+                                    "wls.nodemanager.identitystorefile": "<%= certs_location_path %>/<%= @obpodi['hostnameList'][0][0...-2] %>.jks"
+                                }
+                            }
+                        ],
+                        "domainList": [
+                            {
+                                "name": "<%= @obpodi['wls_domain_name'] %>",
+                                "locationPath": "<%= odi_admin_server_top %>",
+                                "adminUser": "<%= @obpodi['wls_admin_user'] %>",
+                                "adminPassword": "<%= PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpodi['wls_admin_user'] ) %>",
+                                "adminServer": {
+                                    "name": "AdminServer",
+                                    "machineName": "<%= @obpodi['nm']['listen_address'] %><%= @obpodi['dns_domain_name'] %>",
+                                    "listenAddress": "<%= @obpodi['admin']['listen_address'] %><%= @obpodi['dns_domain_name'] %>",
+                                    "listenAddressPort": "<%= @obpodi['admin']['listen_port'] %>",
+                                    "listenAddressPortSSL": "<%= @obpodi['admin']['listen_port_ssl'] %>",
+                                    "targetName": "<%= asset_code[3..-1] %>AdminServer"
+                                },
+                                "machineList": [
+                                    {
+                                        "name": "<%= @obpodi['nm']['listen_address'] %><%= @obpodi['dns_domain_name'] %>",
+                                        "nodeManagerName": "nm-<%= @obpodi['hostnameList'][0] %>"
+                                    }
+                                ],
+                                "clusterList": [
+                                  {
+                                    "name": "<%= @obpodi['odi_server']['cluster_name'] %>",
+                                    "messageMode": "Unicast"
+                                  }
+                                ],
+                                "managedServerList": [
+                                    {
+                                        "name": "ODI_server1",
+                                        "machineName": "<%= @obpodi['nm']['listen_address'] %><%= @obpodi['dns_domain_name'] %>",
+                                        "clusterName": "<%= @obpodi['odi_server']['cluster_name'] %>",
+                                        "listenAddress": "<%=  @obpodi['odi_server']['listen_address'] %><%= @obpodi['dns_domain_name'] %>",
+                                        "listenAddressPort": "<%=  @obpodi['odi_server']['listen_port'] %>",
+                                        "listenAddressPortSSL": "<%=  @obpodi['odi_server']['listen_port_ssl'] %>",
+                                        "targetName": "${_.name}"
+                                    }
+                                ],
+                                "systemComponentList": [
+                                    {
+                                        "name": "OracleDISAgent1",
+                                        "machineName": "<%= @obpodi['nm']['listen_address'] %><%= @obpodi['dns_domain_name'] %>",
+                                        "componentType": "ODI",
+                                        "attributes": {
+                                            "odi.agent.protocol": "https",
+                                            "odi.agent.address": "${_.machineName}",
+                                            "odi.agent.port": "2091",
+                                            "component.identityname": "${_.machine.nodemanager.host.basename}",
+                                            "component.identitystorefile": "<%= certs_location_path %>/${_.machine.nodemanager.host.basename}.jks",
+                                            "component.truststorefile": "<%= certs_location_path %>/<%= @common['trustStore'] %>",
+                                            "component.identitystorekey": "<%= PasswordVault.get_password(password_vault_name + '/' + asset_code, 'keystorepass' ) %>",
+                                            "component.truststorekey": "<%= PasswordVault.get_password(password_vault_name + '/' + asset_code, 'truststorepass' ) %>",
+                                            "component.identitypassphrase": "<%= PasswordVault.get_password(password_vault_name + '/' + asset_code, 'keystorepass' ) %>"
+                                        }
+                                    }
+                                ],
+                                "middlewareList": [
+                                    {
+                                        "installationName": "odi",
+                                        "targetList": [
+                                            {
+                                              "type": "Cluster",
+                                              "names":
+                                              [
+                                                "<%= @obpodi['odi_server']['cluster_name'] %>"
+                                              ]
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "configurationList": [
+
+                                     <%= render "common-settings-configs.erb"  %>
+                                    ,
+                                    {
+                                        "resourceName": "GenericServerSettings_auto_1",
+                                        "type": "Server",
+                                        "attributes": {
+                                            "serverName": "ODI_server1"
+                                        }
+                                    },
+                                    {
+                                        "resourceName": "obpDataSource",
+                                        "type": "JDBCSystemResource",
+                                        "targets": [
+                                            {
+                                                "type": "CLUSTER",
+                                                "names": [
+                                                    "<%= @obpodi['odi_server']['cluster_name'] %>"
+                                                ]
+                                            }
+                                        ]
+                                    },
+									{
+                                        "resourceName": "UseKSSForDemo",
+                                        "type": "SecurityConfiguration"
+                                    },
+                                    {
+                                        "resourceName": "csaodiWorkRepository",
+                                        "type": "JDBCSystemResource",
+                                        "targets": [
+                                            {
+                                                "type": "CLUSTER",
+                                                "names": [
+                                                    "<%= @obpodi['odi_server']['cluster_name'] %>"
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "resourceName": "ClusterStartupParameters",
+                                        "type": "StartupParameter",
+                                        "targets": [
+                                            {
+                                                "type": "CLUSTER",
+                                                "names": [
+                                                    "<%= @obpodi['odi_server']['cluster_name'] %>"
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "resourceName": "DefaultAuthenticator",
+                                        "type": "AuthenticationProvider",
+                                        "attributes": {
+                                            "realmName": "myrealm"
+                                        }
+                                    },
+                                    <% if !is_running_on_cloud %>
+                                    {
+                                        "resourceName": "GIDAuthenticator",
+                                        "type": "AuthenticationProvider",
+                                        "attributes": {
+                                            "realmName": "myrealm"
+                                        }
+                                    },
+                                    <% end %>
+                                    {
+                                        "resourceName": "ipm-service-key",
+                                        "type": "FmwCredentials"
+                                    },
+                                    {
+                                        "resourceName": "WeblogicPolicyPermission_1",
+                                        "type": "WeblogicPolicyPermission"
+                                    },
+                                    {
+                                        "resourceName": "WeblogicPolicyPermission_2",
+                                        "type": "WeblogicPolicyPermission"
+                                     },
+                                     {
+                                        "resourceName": "WeblogicPolicyPermission_3",
+                                        "type": "WeblogicPolicyPermission"
+                                     },
+                                     {
+                                        "resourceName": "WeblogicPolicyPermission_4",
+                                        "type": "WeblogicPolicyPermission"
+                                     },
+                                     {
+                                        "resourceName": "WeblogicPolicyPermission_5",
+                                        "type": "WeblogicPolicyPermission"
+                                     },
+                                     {
+                                        "resourceName": "WeblogicPolicyPermission_6",
+                                        "type": "WeblogicPolicyPermission"
+                                     },
+                                     {
+                                        "resourceName": "ClusterClassPathParameters",
+                                        "type": "ClassPath",
+                                        "targets": [
+                                            {
+                                                "type": "CLUSTER",
+                                                "names": [
+                                                    "<%= @obpodi['odi_server']['cluster_name'] %>"
+                                                ]
+                                            }
+                                        ]
+                                     }
+                                ],
+                                "templateList": [
+                                    {
+                                        "name": "OracleDataIntegrator::CombinedTemplateSet",
+                                        "attributes": {
+                                            "OracleDataIntegrator::CombinedTemplateSet": {
+                                                "SupervisorPassword": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, @obpodi['database']['rcu_schema_prefix'].upcase ) %>",
+                                                "WorkRepositoryName": "workrep1",
+                                                "WorkRepositoryPassword": "<%= PasswordVault.get_password(password_vault_name + '/' +  asset_code, @obpodi['database']['rcu_schema_prefix'].upcase ) %>",
+                                                "WorkRepositoryType": "E",
+                                                "AgentHostname": "<%= @obpodi['frontend']['managed_host'] %>",
+                                                "AgentPort": "<%= @obpodi['frontend']['odi_port'] %>",
+                                                "AgentProtocol": "<%= @obpodi['frontend']['protocol'] %>"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "repositoryList": [
+                                    {
+                                        "componentList": [
+                                            "ODI"
+                                        ],
+                                        "id": "rcu01",
+                                        "dbName": "<%= environment_name %><%= asset_code %>db",
+                                        "prefix": "<%= @obpodi['database']['rcu_schema_prefix'].upcase %>",
+                                        "dbUser": "<%= @obpodi['database']['sysdba_username'].upcase %>",
+                                        "schemaPassword": "<%= PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpodi['database']['rcu_schema_prefix'].upcase, minimum_password_length: 10, include_symbol: false ) %>",
+                                        "defaultRepository": "true"
+                                    }
+                                ],
+                                "attributes": {
+                                    "serverStartMode": "prod",
+                                    "wls.production.mode": "prod",
+                                    "backupEnvironmentName": "<%= environment_name %>",
+                                    "environment.name": "<%= environment_name %>",
+                                    "tlogsLocationPath": "<%= base_domain_path %>/${/domain.name}",
+                                    "wls.tlogs.location.path": "<%= base_domain_path %>/${/domain.name}",
+                                    "odlLogLocation": "<%= log_location_path %>/${/domain.name}",
+                                    "wls.odl.log.location": "<%= log_location_path %>/${/domain.name}",
+                                    "wls.odl.log.retentionPeriod": "<%= @common['odl_log_retentionPeriod'] %>",
+                                    "defaultJMSLogLocation": "<%= log_location_path %>/${/domain.name}",
+                                    "wls.admin.listen.port.admin": "<%= @obpodi['admin']['listen_port_admin'] %>",
+                                    "managedTopLocation": "<%= odi_managed_server_top %>",
+                                    "wls.domain.managed.top": "<%= odi_managed_server_top %>",
+                                    "mintpress.startup.server_exclude": "OracleDISAgent*",
+                                    "mintpress.startup_parallel": "10"
+                                }
+                            }
+                        ],
+                        "hostInstallationList": [
+                            {
+                                "installationName": "odi",
+                                "hostIdentifierList": [
+                                    "<%= @obpodi['hostnameList'][0] %>"
+                                ]
+                            }
+                        ],
+                        "transferList": [
+
+                            <%= render "common-certs-transfer.erb",
+                                :variables => {
+                                    :host_identifier => @obpodi['hostnameList'][0],
+                                    :environment_name => environment_name,
+                                    :asset_code => asset_code,
+                                    :keystore_name => @obpodi['hostnameList'][0][0...-2],
+                                    :certs_source_path => @common['certs_source'],
+                                    :cert_destination_path => certs_location_path,
+                                    :truststore => @common['trustStore']
+                                }
+                            %>
+                            ,
+                            <%= render "common-jdk-policy-transfer.erb",
+                                :variables => {
+                                    :host_identifier => @obpodi['hostnameList'][0],
+                                    :environment_name => environment_name,
+                                    :asset_code => asset_code,
+                                    :jdk_version => jdk_version,
+                                    :java_install_path => java_install_path
+                                }
+                            %>
+                            ,
+                            <%= render "common-transfer-ovd-keystore.erb",
+                                :variables => {
+                                    :environment_name => environment_name,
+                                    :host_identifier => @obpodi['hostnameList'][0],
+                                    :certs_source_path => @common['certs_source'] ,
+                                    :admin_server_top => odi_admin_server_top,
+                                    :domain_name => @obpodi['wls_domain_name']
+                                }
+                            %>,
+                            {
+                                "name": "HealthCheckFileCopy",
+                                "hostIdentifierList": [
+                                  "<%= @obpodi['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "<%= "#{@common['custom_source']}/common/HealthCheck.war" %>",
+                                "destinationFile": "<%= "#{base_domain_path}/applications/#{@obpodi['wls_domain_name']}/HealthCheck.war" %>",
+                                "permissions": "755",
+                                "transferWhenList": [
+                                  "pre-online"
+                                ],
+                                "attributes": {
+                                    "scaleout": "false"
+                                }
+                            }
+                        ],
+                        "executeList": [
+                            <%= render "common-deploy-healthcheck.erb",
+                                :variables => {
+                                  :host_identifier => @obpodi['hostnameList'][0],
+                                  :asset_code => asset_code,
+                                  :custom_source => @common['custom_source'],
+                                  :fmw_install_path => fmw_install_path,
+                                  :t3_connect_url => "t3://#{@obpodi['admin']['listen_address']}#{@obpodi['dns_domain_name']}:#{@obpodi['admin']['listen_port']}",
+                                  :admin_username => @obpodi['wls_admin_user'],
+                                  :admin_password => PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpodi['wls_admin_user'] ),
+                                  :app_target => "#{@obpodi['odi_server']['cluster_name']}",
+                                  :app_path => "#{base_domain_path}/applications/#{@obpodi['wls_domain_name']}"
+                              }
+                            %>
+                            ,
+                            <%= render "common-run-wlst.erb",
+                                :variables => {
+                                  :name => "securityJMXAuthEnable",
+                                  :host_identifier => @obpodi['hostnameList'][0],
+                                  :wlst_command => "#{fmw_install_path}/oracle_common/common/bin/wlst.sh",
+                                  :script => "#{@common['custom_source']}/common/securityAccessAndRoles.py",
+                                  :t3_connect_url => "t3://#{@obpodi['admin']['listen_address']}#{@obpodi['dns_domain_name']}:#{@obpodi['admin']['listen_port']}",
+                                  :admin_username => @obpodi['wls_admin_user'],
+                                  :admin_password => PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpodi['wls_admin_user']),
+                                  :args => 'JMXAuth true',
+                                  :when => 'post-configure'
+                              }
+                            %>
+                            ,
+                            <%= render "common-run-wlst.erb",
+                                :variables => {
+                                  :name => "jmsMsgView",
+                                  :host_identifier => @obpodi['hostnameList'][0],
+                                  :wlst_command => "#{fmw_install_path}/oracle_common/common/bin/wlst.sh",
+                                  :script => "#{@common['custom_source']}/common/securityAccessAndRoles.py",
+                                  :t3_connect_url => "t3://#{@obpodi['admin']['listen_address']}#{@obpodi['dns_domain_name']}:#{@obpodi['admin']['listen_port']}",
+                                  :admin_username => @obpodi['wls_admin_user'],
+                                  :admin_password => PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpodi['wls_admin_user']),
+                                  :args => 'JMSView',
+                                  :when => 'post-online'
+                              }
+                            %>
+                            ,
+                            <% if environment_name =~ /^svp/ or environment_name =~ /^nft/ or environment_name =~ /^prd/ %>
+                            <%= render "common-run-wlst.erb",
+                                :variables => {
+                                  :name => "updateJpsConfig",
+                                  :host_identifier => @obpodi['hostnameList'][0],
+                                  :wlst_command => "#{fmw_install_path}/oracle_common/common/bin/wlst.sh",
+                                  :script => "#{@common['custom_source']}/common/updateJpsConfig.py",
+                                  :t3_connect_url => "t3://#{@obpodi['admin']['listen_address']}#{@obpodi['dns_domain_name']}:#{@obpodi['admin']['listen_port']}",
+                                  :admin_username => @obpodi['wls_admin_user'],
+                                  :admin_password => PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpodi['wls_admin_user']),
+                                  :args => "'#{@obpodi['database']['odi_db_url']}'",
+                                  :when => 'pre-online'
+                              }
+                            %>
+                            ,
+                            {
+                                "name": "UpdateJPSWithDbDetails",
+                                "hostIdentifierList": [
+                                    "<%= @obpodi['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "cinc-client -c $HOME/chef/client.rb -o 'recipe[obp-environmint-custom::odi-db-url]' -l info",
+                                "executeWhenList": [
+                                    "pre-online"
+                                ],
+                                "attributes": {
+                                    "scaleout": "false"
+                                }
+                            },
+							{
+                                "name": "security-config",
+                                "hostIdentifierList": [
+                                    "<%= @obpodi['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "cinc-client -c $HOME/chef/client.rb -o 'recipe[obp-environmint-custom::security_config_param]' -l info",
+                                "executeWhenList": [
+                                    "post-online"
+                                ],
+                                "attributes": {
+                                    "scaleout": "false"
+                                }
+                            },
+                            <% end %>
+                            {
+                                "name": "custom-threshold",
+                                "hostIdentifierList": [
+                                    "<%= @obpodi['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "cinc-client -c $HOME/chef/client.rb -o 'recipe[obp-environmint-custom::custom-threshold-config]' -l info",
+                                "executeWhenList": [
+                                    "post-online"
+                                ],
+                                "attributes": {
+                                    "scaleout": "true"
+                                }
+                            },
+                            {
+                                "name": "CreateDatabaseObjects",
+                                "hostIdentifierList": [
+                                    "<%= @obpodi['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "cinc-client -c $HOME/chef/client.rb -o 'recipe[obp-environmint-custom::create-db-users]' -l info",
+                                "executeWhenList": [
+                                    "post-rcu"
+                                ],
+                                "attributes": {
+                                    "scaleout": "false"
+                                }
+                            },
+                            {
+                                "name": "DeleteDatabaseObjects",
+                                "hostIdentifierList": [
+                                    "<%= @obpodi['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "cinc-client -c $HOME/chef/client.rb -o 'recipe[obp-environmint-custom::drop-db-users]' -l info",
+                                "executeWhenList": [
+                                    "post-clobber"
+                                ],
+                                "attributes": {
+                                    "scaleout": "false"
+                                }
+                            },
+                            <% if !is_running_on_cloud %>
+                            {
+                                "name": "StopControlMAgent",
+                                "hostIdentifierList": [
+                                    "<%= @obpodi['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "cinc-client -c $HOME/chef/client.rb -o 'recipe[wbc-controlm::stop-ctrlm-agent]' -l info",
+                                "executeWhenList": [
+                                    "pre-managedserver-stop"
+                                ],
+                                "attributes": {
+                                    "scaleout": "true"
+                                }
+                            },
+                            <% end %>
+                            <% if !is_running_on_cloud %>
+                            {
+                                "name": "StartControlMAgent",
+                                "hostIdentifierList": [
+                                    "<%= @obpodi['hostnameList'][0] %>"
+                                ],
+                                "sourceFile": "cinc-client -c $HOME/chef/client.rb -o 'recipe[wbc-controlm::start-ctrlm-agent]' -l info",
+                                "executeWhenList": [
+                                    "post-managedserver-start"
+                                ],
+                                "attributes": {
+                                    "scaleout": "true"
+                                }
+                            },
+                            <% end %>
+                            {
+                                "name": "CreateCSAWORKREP",
+                                "hostIdentifierList": [
+                                    "<%= @obpodi['hostnameList'][0] %>"
+                                ],
+                                <% if environment_name =~ /^nft\d*r/ %>
+                                    "sourceFile": "<%= "#{java_install_path}/bin/java -classpath '#{fmw_install_path}/odi/sdk/lib/oracle.odi-sdk-jse.jar:#{fmw_install_path}/oracle_common/modules/oracle.jdbc/ojdbc6.jar:#{fmw_install_path}/wlserver/server/lib/weblogic.jar:#{@common['custom_source']}/obpodi/' CreateWorkRepository WORKREP_CSA #{@obpodi['database']['secondary_scan_address']}:#{@obpodi['database']['listen_port']}/#{@obpodi['database']['service_name']} #{@obpodi['database']['rcu_schema_prefix']}_ODI_REPO ${execute.dbSchemaPassword} #{@obpodi['database']['custom_schema']} ${execute.dbSchemaPassword} false" %>"
+                                <% else %>
+                                    "sourceFile": "<%= "#{java_install_path}/bin/java -classpath '#{fmw_install_path}/odi/sdk/lib/oracle.odi-sdk-jse.jar:#{fmw_install_path}/oracle_common/modules/oracle.jdbc/ojdbc6.jar:#{fmw_install_path}/wlserver/server/lib/weblogic.jar:#{@common['custom_source']}/obpodi/' CreateWorkRepository WORKREP_CSA #{@obpodi['database']['scan_address']}:#{@obpodi['database']['listen_port']}/#{@obpodi['database']['service_name']} #{@obpodi['database']['rcu_schema_prefix']}_ODI_REPO ${execute.dbSchemaPassword} #{@obpodi['database']['custom_schema']} ${execute.dbSchemaPassword} false" %>"
+                                <% end %>
+                                ,
+                                "executeWhenList": [
+                                    "pre-online"
+                                ],
+                                "attributes": {
+                                    "execute.dbSchemaPassword": "<%= PasswordVault.get_password(password_vault_name + '/' + 'obpodi', @obpodi['database']['rcu_schema_prefix'].upcase) %>",
+                                    "scaleout": "false"
+                                }
+                            },
+                            {
+                                "name": "dupecerts",
+                                "hostIdentifierList": [
+                                    "<%= @obpodi['hostnameList'][0] %>"
+                                ],
+                                <% if @obpodi['hostnameList'][1] %>
+                                    "sourceFile": "cp <%= @common['certs_source'] %>/<%= environment_name %>/<%= @obpodi['hostnameList'][0][0...-2] %>.jks <%= certs_location_path %>/<%= @obpodi['hostnameList'][0] %>.jks;cp <%= @common['certs_source'] %>/<%= environment_name %>/<%= @obpodi['hostnameList'][0][0...-2] %>.jks <%= certs_location_path %>/<%= @obpodi['hostnameList'][1] %>.jks;<%= java_install_path %>/bin/keytool -delete -alias <%= @obpodi['hostnameList'][1] %> -keystore <%= certs_location_path %>/<%= @obpodi['hostnameList'][0] %>.jks -storepass ${execute.storepass};<%= java_install_path %>/bin/keytool -delete -alias <%= @obpodi['hostnameList'][0] %> -keystore <%= certs_location_path %>/<%= @obpodi['hostnameList'][1] %>.jks -storepass ${execute.storepass}"
+                                <% else %>
+                                    "sourceFile": "cp <%= @common['certs_source'] %>/<%= environment_name %>/<%= @obpodi['hostnameList'][0][0...-2] %>.jks <%= certs_location_path %>/<%= @obpodi['hostnameList'][0] %>.jks"
+                                <% end %>
+                                ,
+                                "executeWhenList": [
+                                    "pre-online"
+                                ],
+                                "attributes": {
+                                    "execute.storepass": "<%= PasswordVault.get_password(password_vault_name + '/' + asset_code, 'keystorepass' ) %>",
+                                    "scaleout": "false"
+                                }
+                            },
+                            {
+                                  "name": "addDbSslParams",
+                                  "hostIdentifierList": [
+                                    "<%= @obpodi['hostnameList'][0] %>"
+                                  ],
+                                  "sourceFile": "find <%= odi_admin_server_top %>/<%= @obpodi['wls_domain_name'] %>/config/fmwconfig/components/ODI -name instance.sh | xargs sed -i 's|$ODI_ADDITIONAL_JAVA_OPTIONS $ODI_SSL_PROPERTIES|-Doracle.net.ssl_version=1.2 -Doracle.net.ssl_cipher_suites=TLS_RSA_WITH_AES_256_CBC_SHA256 $ODI_ADDITIONAL_JAVA_OPTIONS $ODI_SSL_PROPERTIES|g' ;",
+                                "executeWhenList": [
+                                    "post-configure"
+                                ],
+                                "attributes": {
+                                    "scaleout": "false"
+                                }
+                            },
+                            {
+                                  "name": "updatecacerts",
+                                  "hostIdentifierList": [
+                                    "<%= @obpodi['hostnameList'][0] %>"
+                                  ],
+                                  "sourceFile": "if <%= java_install_path %>/bin/keytool -list -alias WBCTrust -storepass changeit -keystore <%= java_install_path %>/jre/lib/security/cacerts > /dev/null; then echo 'Cert already Exists.. Skipping'; else <%= java_install_path %>/bin/keytool -noprompt -import -trustcacerts -alias WBCTrust -file <%= @common['certs_source'] %>/<%= environment_name %>/cacerts.pem -keystore <%= java_install_path %>/jre/lib/security/cacerts -storepass changeit; fi",
+                                "executeWhenList": [
+                                    "post-binaries"
+                                ],
+                                "attributes": {
+                                    "scaleout": "true"
+                                }
+                            }
+                            ,
+                            <%= render "common-run-wlst.erb",
+                                  :variables => {
+                                      :name => "deleteDefaultAuditor",
+                                      :host_identifier => @obpodi['hostnameList'][0],
+                                      :wlst_command => "#{fmw_install_path}/oracle_common/common/bin/wlst.sh",
+                                      :script => "#{@common['custom_source']}/common/deleteDefaultAuditor.py",
+                                      :t3_connect_url => "t3://#{@obpodi['admin']['listen_address']}#{@obpodi['dns_domain_name']}:#{@obpodi['admin']['listen_port']}",
+                                      :admin_username => @obpodi['wls_admin_user'],
+                                      :admin_password => PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpodi['wls_admin_user']),
+                                      :args => "#{@obpodi['wls_domain_name']}",
+                                      :when => 'pre-online'
+                              }
+                            %>
+                            ,
+                            <%= render "common-run-wlst.erb",
+                                  :variables => {
+                                      :name => "updateSIEMAuditor",
+                                      :host_identifier => @obpodi['hostnameList'][0],
+                                      :wlst_command => "#{fmw_install_path}/oracle_common/common/bin/wlst.sh",
+                                      :script => "#{@common['custom_source']}/common/updateSIEMAuditor.py",
+                                      :t3_connect_url => "t3://#{@obpodi['admin']['listen_address']}#{@obpodi['dns_domain_name']}:#{@obpodi['admin']['listen_port']}",
+                                      :admin_username => @obpodi['wls_admin_user'],
+                                      :admin_password => PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpodi['wls_admin_user']),
+                                      :args => "#{@obpodi['wls_domain_name']} #{asset_code}",
+                                      :when => 'post-online'
+                              }
+                            %>
+                        ]
+                    ,
+        "databaseList": [
+            {
+                "name": "<%= environment_name %><%= asset_code %>db",
+                "port": "<%= @obpodi['database']['listen_port'] %>",
+                "serviceName": "<%= @obpodi['database']['service_name'] %>",
+                "hostIdentifier": "db_server",
+                "schemaList": [
+                  {
+                    "name": "<%= @obpodi['database']['sysdba_username'].upcase %>",
+                    "password": "<%= PasswordVault.get_password(password_vault_name + '/' + asset_code, @obpodi['database']['sysdba_username'].upcase) %>"
+                  }
+                ],
+                "attributes": {
+                    "rcu.datafile.initialsize": "200M",
+                    "rcu.extra.parameters": " -encryptTablespace <%= @obpodi['database'].key?('encryption') ? @obpodi['database']['encryption'] : 'false' %>",
+                    "jdbcUrl": "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(Host=${_.host.address})(Port=${_.port}))(CONNECT_DATA=(SERVER = DEDICATED)(SERVICE_NAME=${_.serviceName})))"
+                }
+            }
+        ],
+        "resourceList": [
+
+            <%= render "common-settings-resources.erb",
+                :variables => {
+                    :environment_name => environment_name,
+                    :password_vault_name => password_vault_name,
+                    :asset_code => asset_code,
+                    :domain_name => @obpodi['wls_domain_name'],
+                    :log_location_path => log_location_path,
+                    :certs_location_path => certs_location_path,
+                    :admin_kestore_alias => @obpodi['hostnameList'][0],
+                    :managed_keystore_alias => '%ListenAddress/noprefix%',
+                    :keystore_name => @obpodi['hostnameList'][0][0...-2],
+                    :common => @common,
+                    :frontend => @obpodi['frontend'],
+                    :database => @obpodi['database'],
+                    :set_dual_site_url => @obpodi['database'].key?('set_dual_site_url') ? @obpodi['database']['set_dual_site_url'].downcase : "false",
+                    :enable_dbssl => @common.key?('enable_dbssl') ? @common['enable_dbssl'].downcase : "false"
+                }
+            %>
+            ,
+            {
+                "name": "obpDataSource",
+                "type": "JDBCSystemResource",
+                "params": [
+                  {
+                    "type": "JDBCResource",
+                    "params": [
+                      {
+                        "type": "JDBCDataSourceParams",
+                        "attributes": {
+                          "JNDINames": "jdbc/FCBDataSource"
+                        }
+                      },
+                      {
+                        "type": "JDBCDriverParams",
+                        "attributes": {
+                          <% if @common['enable_dbssl'] == "true" %>
+                          "Url": "<%= @obpobh['database']['sysconfig_url_ssl'] %>",
+                          <% else %>
+                          "Url": "<%= @obpobh['database']['sysconfig_url'] %>",
+                          <% end %>
+                          "Password": "<%= PasswordVault.get_password(password_vault_name + '/' + 'obpobh', @obpobh['database']['rcu_schema_prefix'].upcase) %>",
+                          "DriverName": "oracle.jdbc.OracleDriver"
+                        },
+                        "properties": {
+                          <% if @common['enable_dbssl'] == "true" %>
+                          "javax.net.ssl.trustStoreType": "JKS",
+                          "encrypted:javax.net.ssl.trustStorePassword": "<%= PasswordVault.get_password(password_vault_name + '/' + 'obpodi', 'truststorepass') %>",
+                          "oracle.net.ssl_cipher_suites": "(TLS_RSA_WITH_AES_256_CBC_SHA256)",
+                          "oracle.net.ssl_version": "1.2",
+                            "javax.net.ssl.trustStore": "<%= certs_location_path %>/<%= @common['trustStore'] %>",
+                          <% end %>
+                          "user": "OBPHOST_OBP",
+                          "oracle.jdbc.ReadTimeout": "300000"
+                        }
+                      }
+                    ]
+                  }
+                ]
+            },
+            {
+                "name": "csaodiWorkRepository",
+                "type": "JDBCSystemResource",
+                "params": [
+                  {
+                    "type": "JDBCResource",
+                    "params": [
+                      {
+                        "type": "JDBCDataSourceParams",
+                        "attributes": {
+                          "JNDINames": "jdbc/csaodiWorkRepository"
+                        }
+                      },
+                      {
+                        "type": "JDBCDriverParams",
+                        "attributes": {
+                          <% if @common['enable_dbssl'] == "true" %>
+                          "Url": "<%= @obpodi['database']['odi_db_url_ssl'] %>",
+                          <% else %>
+                          "Url": "<%= @obpodi['database']['odi_db_url'] %>",
+                          <% end %>
+                          "Password": "<%= PasswordVault.get_password(password_vault_name + '/' + 'obpodi', @obpodi['database']['rcu_schema_prefix'].upcase) %>",
+                          "DriverName": "oracle.jdbc.OracleDriver"
+                        },
+                        "properties": {
+                          <% if @common['enable_dbssl'] == "true" %>
+                          "javax.net.ssl.trustStoreType": "JKS",
+                          "encrypted:javax.net.ssl.trustStorePassword": "<%= PasswordVault.get_password(password_vault_name + '/' + 'obpodi', 'truststorepass') %>",
+                          "oracle.net.ssl_cipher_suites": "(TLS_RSA_WITH_AES_256_CBC_SHA256)",
+                          "oracle.net.ssl_version": "1.2",
+                            "javax.net.ssl.trustStore": "<%= certs_location_path %>/<%= @common['trustStore'] %>",
+                          <% end %>
+                          "user": "<%= @obpodi['database']['custom_schema'] %>",
+                          "oracle.jdbc.ReadTimeout": "300000"
+                        }
+                      }
+                    ]
+                  }
+                ]
+            },
+			{
+                "name": "UseKSSForDemo",
+                "type": "SecurityConfiguration",
+                "attributes": {
+                    "UseKSSForDemo": "false"
+                }
+            },
+            {
+              "name": "DefaultAuthenticator",
+              "type": "AuthenticationProvider",
+              "attributes": {
+                  "subType": "null",
+                  "ControlFlag": "SUFFICIENT"
+              }
+            }
+            ,
+            <% if !is_running_on_cloud %>
+            <%= render "common-gid-authenticator.erb",
+                :variables => {
+                    :hostname => @common['gidldap']['gidhost'],
+                    :port => @common['gidldap']['gidport'],
+                    :username => @common['gidldap']['gidaccountusername'],
+                    :password => PasswordVault.get_password(password_vault_name + '/' + 'all', 'gidaccountpassword'),
+                    :group_base_dn => @common['gidldap']['gid_group_base_dn'],
+                    :user_base_dn => @common['gidldap']['gid_user_base_dn'],
+                    :all_users_filter => @common['gidldap']['all_users_filter'],
+                    :all_groups_filter => @common['gidldap']['all_groups_filter'],
+                    :user_from_name_filter => @common['gidldap']['user_from_name_filter'],
+                    :group_from_name_filter => @common['gidldap']['group_from_name_filter'],
+                    :common => @common
+                }
+            %>,
+            <% end %>
+            {
+                "name": "AdminStartupParameters",
+                "type": "StartupParameter",
+                "attributes": {
+                    "1": "-Xms<%= @obpodi["admin"]['ms_heap'] %> -Xmx<%= @obpodi["admin"]['mx_heap']  %>",
+                    "2": "<%= "-javaagent:/oracle/app/binaries/contrast_agent/contrast.jar" if @common['enable_contrastagent'] == "true" %>",
+                    <% if @common['migrate_appd_agent'] == "true" %>
+                    "3": "<%= "-javaagent:#{@common['appd_agent_home']}/javaagent.jar -Dappagent.install.dir=#{@common['appd_agent_home']} -Dappdynamics.agent.nodeName=%ListenAddress/noprefix%#{@obpobh['dns_domain_name']}:%ListenPort+1000%" if @common['enable_appdynamics'] == "true" %>",
+                    <% else %>
+                    "3": "<%= "-javaagent:#{@common['appdynamics_agent']} -Dappagent.install.dir=/oracle/app/binaries/appdynamics/javaagent -Dappdynamics.agent.nodeName=%ListenAddress/noprefix%#{@obpobh['dns_domain_name']}:%ListenPort+1000%" if @common['enable_appdynamics'] == "true" %>",
+                    <% end %>
+                    "4": "-Dweblogic.ProductionModeEnabled=true",
+                    <% if environment_name =~ /^svp3w/ or environment_name =~ /^prd3w/ or environment_name =~ /^nft1w/ %>
+                    "5": "-Dappdynamics.agent.tierName=OBP-ADMIN-WSDC",
+                    <% else %>
+                    "5": "-Dappdynamics.agent.tierName=OBP-ADMIN",
+                    <% end %>
+                    <%= render "common-startup-params.erb",
+                        :variables => {
+							:asset_code => asset_code,
+                            :log_location_path => log_location_path,
+                            :certs_location_path => certs_location_path,
+                            :truststore => @common['trustStore']
+                        }
+                    %>
+                }
+            },
+            {
+                "name": "ClusterStartupParameters",
+                "type": "StartupParameter",
+                "attributes": {
+                    "1": "-Xms<%= @obpodi["odi_server"]['ms_heap'] %> -Xmx<%= @obpodi["odi_server"]['mx_heap'] %>",
+                    "2": "-XX:+UseG1GC -XX:+DisableExplicitGC -XX:+UseStringDeduplication -XX:MaxGCPauseMillis=150 -XX:ReservedCodeCacheSize=256M -XX:-TieredCompilation -XX:+PrintGCApplicationConcurrentTime -XX:+PrintGCApplicationStoppedTime -XX:-UseBiasedLocking -XX:+UnlockDiagnosticVMOptions -XX:GuaranteedSafepointInterval=0 -XX:-OmitStackTraceInFastThrow",
+                    <% if @common['migrate_appd_agent'] == "true" %>
+                    "3": "<%= "-javaagent:#{@common['appd_agent_home']}/javaagent.jar -Dappagent.install.dir=#{@common['appd_agent_home']} -Dappdynamics.agent.nodeName=%ListenAddress/noprefix%#{@obpodi['dns_domain_name']}:%ListenPort+1000%" if @common['enable_appdynamics'] == "true" %>",
+                    <% else %>
+                    "3": "<%= "-javaagent:#{@common['appdynamics_agent']} -Dappagent.install.dir=/oracle/app/binaries/appdynamics/javaagent -Dappdynamics.agent.nodeName=%ListenAddress/noprefix%#{@obpodi['dns_domain_name']}:%ListenPort+1000%" if @common['enable_appdynamics'] == "true" %>",
+                    <% end %>
+					"4": "<%= "-javaagent:/oracle/app/binaries/contrast_agent/contrast.jar" if @common['enable_contrastagent'] == "true" %>",
+                    "5": "-Dfile.encoding=UTF-8 -Dweblogic.utils.cmm.lowertier.ServiceDisabled=true -Dweblogic.ProductionModeEnabled=true -XX:-UseContainerSupport -Dweblogic.MuxerClass=weblogic.socket.PosixSocketMuxer -Doracle.net.disableOob=true -Dodi.transformui.scen.regeneration=false -Doracle.odi.session.change.propagation.disable=TRUE",
+                    <% if environment_name =~ /^svp3w/ or environment_name =~ /^prd3w/ or environment_name =~ /^nft1w/ %>
+                    "6": "-Dappdynamics.agent.tierName=OBP-ODI-WSDC",
+                    <% else %>
+                    "6": "-Dappdynamics.agent.tierName=OBP-ODI",
+                    <% end %>
+                    <%= render "odi-urm-managed-server-startups.erb",
+                        :variables => {
+                            :log_location_path => log_location_path,
+                            :certs_location_path => certs_location_path,
+                            :truststore => @common['trustStore']
+                        }
+                    %>
+                }
+            },
+            {
+                "attributes": {
+                    "AdministrationPort": "<%= @obpodi['admin']['listen_port_admin'] %>",
+                    "AdministrationPortEnabled": "false"
+                },
+                "type": "Domain",
+                "name": "DomainAdministrationPortConfiguration"
+            },
+            {
+                "name": "ipm-service-key",
+                "type": "FmwCredentials",
+                "attributes": {
+                    "map": "oracle.obp.credmap",
+                    "key": "IPM_SERVICE",
+                    "username": "SA_OBP_IPM_MANAGE_USER",
+                    "password": "<%= PasswordVault.get_password(password_vault_name + '/' + 'obpoid', 'sa_obp_ipm_manage_user') %>",
+                    "description": "IPM Service Account"
+                }
+            },
+            {
+                "name": "WeblogicPolicyPermission_1",
+                "type": "WeblogicPolicyPermission",
+                "attributes": {
+                    "permClass": "oracle.security.jps.service.credstore.CredentialAccessPermission",
+                    "permTarget": "context=SYSTEM,mapName=*,keyName=*",
+                    "permActions": "*",
+                    "codeBaseURL": "<%= "file:#{fmw_install_path}/odi/sdk/lib/-" %>"
+                }
+            },
+            {
+                "name": "WeblogicPolicyPermission_2",
+                "type": "WeblogicPolicyPermission",
+                "attributes": {
+                    "permClass": "oracle.security.jps.service.credstore.CredentialAccessPermission",
+                    "permTarget": "context=SYSTEM,mapName=*,keyName=*",
+                    "permActions": "*",
+                    "codeBaseURL": "<%= "file:#{fmw_install_path}/odi/jee/oracledi-agent/oracle.odi-agent.jar" %>"
+                }
+            },
+            {
+                "name": "WeblogicPolicyPermission_3",
+                "type": "WeblogicPolicyPermission",
+                "attributes": {
+                    "permClass": "oracle.security.jps.service.credstore.CredentialAccessPermission",
+                    "permTarget": "context=SYSTEM,mapName=*,keyName=*",
+                    "permActions": "*",
+                    "codeBaseURL": "<%= "file:#{fmw_install_path}/oracle_common/modules/org.springframework_3.1.0.jar" %>"
+                }
+            },
+            {
+                "name": "WeblogicPolicyPermission_4",
+                "type": "WeblogicPolicyPermission",
+                "attributes": {
+                    "permClass": "java.security.AllPermission",
+                    "permTarget": "None",
+                    "permActions": "None",
+                    "codeBaseURL": "<%= "file:#{odi_batch_scripts_path}/com.ofss.fc.cz.obp.batch/lib/com.ofss.fc.document.upload.ipm.jar" %>"
+                }
+
+            },
+            {
+                "name": "WeblogicPolicyPermission_5",
+                "type": "WeblogicPolicyPermission",
+                "attributes": {
+                    "permClass": "java.security.AllPermission",
+                    "permTarget": "None",
+                    "permActions": "None",
+                    "codeBaseURL": "<%= "file:#{odi_batch_scripts_path}/com.ofss.fc.cz.obp.batch/lib/com.ofss.fc.document.upload.wsdl.client.jar" %>"
+                }
+
+            },
+            {
+                "name": "WeblogicPolicyPermission_6",
+                "type": "WeblogicPolicyPermission",
+                "attributes": {
+                    "permClass": "java.security.AllPermission",
+                    "permTarget": "None",
+                    "permActions": "None",
+                    "codeBaseURL": "<%= "file:#{odi_batch_scripts_path}/com.ofss.fc.cz.obp.batch/lib/imaging-client.jar" %>"
+                }
+
+            },
+            {
+                "name": "ClusterClassPathParameters",
+                "type": "ClassPath",
+                "attributes": {
+                    "Auto01": "<%= odi_batch_scripts_path %>/com.ofss.fc.cz.obp.batch/config:<%= odi_batch_scripts_path %>/com.ofss.fc.cz.obp.batch/lib/imaging-client.jar:<%= odi_batch_scripts_path %>/com.ofss.fc.cz.obp.batch/lib/com.ofss.fc.document.upload.ipm.jar:<%= odi_batch_scripts_path %>/com.ofss.fc.cz.obp.batch/lib/com.ofss.fc.document.upload.wsdl.client.jar"
+                }
+            }
+        ],
+        "propertyGroupList":
+        [
+            <%= render "common-config-groups.erb",
+                :variables => {
+                    :environment_name => environment_name,
+                    :asset_code => asset_code,
+                    :inventory_install_path => inventory_install_path,
+                    :fmw_install_path => fmw_install_path,
+                    :temp_location => temp_location
+                }
+            %>
+            ,
+            {
+                "name": "Node_Manager_Common_Config",
+                "description": "Common Node Manager configuration",
+                "attributes": {
+                    "wls.nodemanager.domainbased": "true",
+                    "wls.nodemanager.shared.domain.dir": "true",
+                    "wlInstallationName": "fmwinfra",
+                    "nodemanagerTop": "<%= node_manager_top %>",
+                    "wls.nodemanager.top": "<%= node_manager_top %>"
+                }
+            },
+            <%= render "common-nm-ssl-config.erb",
+                :variables => {
+                    :environment_name => environment_name,
+                    :password_vault_name => password_vault_name,
+                    :asset_code => asset_code,
+                    :certs_location_path => certs_location_path,
+                    :truststore => @common['trustStore']
+                }
+            %>
+        ]
+    }
+}

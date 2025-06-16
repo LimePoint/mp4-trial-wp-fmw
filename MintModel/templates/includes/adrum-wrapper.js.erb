@@ -1,0 +1,42 @@
+window['adrum-start-time'] = new Date().getTime();
+var vPageView;
+
+(function(config) {
+    config.appKey = '<%= @eum_key %>';
+    config.adrumExtUrlHttps = 'https://<%= @friendly_vip %>/adrum/';
+    config.beaconUrlHttps = 'https://<%= @beacon_url %>';
+    config.xd = {
+        enable: true
+    };
+    (function(info) {
+        info.Ajax = function(context) {
+            if (context.method == "POST") {
+            	//console.log("Sending post data", sessionStorage.getItem('PageId'));
+                return {
+                	userData: {CSHpageClick: sessionStorage.getItem('PageId')},
+
+                }
+            }
+        }
+    })
+	(config.userEventInfo || (config.userEventInfo = {}))
+})
+(window['adrum-config'] || (window['adrum-config'] = {}));
+var script = document.createElement('script');
+script.src = 'https://<%= @friendly_vip %>/adrum/adrum-latest.js';
+document.head.appendChild(script);
+var guideMe;
+
+window.onclick = function (e) {
+    var clickedElement;
+    var buttonName;
+
+    clickedElement = (e.target.querySelector('a') != null && e.target.tagName != 'INPUT') ? e.target.querySelector('a') : page._activeDomNode;
+
+    if (clickedElement != null){
+
+    vPageView = (clickedElement.innerText.length > 0) ? clickedElement.innerText : clickedElement.title;
+
+    sessionStorage.setItem('PageId', vPageView);
+	}
+}

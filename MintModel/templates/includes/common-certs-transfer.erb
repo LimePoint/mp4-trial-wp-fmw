@@ -1,0 +1,69 @@
+
+                            {
+                                "name": "<%= @environment_name %>_<%= @asset_code %>_keystore",
+                                "hostIdentifierList": [
+                                <% if @host_identifier  %>
+                                    "<%= @host_identifier %>"
+                                <% else %>
+                                    "server_1"
+                                <% end %>
+                                ],
+                                "sourceFile": "<%= @certs_source_path %>/<%= @environment_name %>/<%= @keystore_name %>.jks",
+                                "destinationFile": "<%= @cert_destination_path %>/<%= @keystore_name %>.jks",
+                                "permissions": "600",
+                                "transferWhenList": [
+                                    "pre-online"
+                                ],
+                                "properties": [
+                                    {
+                                        "name": "scaleout",
+                                        "value": "false"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "<%= @environment_name %>_<%= @asset_code %>_truststore",
+                                "hostIdentifierList": [
+                                <% if @host_identifier  %>
+                                    "<%= @host_identifier %>"
+                                <% else %>
+                                    "server_1"
+                                <% end %>
+                                ],
+                                "sourceFile": "<%= @certs_source_path %>/<%= @environment_name %>/<%= @truststore %>",
+                                "destinationFile": "<%= @cert_destination_path %>/<%= @truststore %>",
+                                "permissions": "600",
+                                "transferWhenList": [
+                                    "pre-online"
+                                ],
+                                "properties": [
+                                    {
+                                        "name": "scaleout",
+                                        "value": "false"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "<%= @environment_name %>_<%= @asset_code %>_caCerts",
+                                "hostIdentifierList": [
+                                <% if @host_identifier  %>
+                                    "<%= @host_identifier %>"
+                                <% else %>
+                                    "server_1"
+                                <% end %>
+                                ],
+                                "sourceFile": "<%= @certs_source_path %>/<%= @environment_name %>/cacerts.pem",
+                                "destinationFile": "<%= @cert_destination_path %>/cacerts.pem",
+                                "permissions": "600",
+                                "transferWhenList": [
+                                    "pre-online"
+                                ],
+                                "properties": [
+                                    {
+                                        "name": "scaleout",
+                                        "value": "false"
+                                    }
+                                ]
+                            }
+
+

@@ -1,0 +1,21 @@
+                            {
+                                "name": "EnableOAMSSO",
+                                "hostIdentifierList": [
+                                    "<%= @host_identifier %>"
+                                ],
+                                "sourceFile": "${stageRootDir}/customer/wp/csh/scripts/common/enable_sso.sh <%= @admin_username %> ${execute.weblogicAdminPassword} <%= @t3_connect_url %> <%= @fmw_install_path %> <%= @domain_home %> <%= @logout_url %> ${stageRootDir}/customer/wp/csh/scripts/common",
+                                "properties": [
+                                    {
+                                        "name": "execute.weblogicAdminPassword",
+                                        "target": "execute.weblogicAdminPassword",
+                                        "value": "<%= @admin_password %>"
+                                    },
+                                    {
+                                        "name": "scaleout",
+                                        "value": "false"
+                                    }
+                                ],
+                                "executeWhenList": [
+                                    "pre-online"
+                                ]
+                            }

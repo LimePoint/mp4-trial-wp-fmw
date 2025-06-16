@@ -1,0 +1,1745 @@
+{
+  "id": "<%= @environment_name %>",
+  "common": {
+    "dataload_path": "<%= @dataload_path %>",
+    "remap_schema": "",
+    "remap_tablespace": "",
+    "database_version": "12.2.0.1",
+    "password_vault_name": "<%= @environment_name %>",
+    "trustStore": "wpdev_trust.jks",
+    "certs_source": "${stageRootDir}/certs/gen2_certs",
+    "custom_source": "${stageRootDir}/customer/wp/csh/scripts",
+    "git_repo_path": "/backup/gitrepos/ocloud_mintpress_jsons",
+    "rt_configs_path": "/limepoint/runTime/data/Repository/configs",
+    "git_commit_on_upload": "true",
+    "odl_log_retentionPeriod": "5d",
+    "enable_appdynamics": "false",
+    "enable_contrastagent": "false",
+    "enable_dbssl": "false",
+    "appdynamics_agent": "/oracle/app/binaries/appdynamics/javaagent/javaagent.jar",
+    "OAMLogoutURL": "https://obp-sso-<%= @environment_name %><%= @dns_domain %>/oam/pages/logout.jsp",
+    "ons_node_list": "notrequired:6200,notrequired:6200",
+    "stubbed": "true",
+    "enable_virus_scan": "false",
+    "val_funder_id_pbwp": "VXF-167",
+    "val_funder_id_pbsg": "VXF-187",
+    "val_funder_id_pbbm": "VXF-187",
+    "val_funder_id_pbbs": "VXF-187",
+    "val_client_id_pbwp": "VXCL-12495",
+    "val_client_id_pbsg": "VXCL-12755",
+    "val_client_id_pbbm": "VXCL-12793",
+    "val_client_id_pbbs": "VXCL-12788",
+    "eoibBond": {
+      "APP": "CHANGE_ME",
+      "INT": "CHANGE_ME",
+      "SEC": "CHANGE_ME"
+    },
+    "jdbc": {
+      "min_capacity": "1"
+    },
+    "oidldap": {
+      "ConnectionPoolSize": "20",
+      "ConnectTimeout": "60",
+      "ConnectionRetryLimit": "5",
+      "ParallelConnectDelay": "0",
+      "ResultsTimeLimit": "5000",
+      "CacheSize": "10240",
+      "CacheTTL": "300"
+    }
+  },
+  "obpbip": {
+    "release_version": "1.7.0",
+    "dns_domain_name": "<%= @dns_domain %>",
+    "disk_size": "50",
+    "managed_servers_per_host": "1",
+    "wls_admin_user": "weblogic",
+    "bip_admin_user": "obpbip_admin",
+    "wls_domain_name": "obpbip_domain",
+    "register_with_drift": "false",
+    "OAMLogonURL": "https://obp-reports-<%= @environment_name %><%= @dns_domain %>/analytics",
+    "hostnameList": [
+      "obp<%= @site_name %><%= @environment_name %>bip01"
+    ],
+    "database": {
+      "scan_address": "obp<%= @site_name %><%= @environment_name %>db-prv<%= @dns_domain_managed %>",
+      "listen_port": "<%= @db_port %>",
+      "service_name": "CBCD3_OSB_PRIM",
+      "rcu_schema_prefix": "OBPBIP",
+      "obp_analytics_service_name": "CBCD3_OBA_PRIM",
+      "custom_schema": "OBP_ANALYTICS,OBPA_EXT,OBPA_GTA",
+      "sysdba_username": "sys",
+      "ons_node_list": "notrequired:6200,notrequired:6200"
+    },
+    "nm": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>bip01-prv",
+      "listen_port": "16001"
+    },
+    "admin": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>bip01-prv",
+      "listen_port": "17001",
+      "listen_port_ssl": "18001",
+      "listen_port_admin": "19001",
+      "ms_heap": "4g",
+      "mx_heap": "4g"
+    },
+    "bi_server": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>bip01-prv",
+      "listen_port": "17002",
+      "listen_port_ssl": "18002",
+      "cluster_name": "bi_cluster",
+      "ms_heap": "4g",
+      "mx_heap": "4g"
+    },
+    "frontend": {
+      "protocol": "https",
+      "admin_host": "obp<%= @site_name %><%= @environment_name %>bip-adm<%= @dns_domain %>",
+      "admin_port": "18001",
+      "managed_host": "obp<%= @site_name %><%= @environment_name %>bip<%= @dns_domain_managed %>",
+      "otd_vip_name": "obp<%= @site_name %><%= @environment_name %>bip<%= @dns_domain_managed %>",
+      "friendly_name": "obp<%= @site_name %><%= @environment_name %>bip<%= @dns_domain_managed %>",
+      "friendly_port": "18002",
+      "bip_port": "18002"
+    }
+  },
+  "obpobh": {
+    "release_version": "1.10.0",
+    "dns_domain_name": "<%= @dns_domain %>",
+    "disk_size": "300",
+    "managed_servers_per_host": "1",
+    "wls_admin_user": "weblogic",
+    "wls_domain_name": "obphost_domain",
+    "host_admin_user": "obphost_admin",
+    "register_with_drift": "false",
+    "hostnameList": [
+      "obp<%= @site_name %><%= @environment_name %>obh01"
+    ],
+    "database": {
+      "scan_address": "obp<%= @site_name %><%= @environment_name %>db-prv<%= @dns_domain_managed %>",
+      "listen_port": "<%= @db_port %>",
+      "listen_port_ssl": "<%= @db_port + 100%>",
+      "service_name": "CBCD3_OBP_PRIM",
+      "rcu_schema_prefix": "OBPHOST",
+      "cde_service_name": "CBCD3_CST_PRIM",
+      "custom_schema": "CDE,BDPUSER,OIM_BAM_USER,OBPHOST_JMS_TLOGS",
+      "sysdba_username": "sys",
+      "ons_node_list": "notrequired:6200,notrequired:6200",
+      "sysconfig_url": "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=obp<%= @site_name %><%= @environment_name %>db-prv<%= @dns_domain_managed %>)(PORT=<%= @db_port %>))(CONNECT_DATA=(SERVICE_NAME=CBCD3_OBP_PRIM)))",
+      "obp_batch_svc_url": "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=obp<%= @site_name %><%= @environment_name %>db-prv<%= @dns_domain_managed %>)(PORT=<%= @db_port %>))(CONNECT_DATA=(SERVICE_NAME=CBCD3_OBP_BATCH)))",
+      "sysconfig_url_ssl": "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=obp<%= @site_name %><%= @environment_name %>db-prv<%= @dns_domain_managed %>)(PORT=<%= @db_port + 100 %>))(CONNECT_DATA=(SERVICE_NAME=CBCD3_OBP_PRIM)))",
+      "obp_batch_svc_url_ssl": "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=obp<%= @site_name %><%= @environment_name %>db-prv<%= @dns_domain_managed %>)(PORT=<%= @db_port + 100 %>))(CONNECT_DATA=(SERVICE_NAME=CBCD3_OBP_BATCH)))"
+    },
+    "nm": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>obh01-prv",
+      "listen_port": "16001"
+    },
+    "admin": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>obh01-prv",
+      "listen_port": "17001",
+      "listen_port_ssl": "18001",
+      "listen_port_admin": "19001",
+      "ms_heap": "4g",
+      "mx_heap": "4g"
+    },
+    "obphost_server": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>obh01-prv",
+      "listen_port": "17002",
+      "listen_port_ssl": "18002",
+      "cluster_name": "obphost_cluster",
+      "ms_heap": "8g",
+      "mx_heap": "8g"
+    },
+    "frontend": {
+      "protocol": "https",
+      "admin_host": "obp<%= @site_name %><%= @environment_name %>obh-adm<%= @dns_domain %>",
+      "managed_host": "obp<%= @site_name %><%= @environment_name %>obh<%= @dns_domain_managed %>",
+      "otd_vip_name": "obp<%= @site_name %><%= @environment_name %>obh<%= @dns_domain_managed %>",
+      "admin_port": "18001",
+      "obh_port": "18002",
+      "t3_port": "18002"
+    }
+  },
+  "obpsoa": {
+    "release_version": "1.10.0",
+    "dns_domain_name": "<%= @dns_domain %>",
+    "disk_size": "300",
+    "managed_servers_per_host": "1",
+    "wls_admin_user": "weblogic",
+    "wls_domain_name": "obpsoa_domain",
+    "soa_admin_user": "obpsoa_admin",
+    "soa_credentialmap_user": "OFSSUser",
+    "register_with_drift": "false",
+    "hostnameList": [
+      "obp<%= @site_name %><%= @environment_name %>soa01"
+    ],
+    "database": {
+      "scan_address": "obp<%= @site_name %><%= @environment_name %>db-prv<%= @dns_domain_managed %>",
+      "listen_port": "<%= @db_port %>",
+      "listen_port_ssl": "<%= @db_port + 100%>",
+      "service_name": "CBCD3_SOA_PRIM",
+      "rcu_schema_prefix": "OBPSOA",
+      "sysdba_username": "sys",
+      "ons_node_list": "notrequired:6200,notrequired:6200",
+      "soa_db_url": "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=obp<%= @site_name %><%= @environment_name %>db-prv<%= @dns_domain_managed %>)(PORT=<%= @db_port %>))(CONNECT_DATA=(SERVICE_NAME=CBCD3_SOA_PRIM)))",
+      "soa_db_url_ssl": "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=obp<%= @site_name %><%= @environment_name %>db-prv<%= @dns_domain_managed %>)(PORT=<%= @db_port + 100 %>))(CONNECT_DATA=(SERVICE_NAME=CBCD3_SOA_PRIM)))"
+    },
+    "nm": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>soa01-prv",
+      "listen_port": "16001"
+    },
+    "admin": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>soa01-prv",
+      "listen_port": "17001",
+      "listen_port_ssl": "18001",
+      "listen_port_admin": "19001",
+      "ms_heap": "4g",
+      "mx_heap": "4g"
+    },
+    "soa_server": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>soa01-prv",
+      "coherence_port": "15002",
+      "listen_port": "17002",
+      "listen_port_ssl": "18002",
+      "cluster_name": "soa_cluster",
+      "ms_heap": "12g",
+      "mx_heap": "12g"
+    },
+    "obphumantask_server": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>soa01-prv",
+      "coherence_port": "15102",
+      "listen_port": "17102",
+      "listen_port_ssl": "18102",
+      "cluster_name": "hwf_cluster",
+      "ms_heap": "12g",
+      "mx_heap": "12g"
+    },
+    "bam_server": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>soa01-prv",
+      "listen_port": "17202",
+      "listen_port_ssl": "18202",
+      "cluster_name": "bam_cluster",
+      "ms_heap": "4g",
+      "mx_heap": "4g"
+    },
+    "frontend": {
+      "protocol": "https",
+      "admin_host": "obp<%= @site_name %><%= @environment_name %>soa-adm<%= @dns_domain %>",
+      "admin_port": "18001",
+      "managed_host": "obp<%= @site_name %><%= @environment_name %>soa<%= @dns_domain_managed %>",
+      "bam_port": "18202",
+      "soa_port": "18002",
+      "ht_port": "18102",
+      "tcp_proxy_port": "18002",
+      "otd_vip_name": "obp<%= @site_name %><%= @environment_name %>soa<%= @dns_domain_managed %>",
+      "friendly_name": "obp<%= @site_name %><%= @environment_name %>soa<%= @dns_domain_managed %>",
+      "friendly_port": "18002",
+      "t3_port": "18002"
+    }
+  },
+  "obpobu": {
+    "release_version": "1.10.0",
+    "dns_domain_name": "<%= @dns_domain %>",
+    "disk_size": "300",
+    "managed_servers_per_host": "1",
+    "wls_admin_user": "weblogic",
+    "wls_domain_name": "obpui_domain",
+    "register_with_drift": "false",
+    "hostnameList": [
+      "obp<%= @site_name %><%= @environment_name %>obu01"
+    ],
+    "database": {
+      "scan_address": "obp<%= @site_name %><%= @environment_name %>db-prv<%= @dns_domain_managed %>",
+      "listen_port": "<%= @db_port %>",
+      "listen_port_ssl": "<%= @db_port + 100 %>",
+      "service_name": "CBCD3_OBP_PRIM",
+      "rcu_schema_prefix": "OBPUI",
+      "sysdba_username": "sys",
+      "ons_node_list": "notrequired:6200,notrequired:6200",
+      "ui_db_url": "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=obp<%= @site_name %><%= @environment_name %>db-prv<%= @dns_domain_managed %>)(PORT=<%= @db_port %>))(CONNECT_DATA=(SERVICE_NAME=CBCD3_OBP_PRIM)))",
+      "ui_db_url_ssl": "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=obp<%= @site_name %><%= @environment_name %>db-prv<%= @dns_domain_managed %>)(PORT=<%= @db_port + 100 %>))(CONNECT_DATA=(SERVICE_NAME=CBCD3_OBP_PRIM)))"
+    },
+    "nm": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>obu01-prv",
+      "listen_port": "16001"
+    },
+    "admin": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>obu01-prv",
+      "listen_port": "17001",
+      "listen_port_ssl": "18001",
+      "listen_port_admin": "19001",
+      "ms_heap": "4g",
+      "mx_heap": "4g"
+    },
+    "obpui_server": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>obu01-prv",
+      "listen_port": "17002",
+      "listen_port_ssl": "18002",
+      "cluster_name": "obpui_cluster",
+      "ms_heap": "12g",
+      "mx_heap": "12g"
+    },
+    "frontend": {
+      "protocol": "https",
+      "admin_host": "obp<%= @site_name %><%= @environment_name %>obu-adm<%= @dns_domain %>",
+      "managed_host": "obp<%= @site_name %><%= @environment_name %>obu<%= @dns_domain_managed %>",
+      "otd_vip_name": "obp<%= @site_name %><%= @environment_name %>obu<%= @dns_domain_managed %>",
+      "friendly_name": "obp<%= @site_name %><%= @environment_name %>obu<%= @dns_domain_managed %>",
+      "friendly_port": "18002",
+      "admin_port": "18001",
+      "obu_port": "18002"
+    }
+  },
+  "obpdoc": {
+    "release_version": "1.7.0",
+    "dns_domain_name": "<%= @dns_domain %>",
+    "disk_size": "300",
+    "managed_servers_per_host": "1",
+    "wls_admin_user": "weblogic",
+    "wls_domain_name": "obpdoc_domain",
+    "register_with_drift": "false",
+    "app_endpoint": "http://localhost:8080/replace",
+    "hostnameList": [
+      "obp<%= @site_name %><%= @environment_name %>doc01"
+    ],
+    "database": {
+      "scan_address": "obp<%= @site_name %><%= @environment_name %>db-prv<%= @dns_domain_managed %>",
+      "listen_port": "<%= @db_port %>",
+      "listen_port_ssl": "<%= @db_port + 100%>",
+      "service_name": "CBCD3_DOC_PRIM",
+      "rcu_schema_prefix": "OBPDOC",
+      "sysdba_username": "sys",
+      "ons_node_list": "notrequired:6200,notrequired:6200",
+      "doc_db_url": "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=obp<%= @site_name %><%= @environment_name %>db-prv<%= @dns_domain_managed %>)(PORT=<%= @db_port %>))(CONNECT_DATA=(SERVICE_NAME=CBCD3_DOC_PRIM)))",
+      "doc_db_url_ssl": "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=obp<%= @site_name %><%= @environment_name %>db-prv<%= @dns_domain_managed %>)(PORT=<%= @db_port + 100 %>))(CONNECT_DATA=(SERVICE_NAME=CBCD3_DOC_PRIM)))",
+      "custom_schema": "DOCU_JMS_TLOGS"
+    },
+    "nm": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>doc01-prv",
+      "listen_port": "16001"
+    },
+    "admin": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>doc01-prv",
+      "listen_port": "17001",
+      "listen_port_ssl": "18001",
+      "listen_port_admin": "19001",
+      "ms_heap": "2g",
+      "mx_heap": "2g"
+    },
+    "soa_server": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>doc01-prv",
+      "listen_port": "17002",
+      "listen_port_ssl": "18002",
+      "cluster_name": "soa_cluster",
+      "ms_heap": "2g",
+      "mx_heap": "2g"
+    },
+    "dmkr_server": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>doc01-prv",
+      "listen_port": "17102",
+      "listen_port_ssl": "18102",
+      "cluster_name": "dmkr_cluster",
+      "ms_heap": "2g",
+      "mx_heap": "2g"
+    },
+    "jms_server": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>doc01-prv",
+      "listen_port": "17202",
+      "listen_port_ssl": "18202",
+      "cluster_name": "jms_cluster",
+      "ms_heap": "2g",
+      "mx_heap": "2g"
+    },
+    "idm_server": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>doc01-prv",
+      "listen_port": "17302",
+      "listen_port_ssl": "18302",
+      "cluster_name": "idm_cluster",
+      "ms_heap": "2g",
+      "mx_heap": "2g"
+    },
+    "documaker": {
+      "smtp_user": "smtpuser",
+      "admin_user": "documaker",
+      "ums_user": "ums_user",
+      "ucm_user": "ucm_user",
+      "jms_user": "jmsadmin",
+      "admin_db_user": "dmkr_admin",
+      "asline_db_user": "dmkr_asline",
+      "tlogs_db_user": "DOCU_JMS_TLOGS"
+    },
+    "frontend": {
+      "protocol": "https",
+      "admin_host": "obp<%= @site_name %><%= @environment_name %>doc-adm<%= @dns_domain %>",
+      "admin_port": "18001",
+      "managed_host": "obp<%= @site_name %><%= @environment_name %>doc<%= @dns_domain_managed %>",
+      "otd_vip_name": "obp<%= @site_name %><%= @environment_name %>doc<%= @dns_domain_managed %>",
+      "friendly_name": "obp<%= @site_name %><%= @environment_name %>doc<%= @dns_domain_managed %>",
+      "friendly_port": "18002",
+      "soa_port": "18002",
+      "dmkr_port": "18102",
+      "jms_port": "18202",
+      "t3_jms_vip_port": "17202",
+      "idm_port": "18302"
+    }
+  },
+  "obpipm": {
+    "release_version": "1.7.0",
+    "dns_domain_name": "<%= @dns_domain %>",
+    "disk_size": "50",
+    "managed_servers_per_host": "1",
+    "wls_admin_user": "weblogic",
+    "ipm_admin_user": "obpipm_admin",
+    "wls_domain_name": "obpipm_domain",
+    "register_with_drift": "false",
+    "hostnameList": [
+      "obp<%= @site_name %><%= @environment_name %>ipm01"
+    ],
+    "database": {
+      "scan_address": "obp<%= @site_name %><%= @environment_name %>db-prv<%= @dns_domain_managed %>",
+      "listen_port": "<%= @db_port %>",
+      "listen_port_ssl": "<%= @db_port + 100 %>",
+      "service_name": "CBCD3_UCM_PRIM",
+      "dcms_service_name": "CBCD3_CST_PRIM",
+      "rcu_schema_prefix": "OBPIPM",
+      "custom_schema": "DCMS",
+      "sysdba_username": "sys",
+      "ons_node_list": "notrequired:6200,notrequired:6200",
+      "dcms_url": "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=obp<%= @site_name %><%= @environment_name %>db-prv<%= @dns_domain_managed %>)(PORT=<%= @db_port %>))(CONNECT_DATA=(SERVICE_NAME=CBCD3_CST_PRIM)))",
+      "dcms_url_ssl": "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=obp<%= @site_name %><%= @environment_name %>db-prv<%= @dns_domain_managed %>)(PORT=<%= @db_port + 100 %>))(CONNECT_DATA=(SERVICE_NAME=CBCD3_CST_PRIM)))"
+    },
+    "nm": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>ipm01-prv",
+      "listen_port": "16001"
+    },
+    "admin": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>ipm01-prv",
+      "listen_port": "17001",
+      "listen_port_ssl": "18001",
+      "listen_port_admin": "19001",
+      "ms_heap": "4g",
+      "mx_heap": "4g"
+    },
+    "ucm_server": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>ipm01-prv",
+      "listen_port": "17002",
+      "listen_port_ssl": "18002",
+      "cluster_name": "ucm_cluster",
+      "intradoc_port": "14002",
+      "http_address_filter": "127.0.0.1|0:0:0:0:0:0:0:1",
+      "ms_heap": "4g",
+      "mx_heap": "4g"
+    },
+    "ipm_server": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>ipm01-prv",
+      "listen_port": "17102",
+      "listen_port_ssl": "18102",
+      "cluster_name": "ipm_cluster",
+      "ms_heap": "4g",
+      "mx_heap": "4g"
+    },
+    "frontend": {
+      "protocol": "https",
+      "admin_host": "obp<%= @site_name %><%= @environment_name %>ipm-adm<%= @dns_domain %>",
+      "admin_port": "18001",
+      "otd_vip_name": "obp<%= @site_name %><%= @environment_name %>ipm<%= @dns_domain_managed %>",
+      "friendly_name": "obp<%= @site_name %><%= @environment_name %>ipm<%= @dns_domain_managed %>",
+      "managed_host": "obp<%= @site_name %><%= @environment_name %>ipm<%= @dns_domain_managed %>",
+      "ucm_port": "18002",
+      "ipm_port": "18102",
+      "friendly_port": "18102"
+    }
+  },
+  "obpurm": {
+    "release_version": "1.7.0",
+    "dns_domain_name": "<%= @dns_domain %>",
+    "disk_size": "50",
+    "managed_servers_per_host": "1",
+    "wls_admin_user": "weblogic",
+    "urm_admin_user": "obpurm_admin",
+    "wls_domain_name": "obpurm_domain",
+    "register_with_drift": "false",
+    "hostnameList": [
+      "obp<%= @site_name %><%= @environment_name %>urm01"
+    ],
+    "database": {
+      "scan_address": "obp<%= @site_name %><%= @environment_name %>db-prv<%= @dns_domain_managed %>",
+      "listen_port": "<%= @db_port %>",
+      "listen_port_ssl": "<%= @db_port + 100 %>",
+      "service_name": "CBCD3_INT_PRIM",
+      "rcu_schema_prefix": "obpurm",
+      "sysdba_username": "sys",
+      "ons_node_list": "notrequired:6200,notrequired:6200"
+    },
+    "nm": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>urm01-prv",
+      "listen_port": "16001"
+    },
+    "admin": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>urm01-prv",
+      "listen_port": "17001",
+      "listen_port_ssl": "18001",
+      "listen_port_admin": "19001",
+      "ms_heap": "4g",
+      "mx_heap": "4g"
+    },
+    "urm_server": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>urm01-prv",
+      "listen_port": "17002",
+      "listen_port_ssl": "18002",
+      "cluster_name": "urm_cluster",
+      "intradoc_port": "14002",
+      "ms_heap": "4g",
+      "mx_heap": "4g"
+    },
+    "frontend": {
+      "protocol": "https",
+      "admin_host": "obp<%= @site_name %><%= @environment_name %>urm-adm<%= @dns_domain %>",
+      "admin_port": "18001",
+      "otd_vip_name": "obp<%= @site_name %><%= @environment_name %>urm<%= @dns_domain_managed %>",
+      "friendly_name": "obp<%= @site_name %><%= @environment_name %>urm<%= @dns_domain_managed %>",
+      "managed_host": "obp<%= @site_name %><%= @environment_name %>urm<%= @dns_domain_managed %>",
+      "urm_port": "18002",
+      "friendly_port": "18002"
+    }
+  },
+  "obpoim": {
+    "release_version": "1.7.0",
+    "dns_domain_name": "<%= @dns_domain %>",
+    "disk_size": "50",
+    "managed_servers_per_host": "1",
+    "wls_admin_user": "weblogic",
+    "oim_admin_user": "xelsysadm",
+    "wls_domain_name": "obpoim_domain",
+    "register_with_drift": "false",
+    "hostnameList": [
+      "obp<%= @site_name %><%= @environment_name %>oim01"
+    ],
+    "database": {
+      "scan_address": "obp<%= @site_name %><%= @environment_name %>db-prv<%= @dns_domain_managed %>",
+      "listen_port": "<%= @db_port %>",
+      "listen_port_ssl": "<%= @db_port + 100%>",
+      "service_name": "CBCD3_IDM_PRIM",
+      "rcu_schema_prefix": "OBPOIM",
+      "sysdba_username": "sys",
+      "ons_node_list": "notrequired:6200,notrequired:6200"
+    },
+    "nm": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>oim01-prv",
+      "listen_port": "16101"
+    },
+    "admin": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>oim01-prv",
+      "listen_port": "17101",
+      "listen_port_ssl": "18101",
+      "listen_port_admin": "19101",
+      "ms_heap": "2g",
+      "mx_heap": "2g"
+    },
+    "oim_server": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>oim01-prv",
+      "listen_port": "17202",
+      "listen_port_ssl": "18202",
+      "cluster_name": "oim_cluster",
+      "ms_heap": "8g",
+      "mx_heap": "8g"
+    },
+    "soa_server": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>oim01-prv",
+      "listen_port": "17302",
+      "listen_port_ssl": "18302",
+      "cluster_name": "soa_cluster",
+      "ms_heap": "4g",
+      "mx_heap": "4g"
+    },
+    "frontend": {
+      "protocol": "https",
+      "admin_host": "obp<%= @site_name %><%= @environment_name %>oim-adm<%= @dns_domain %>",
+      "admin_port": "18101",
+      "otd_vip_name": "obp<%= @site_name %><%= @environment_name %>oim<%= @dns_domain_managed %>",
+      "friendly_name": "obp<%= @site_name %><%= @environment_name %>oim<%= @dns_domain_managed %>",
+      "managed_host": "obp<%= @site_name %><%= @environment_name %>oim<%= @dns_domain_managed %>",
+      "oim_port": "18202",
+      "soa_port": "18302",
+      "bi_port": "18402",
+      "friendly_port": "18202"
+    }
+  },
+  "obpcim": {
+    "release_version": "1.7.0",
+    "dns_domain_name": "<%= @dns_domain %>",
+    "disk_size": "50",
+    "managed_servers_per_host": "1",
+    "wls_admin_user": "weblogic",
+    "oim_admin_user": "xelsysadm",
+    "wls_domain_name": "obpcim_domain",
+    "register_with_drift": "false",
+    "hostnameList": [
+      "obp<%= @site_name %><%= @environment_name %>cim01"
+    ],
+    "database": {
+      "scan_address": "obp<%= @site_name %><%= @environment_name %>db-prv<%= @dns_domain_managed %>",
+      "listen_port": "<%= @db_port %>",
+      "listen_port_ssl": "<%= @db_port + 100%>",
+      "service_name": "CBCD3_IDM_PRIM",
+      "rcu_schema_prefix": "OBPCIM",
+      "sysdba_username": "sys",
+      "ons_node_list": "notrequired:6200,notrequired:6200"
+    },
+    "nm": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>cim01-prv",
+      "listen_port": "16101"
+    },
+    "admin": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>cim01-prv",
+      "listen_port": "17101",
+      "listen_port_ssl": "18101",
+      "listen_port_admin": "19101",
+      "ms_heap": "2g",
+      "mx_heap": "2g"
+    },
+    "oim_server": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>cim01-prv",
+      "listen_port": "17202",
+      "listen_port_ssl": "18202",
+      "cluster_name": "oim_cluster",
+      "ms_heap": "8g",
+      "mx_heap": "8g"
+    },
+    "soa_server": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>cim01-prv",
+      "listen_port": "17302",
+      "listen_port_ssl": "18302",
+      "cluster_name": "soa_cluster",
+      "ms_heap": "4g",
+      "mx_heap": "4g"
+    },
+    "frontend": {
+      "protocol": "https",
+      "admin_host": "obp<%= @site_name %><%= @environment_name %>cim-adm<%= @dns_domain %>",
+      "admin_port": "18101",
+      "otd_vip_name": "obp<%= @site_name %><%= @environment_name %>cim<%= @dns_domain_managed %>",
+      "friendly_name": "obp<%= @site_name %><%= @environment_name %>cim<%= @dns_domain_managed %>",
+      "managed_host": "obp<%= @site_name %><%= @environment_name %>cim<%= @dns_domain_managed %>",
+      "oim_port": "18202",
+      "soa_port": "18302",
+      "bi_port": "18402",
+      "otd_cim_tcp_port": "18202",
+      "friendly_port": "18202"
+    }
+  },
+  "obpodi": {
+    "release_version": "1.7.0",
+    "dns_domain_name": "<%= @dns_domain %>",
+    "disk_size": "300",
+    "managed_servers_per_host": "1",
+    "wls_admin_user": "weblogic",
+    "wls_domain_name": "obpodi_domain",
+    "register_with_drift": "false",
+    "hostnameList": [
+      "obp<%= @site_name %><%= @environment_name %>odi01"
+    ],
+    "database": {
+      "scan_address": "obp<%= @site_name %><%= @environment_name %>db-prv<%= @dns_domain_managed %>",
+      "listen_port": "<%= @db_port %>",
+      "listen_port_ssl": "<%= @db_port + 100  %>",
+      "service_name": "CBCD3_INT_PRIM",
+      "rcu_schema_prefix": "OBPODI",
+      "custom_schema": "OBPODI_CSA_REPO",
+      "sysdba_username": "sys",
+      "ons_node_list": "notrequired:6200,notrequired:6200",
+      "odi_db_url": "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=obp<%= @site_name %><%= @environment_name %>db-prv<%= @dns_domain_managed %>)(PORT=<%= @db_port %>))(CONNECT_DATA=(SERVICE_NAME=CBCD3_INT_PRIM)))",
+      "odi_db_url_ssl": "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=obp<%= @site_name %><%= @environment_name %>db-prv<%= @dns_domain_managed %>)(PORT=<%= @db_port + 100%>))(CONNECT_DATA=(SERVICE_NAME=CBCD3_INT_PRIM)))"
+    },
+    "nm": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>odi01-prv",
+      "listen_port": "16001"
+    },
+    "admin": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>odi01-prv",
+      "listen_port": "17001",
+      "listen_port_ssl": "18001",
+      "listen_port_admin": "19001",
+      "ms_heap": "2g",
+      "mx_heap": "2g"
+    },
+    "odi_server": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>odi01-prv",
+      "listen_port": "17002",
+      "listen_port_ssl": "18002",
+      "coh_listen_port": "15002",
+      "cluster_name": "obpodi_cluster",
+      "ms_heap": "4g",
+      "mx_heap": "4g"
+    },
+    "frontend": {
+      "protocol": "https",
+      "admin_host": "obp<%= @site_name %><%= @environment_name %>odi-adm<%= @dns_domain %>",
+      "admin_port": "18001",
+      "managed_host": "obp<%= @site_name %><%= @environment_name %>odi<%= @dns_domain_managed %>",
+      "otd_vip_name": "obp<%= @site_name %><%= @environment_name %>odi<%= @dns_domain_managed %>",
+      "odi_port": "18002"
+    }
+  },
+  "obpoid": {
+    "release_version": "1.7.0",
+    "dns_domain_name": "<%= @dns_domain %>",
+    "disk_size": "50",
+    "managed_servers_per_host": "1",
+    "register_with_drift": "false",
+    "wls_admin_user": "weblogic",
+    "wls_domain_name": "obpoid_domain",
+    "hostnameList": [
+      "obp<%= @site_name %><%= @environment_name %>oid01"
+    ],
+    "database": {
+      "scan_address": "obp<%= @site_name %><%= @environment_name %>db-prv<%= @dns_domain_managed %>",
+      "listen_port": "<%= @db_port %>",
+      "listen_port_ssl": "<%= @db_port + 100 %>",
+      "service_name": "CBCD3_SEC_PRIM",
+      "rcu_schema_prefix": "ODS",
+      "sysdba_username": "sys",
+      "ons_node_list": "notrequired:6200,notrequired:6200"
+    },
+    "nm": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>oid01-prv",
+      "listen_port": "16010"
+    },
+    "admin": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>oid01-prv",
+      "listen_port": "17110",
+      "listen_port_ssl": "18110",
+      "listen_port_admin": "19110",
+      "ms_heap": "4g",
+      "mx_heap": "4g"
+    },
+    "oidldap": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>oid01-prv",
+      "listen_port": "17001",
+      "listen_port_ssl": "18001",
+      "admin_user": "cn=orcladmin"
+    },
+    "oidrepl": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>oid01-prv",
+      "listen_port": "17002",
+      "listen_port_ssl": "18002",
+      "admin_user": "cn=orcladmin"
+    },
+    "frontend": {
+      "managed_host": "obp<%= @site_name %><%= @environment_name %>oid<%= @dns_domain_managed %>",
+      "ldap_port": "18001",
+      "repl_port": "18002"
+    }
+  },
+  "obpcid": {
+    "release_version": "1.7.0",
+    "dns_domain_name": "<%= @dns_domain %>",
+    "disk_size": "50",
+    "managed_servers_per_host": "1",
+    "register_with_drift": "false",
+    "wls_admin_user": "weblogic",
+    "wls_domain_name": "obpcid_domain",
+    "hostnameList": [
+      "obp<%= @site_name %><%= @environment_name %>cid01"
+    ],
+    "database": {
+      "scan_address": "obp<%= @site_name %><%= @environment_name %>db-prv<%= @dns_domain_managed %>",
+      "listen_port": "<%= @db_port %>",
+      "listen_port_ssl": "<%= @db_port + 100 %>",
+      "service_name": "CBCD3_OSB_PRIM",
+      "rcu_schema_prefix": "ODS",
+      "sysdba_username": "sys",
+      "ons_node_list": "notrequired:6200,notrequired:6200"
+    },
+    "nm": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>cid01-prv",
+      "listen_port": "16010"
+    },
+    "admin": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>cid01-prv",
+      "listen_port": "17110",
+      "listen_port_ssl": "18110",
+      "listen_port_admin": "19110",
+      "ms_heap": "4g",
+      "mx_heap": "4g"
+    },
+    "oidldap": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>cid01-prv",
+      "listen_port": "17001",
+      "listen_port_ssl": "18001",
+      "admin_user": "cn=orcladmin"
+    },
+    "oidrepl": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>cid01-prv",
+      "listen_port": "17002",
+      "listen_port_ssl": "18002",
+      "admin_user": "cn=orcladmin"
+    },
+    "frontend": {
+      "managed_host": "obp<%= @site_name %><%= @environment_name %>cid<%= @dns_domain_managed %>",
+      "ldap_port": "18001",
+      "repl_port": "18002"
+    }
+  },
+  "obpoam": {
+    "release_version": "1.7.0",
+    "dns_domain_name": "<%= @dns_domain %>",
+    "disk_size": "50",
+    "managed_servers_per_host": "1",
+    "wls_admin_user": "weblogic",
+    "wls_domain_name": "obpoam_domain",
+    "register_with_drift": "false",
+    "hostnameList": [
+      "obp<%= @site_name %><%= @environment_name %>oam01"
+    ],
+    "database": {
+      "scan_address": "obp<%= @site_name %><%= @environment_name %>db-prv<%= @dns_domain_managed %>",
+      "listen_port": "<%= @db_port %>",
+      "listen_port_ssl": "<%= @db_port + 100 %>",
+      "service_name": "CBCD3_SEC_PRIM",
+      "rcu_schema_prefix": "OBPOAM",
+      "sysdba_username": "sys",
+      "ons_node_list": "notrequired:6200,notrequired:6200"
+    },
+    "nm": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>oam01-prv",
+      "listen_port": "16001"
+    },
+    "admin": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>oam01-prv",
+      "listen_port": "17001",
+      "listen_port_ssl": "18001",
+      "listen_port_admin": "19001",
+      "ms_heap": "4g",
+      "mx_heap": "4g"
+    },
+    "oam_server": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>oam01-prv",
+      "listen_port": "17002",
+      "listen_port_ssl": "18002",
+      "cluster_name": "oam_cluster",
+      "ms_heap": "4g",
+      "mx_heap": "4g"
+    },
+    "oam_policy_mgr": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>oam01-prv",
+      "listen_port": "17202",
+      "listen_port_ssl": "18202",
+      "cluster_name": "opm_cluster",
+      "ms_heap": "2g",
+      "mx_heap": "2g"
+    },
+    "frontend": {
+      "protocol": "https",
+      "admin_host": "obp<%= @site_name %><%= @environment_name %>oam-adm<%= @dns_domain %>",
+      "friendly_name": "obp<%= @site_name %><%= @environment_name %>oam<%= @dns_domain_managed %>",
+      "friendly_port": "18002",
+      "admin_port": "18001",
+      "managed_host": "obp<%= @site_name %><%= @environment_name %>oam<%= @dns_domain_managed %>"
+    }
+  },
+  "obposb": {
+    "release_version": "1.10.0",
+    "dns_domain_name": "<%= @dns_domain %>",
+    "disk_size": "300",
+    "managed_servers_per_host": "1",
+    "wls_admin_user": "weblogic",
+    "wls_domain_name": "obposb_domain",
+    "register_with_drift": "false",
+    "enable_wildcard": "true",
+    "sa_obp_och_username": "UNTMP001T",
+    "sa_obp_netiq_username": "Proxy-STS",
+    "rb_issuer_name": "https://cloud.dev.authbridge.limepoint.engineering/nidp/wstrust/sts",
+    "hostnameList": [
+      "obp<%= @site_name %><%= @environment_name %>osb01"
+    ],
+    "database": {
+      "scan_address": "obp<%= @site_name %><%= @environment_name %>db-prv<%= @dns_domain_managed %>",
+      "listen_port": "<%= @db_port %>",
+      "listen_port_ssl": "<%= @db_port + 100 %>",
+      "service_name": "CBCD3_OSB_PRIM",
+      "rcu_schema_prefix": "OBPOSB",
+      "custom_schema": "OSB_JMS_TLOGS",
+      "sysdba_username": "sys",
+      "ons_node_list": "notrequired:6200,notrequired:6200"
+    },
+    "nm": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>osb01-prv",
+      "listen_port": "16001"
+    },
+    "admin": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>osb01-prv",
+      "listen_port": "17001",
+      "listen_port_ssl": "18001",
+      "listen_port_admin": "19001",
+      "ms_heap": "6g",
+      "mx_heap": "6g"
+    },
+    "osb_server": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>osb01-prv",
+      "listen_port": "17002",
+      "listen_port_ssl": "18002",
+      "coh_listen_port": "15002",
+      "cluster_name": "obposb_cluster",
+      "ms_heap": "8g",
+      "mx_heap": "8g"
+    },
+    "frontend": {
+      "protocol": "https",
+      "admin_host": "obp<%= @site_name %><%= @environment_name %>osb-adm<%= @dns_domain %>",
+      "admin_port": "18001",
+      "otd_vip_name": "obp<%= @site_name %><%= @environment_name %>osb<%= @dns_domain_managed %>",
+      "osb_port": "18002",
+      "managed_host": "obp<%= @site_name %><%= @environment_name %>osb<%= @dns_domain_managed %>"
+    }
+  },
+  "obpotd": {
+    "dns_domain_name": "<%= @dns_domain %>",
+    "disk_size": "50",
+    "managed_servers_per_host": "1",
+    "wls_admin_user": "weblogic",
+    "wls_domain_name": "obpotd_domain",
+    "register_with_drift": "false",
+    "hostnameList": [
+      "obp<%= @site_name %><%= @environment_name %>otd01",
+      "obp<%= @site_name %><%= @environment_name %>otd02"
+    ],
+    "nm": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>otd01-prv",
+      "listen_port": "16001"
+    },
+    "admin": {
+      "listen_address": "obp<%= @site_name %><%= @environment_name %>otd01-prv",
+      "listen_port": "17001",
+      "listen_port_ssl": "18001",
+      "listen_port_admin": "19001",
+      "ms_heap": "6g",
+      "mx_heap": "6g"
+    },
+    "frontend": {
+      "protocol": "https",
+      "admin_host": "obp<%= @site_name %><%= @environment_name %>otd-adm<%= @dns_domain %>",
+      "admin_port": "18001"
+    },
+    "otd_config": {
+      "base_routerId": "41",
+      "obpoid": {
+        "server_name": "obp<%= @site_name %><%= @environment_name %>oid<%= @dns_domain_managed %>",
+        "e_vip_name": "obp<%= @site_name %><%= @environment_name %>oid-e<%= @dns_domain %>",
+        "origin_pool_list": [
+          {
+            "name": "obpoid",
+            "type": "tcp",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>oid01-prv<%= @dns_domain %>",
+                "port": "18001"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obpoid",
+            "tcp": {
+              "e_listener_port": "18001",
+              "origin_pool": "obpoid"
+            }
+          }
+        ]
+      },
+      "obpcid": {
+        "server_name": "obp<%= @site_name %><%= @environment_name %>cid<%= @dns_domain_managed %>",
+        "e_vip_name": "obp<%= @site_name %><%= @environment_name %>cid-e<%= @dns_domain %>",
+        "origin_pool_list": [
+          {
+            "name": "obpcid",
+            "type": "tcp",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>cid01-prv<%= @dns_domain %>",
+                "port": "18001"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obpcid",
+            "tcp": {
+              "e_listener_port": "18001",
+              "origin_pool": "obpcid"
+            }
+          }
+        ]
+      },
+      "obpobh": {
+        "server_name": "obp<%= @site_name %><%= @environment_name %>obh<%= @dns_domain_managed %>",
+        "e_vip_name": "obp<%= @site_name %><%= @environment_name %>obh-e<%= @dns_domain %>",
+        "origin_pool_list": [
+          {
+            "name": "obpobh",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>obh01-prv<%= @dns_domain %>",
+                "port": "18002"
+              }
+            ]
+          },
+          {
+            "name": "obpobh",
+            "type": "tcp",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>obh01-prv<%= @dns_domain %>",
+                "port": "18002"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obpobh",
+            "ssl": {
+              "e_listener_port": "18002",
+              "origin_pool": "obpobh"
+            },
+            "tcp": {
+              "e_listener_port": "14002",
+              "origin_pool": "obpobh"
+            }
+          }
+        ]
+      },
+      "obpobu": {
+        "server_name": "obp<%= @site_name %><%= @environment_name %>obu<%= @dns_domain_managed %>",
+        "e_vip_name": "obp<%= @site_name %><%= @environment_name %>obu-e<%= @dns_domain %>",
+        "origin_pool_list": [
+          {
+            "name": "obpobu",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>obu01-prv<%= @dns_domain %>",
+                "port": "18002"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obpobu",
+            "ssl": {
+              "e_listener_port": "18002",
+              "origin_pool": "obpobu"
+            }
+          }
+        ]
+      },
+      "obpsoa": {
+        "server_name": "obp<%= @site_name %><%= @environment_name %>soa<%= @dns_domain_managed %>",
+        "e_vip_name": "obp<%= @site_name %><%= @environment_name %>soa-e<%= @dns_domain %>",
+        "origin_pool_list": [
+          {
+            "name": "obpsoa",
+            "type": "ssl",
+            "request_uri": "/soa-infra/services/isSoaServerReady",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>soa01-prv<%= @dns_domain %>",
+                "port": "18002"
+              }
+            ]
+          },
+          {
+            "name": "obpsoa",
+            "type": "tcp",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>soa01-prv<%= @dns_domain %>",
+                "port": "18002"
+              }
+            ]
+          },
+          {
+            "name": "obpht",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>soa01-prv<%= @dns_domain %>",
+                "port": "18102"
+              }
+            ]
+          },
+          {
+            "name": "obpbam",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>soa01-prv<%= @dns_domain %>",
+                "port": "18202"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obpsoa",
+            "ssl": {
+              "e_listener_port": "18002",
+              "origin_pool": "obpsoa"
+            },
+            "tcp": {
+              "e_listener_port": "14002",
+              "origin_pool": "obpsoa"
+            }
+          },
+          {
+            "name": "obpht",
+            "ssl": {
+              "e_listener_port": "18102",
+              "origin_pool": "obpht"
+            }
+          },
+          {
+            "name": "obpbam",
+            "ssl": {
+              "e_listener_port": "18202",
+              "origin_pool": "obpbam"
+            }
+          }
+        ]
+      },
+      "obpipm": {
+        "server_name": "obp<%= @site_name %><%= @environment_name %>ipm<%= @dns_domain_managed %>",
+        "e_vip_name": "obp<%= @site_name %><%= @environment_name %>ipm-e<%= @dns_domain %>",
+        "origin_pool_list": [
+          {
+            "name": "obpipm",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>ipm01-prv<%= @dns_domain %>",
+                "port": "18102"
+              }
+            ]
+          },
+          {
+            "name": "obpucm",
+            "type": "ssl",
+            "request_uri": "/cs/checkucm.html",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>ipm01-prv<%= @dns_domain %>",
+                "port": "18002"
+              }
+            ]
+          },
+          {
+            "name": "obpucm",
+            "type": "tcp",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>ipm01-prv<%= @dns_domain %>",
+                "port": "14002"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obpipm",
+            "ssl": {
+              "e_listener_port": "18102",
+              "origin_pool": "obpipm"
+            }
+          },
+          {
+            "name": "obpucm",
+            "ssl": {
+              "e_listener_port": "18002",
+              "origin_pool": "obpucm"
+            },
+            "tcp": {
+              "e_listener_port": "14002",
+              "origin_pool": "obpucm"
+            }
+          }
+        ]
+      },
+      "obpbip": {
+        "server_name": "obp<%= @site_name %><%= @environment_name %>bip<%= @dns_domain_managed %>",
+        "e_vip_name": "obp<%= @site_name %><%= @environment_name %>bip-e<%= @dns_domain %>",
+        "origin_pool_list": [
+          {
+            "name": "obpbip",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>bip01-prv<%= @dns_domain %>",
+                "port": "18002"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obpbip",
+            "ssl": {
+              "e_listener_port": "18002",
+              "origin_pool": "obpbip"
+            }
+          }
+        ]
+      },
+      "obpdoc": {
+        "server_name": "obp<%= @site_name %><%= @environment_name %>doc<%= @dns_domain_managed %>",
+        "e_vip_name": "obp<%= @site_name %><%= @environment_name %>doc-e<%= @dns_domain %>",
+        "origin_pool_list": [
+          {
+            "name": "obpdocsoa",
+            "type": "ssl",
+            "request_uri": "/soa-infra/services/isSoaServerReady",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>doc01-prv<%= @dns_domain %>",
+                "port": "18002"
+              }
+            ]
+          },
+          {
+            "name": "obpdocdmkr",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>doc01-prv<%= @dns_domain %>",
+                "port": "18102"
+              }
+            ]
+          },
+          {
+            "name": "obpdocjms",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>doc01-prv<%= @dns_domain %>",
+                "port": "18202"
+              }
+            ]
+          },
+          {
+            "name": "obpdocidm",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>doc01-prv<%= @dns_domain %>",
+                "port": "18302"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obpdocsoa",
+            "ssl": {
+              "e_listener_port": "18002",
+              "origin_pool": "obpdocsoa"
+            }
+          },
+          {
+            "name": "obpdocdmkr",
+            "ssl": {
+              "e_listener_port": "18102",
+              "origin_pool": "obpdocdmkr"
+            }
+          },
+          {
+            "name": "obpdocjms",
+            "ssl": {
+              "e_listener_port": "18202",
+              "origin_pool": "obpdocjms"
+            }
+          },
+          {
+            "name": "obpdocidm",
+            "ssl": {
+              "e_listener_port": "18302",
+              "origin_pool": "obpdocidm"
+            }
+          }
+        ]
+      },
+      "obpodi": {
+        "server_name": "obp<%= @site_name %><%= @environment_name %>odi<%= @dns_domain_managed %>",
+        "e_vip_name": "obp<%= @site_name %><%= @environment_name %>odi-e<%= @dns_domain %>",
+        "origin_pool_list": [
+          {
+            "name": "obpodi",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>odi01-prv<%= @dns_domain %>",
+                "port": "18002"
+              }
+            ]
+          },
+          {
+            "name": "ftpodi",
+            "type": "tcp",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>odi01-prv<%= @dns_domain %>",
+                "port": "2022"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obpodi",
+            "ssl": {
+              "e_listener_port": "18002",
+              "origin_pool": "obpodi"
+            }
+          },
+          {
+            "name": "ftpodi",
+            "tcp": {
+              "e_listener_port": "2022",
+              "origin_pool": "ftpodi"
+            }
+          }
+        ]
+      },
+      "obposb": {
+        "server_name": "obp<%= @site_name %><%= @environment_name %>osb<%= @dns_domain_managed %>",
+        "e_vip_name": "obp<%= @site_name %><%= @environment_name %>osb-e<%= @dns_domain %>",
+        "origin_pool_list": [
+          {
+            "name": "obposb",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>osb01-prv<%= @dns_domain %>",
+                "port": "18002"
+              }
+            ]
+          },
+          {
+            "name": "obposb",
+            "type": "tcp",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>osb01-prv<%= @dns_domain %>",
+                "port": "18002"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obposb",
+            "ssl": {
+              "e_listener_port": "18002",
+              "origin_pool": "obposb"
+            }
+          },
+          {
+            "name": "obposb-2",
+            "ssl": {
+              "e_listener_port": "443",
+              "origin_pool": "obposb",
+              "client-auth": "required"
+            },
+            "tcp": {
+              "e_listener_port": "444",
+              "origin_pool": "obposb"
+            }
+          }
+        ]
+      },
+      "obpoim": {
+        "server_name": "obp<%= @site_name %><%= @environment_name %>oim<%= @dns_domain_managed %>",
+        "e_vip_name": "obp<%= @site_name %><%= @environment_name %>oim-e<%= @dns_domain %>",
+        "origin_pool_list": [
+          {
+            "name": "obpoim",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>oim01-prv<%= @dns_domain %>",
+                "port": "18202"
+              }
+            ]
+          },
+          {
+            "name": "obpoimsoa",
+            "type": "ssl",
+            "request_uri": "/soa-infra/services/isSoaServerReady",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>oim01-prv<%= @dns_domain %>",
+                "port": "18302"
+              }
+            ]
+          },
+          {
+            "name": "obpoimbip",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>oim01-prv<%= @dns_domain %>",
+                "port": "18402"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obpoim",
+            "ssl": {
+              "e_listener_port": "443",
+              "origin_pool": "obpoim"
+            }
+          },
+          {
+            "name": "obpoimsoa",
+            "ssl": {
+              "e_listener_port": "18302",
+              "origin_pool": "obpoimsoa"
+            }
+          },
+          {
+            "name": "obpoimbip",
+            "ssl": {
+              "e_listener_port": "18402",
+              "origin_pool": "obpoimbip"
+            }
+          }
+        ]
+      },
+      "obpcim": {
+        "server_name": "obp<%= @site_name %><%= @environment_name %>cim<%= @dns_domain_managed %>",
+        "e_vip_name": "obp<%= @site_name %><%= @environment_name %>cim-e<%= @dns_domain %>",
+        "origin_pool_list": [
+          {
+            "name": "obpcim",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>cim01-prv<%= @dns_domain %>",
+                "port": "18202"
+              }
+            ]
+          },
+          {
+            "name": "obpcim",
+            "type": "tcp",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>cim01-prv<%= @dns_domain %>",
+                "port": "18202"
+              }
+            ]
+          },
+          {
+            "name": "obpcimsoa",
+            "type": "ssl",
+            "request_uri": "/soa-infra/services/isSoaServerReady",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>cim01-prv<%= @dns_domain %>",
+                "port": "18302"
+              }
+            ]
+          },
+          {
+            "name": "obpcimbip",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>cim01-prv<%= @dns_domain %>",
+                "port": "18402"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obpcim",
+            "ssl": {
+              "e_listener_port": "443",
+              "origin_pool": "obpcim"
+            },
+            "tcp": {
+              "e_listener_port": "14202",
+              "origin_pool": "obpcim"
+            }
+          },
+          {
+            "name": "obpcimsoa",
+            "ssl": {
+              "e_listener_port": "18302",
+              "origin_pool": "obpcimsoa"
+            }
+          },
+          {
+            "name": "obpcimbip",
+            "ssl": {
+              "e_listener_port": "18402",
+              "origin_pool": "obpcimbip"
+            }
+          }
+        ]
+      },
+      "obp-sso": {
+        "server_name": "obp-sso-<%= @environment_name %><%= @dns_domain %>",
+        "e_vip_name": "obp<%= @site_name %>-sso-<%= @environment_name %><%= @dns_domain %>",
+        "origin_pool_list": [
+          {
+            "name": "obp-sso",
+            "type": "ssl",
+            "request_uri": "/oam/server/HeartBeat",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>oam01-prv<%= @dns_domain %>",
+                "port": "18002"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obp-sso",
+            "ssl": {
+              "e_listener_port": "443",
+              "origin_pool": "obp-sso"
+            }
+          }
+        ]
+      },
+      "obp-banker": {
+        "server_name": "obp-banker-<%= @environment_name %><%= @dns_domain %>",
+        "e_vip_name": "obp<%= @site_name %>-banker-<%= @environment_name %><%= @dns_domain %>",
+        "origin_pool_list": [
+          {
+            "name": "obp-banker",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>obu01-prv<%= @dns_domain %>",
+                "port": "18002"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obp-banker",
+            "ssl": {
+              "e_listener_port": "443",
+              "webgate": {
+                "identifier": "MultiSSO",
+                "agentName": "obp-banker-wsdc",
+                "logoutRedirectUrl": "https://obp-sso-<%= @environment_name %><%= @dns_domain %>/oam/server/logout"
+              },
+              "origin_pool": "obp-banker"
+            }
+          }
+        ]
+      },
+      "obp-worklist": {
+        "server_name": "obp-worklist-<%= @environment_name %><%= @dns_domain %>",
+        "e_vip_name": "obp<%= @site_name %>-worklist-<%= @environment_name %><%= @dns_domain %>",
+        "origin_pool_list": [
+          {
+            "name": "obp-worklist",
+            "type": "ssl",
+            "request_uri": "/soa-infra/services/isSoaServerReady",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>soa01-prv<%= @dns_domain %>",
+                "port": "18002"
+              }
+            ]
+          },
+          {
+            "name": "obp-humantask",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>soa01-prv<%= @dns_domain %>",
+                "port": "18102"
+              }
+            ]
+          },
+          {
+            "name": "obp-bam",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>soa01-prv<%= @dns_domain %>",
+                "port": "18202"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obp-worklist",
+            "ssl": {
+              "e_listener_port": "443",
+              "origin_pool": "obp-worklist",
+              "webgate": {
+                "identifier": "OBPSSO",
+                "agentName": "obp-worklist-wsdc",
+                "logoutRedirectUrl": "https://obp-sso-<%= @environment_name %><%= @dns_domain %>/oam/server/logout"
+              },
+              "routes": [
+                {
+                  "name": "workflow",
+                  "condition": "$uri =~ \\\"/workflow*\\\"",
+                  "origin_pool": "obp-humantask",
+                  "cookie_name": "ORA_OTD_JROUTE_WF"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "obp-reports": {
+        "server_name": "obp-reports-<%= @environment_name %><%= @dns_domain %>",
+        "e_vip_name": "obp<%= @site_name %>-reports-<%= @environment_name %><%= @dns_domain %>",
+        "origin_pool_list": [
+          {
+            "name": "obp-reports",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>bip01-prv<%= @dns_domain %>",
+                "port": "18002"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obp-reports",
+            "ssl": {
+              "e_listener_port": "443",
+              "webgate": {
+                "identifier": "MultiSSO",
+                "agentName": "obp-reports-wsdc",
+                "logoutRedirectUrl": "https://obp-sso-<%= @environment_name %><%= @dns_domain %>/oam/server/logout"
+              },
+              "origin_pool": "obp-reports"
+            }
+          }
+        ]
+      },
+      "obp-files": {
+        "server_name": "obp-files-<%= @environment_name %><%= @dns_domain %>",
+        "e_vip_name": "obp<%= @site_name %>-files-<%= @environment_name %><%= @dns_domain %>",
+        "origin_pool_list": [
+          {
+            "name": "obp-files",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>ipm01-prv<%= @dns_domain %>",
+                "port": "18102"
+              }
+            ]
+          },
+          {
+            "name": "obp-doc-cor",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>doc01-prv<%= @dns_domain %>",
+                "port": "18302"
+              }
+            ]
+          },
+          {
+            "name": "obp-cs",
+            "type": "ssl",
+            "request_uri": "/cs/checkucm.html",
+            "members": [
+              {
+                "host": "obp<%= @site_name %><%= @environment_name %>ipm01-prv<%= @dns_domain %>",
+                "port": "18002"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obp-files",
+            "ssl": {
+              "e_listener_port": "443",
+              "origin_pool": "obp-files",
+              "webgate": {
+                "identifier": "MultiSSO",
+                "agentName": "obp-files-wsdc",
+                "logoutRedirectUrl": "https://obp-sso-<%= @environment_name %><%= @dns_domain %>/oam/server/logout"
+              },
+              "routes": [
+                {
+                  "name": "doc-cor",
+                  "condition": "$uri =~ \\\"/DocumakerCorrespondence*\\\"",
+                  "origin_pool": "obp-doc-cor",
+                  "cookie_name": "ORA_OTD_JROUTE_DC"
+                },
+                {
+                  "name": "ucm-route",
+                  "condition": "$uri = \\\"/cs*\\\" or $uri = \\\"/adfAuthentication\\\" or $uri =~ \\\"/_ocsh*\\\"",
+                  "origin_pool": "obp-cs",
+                  "cookie_name": "ORA_OTD_JROUTE_CS"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "obpoba": {
+    "database": {
+      "scan_address": "obp<%= @site_name %><%= @environment_name %>db-prv<%= @dns_domain_managed %>",
+      "listen_port": "<%= @db_port %>",
+      "service_name": "CBCD3_OBA_PRIM",
+      "sysdba_username": "sys",
+      "ons_node_list": "notrequired:6200,notrequired:6200"
+    }
+  },
+  "obpcst": {
+    "database": {
+      "scan_address": "obp<%= @site_name %><%= @environment_name %>db-prv<%= @dns_domain_managed %>",
+      "listen_port": "<%= @db_port %>",
+      "service_name": "CBCD3_CST_PRIM",
+      "sysdba_username": "sys",
+      "ons_node_list": "notrequired:6200,notrequired:6200"
+    }
+  }
+}

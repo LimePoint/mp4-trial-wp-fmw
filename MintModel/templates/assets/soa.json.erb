@@ -1,0 +1,503 @@
+<% environment_name = @environment['name'] %>
+<% dns_domain = @soa["dns_domain"] ; if dns_domain.nil? then dns_domain=".mintpress.io" end %>
+<% soa_asset_code = 'soa' %>
+
+<% uniquifier = @uuid.tr('-', '') %>
+
+<% java_install_path = '/oracle/app/' + environment_name + '/' + soa_asset_code + '/java' %>
+<% inventory_install_path = '/oracle/app/' + environment_name + '/' + soa_asset_code + '/oraInventory' %>
+<% soa_install_path = '/oracle/app/' + environment_name + '/' + soa_asset_code + '/fmw' %>
+<% soa_admin_server_top = '/oracle/app' + '/' + environment_name + '/' + soa_asset_code + '/environments' %>
+<% soa_managed_server_top = '/oracle/app' + '/' + environment_name + '/' + soa_asset_code + '/environments' %>
+<% soa_log_location = '/oracle/logs' + '/' + environment_name + '/' + soa_asset_code %>
+<% temp_location = '/oracle/app' + '/' + environment_name + '/' + soa_asset_code  + '/tmp' %>
+<% appdeploy_install_path = '/oracle/app/' + soa_asset_code + '/deployments' %>
+
+<% soa_admin_server_heap = '2g' %>
+
+
+{
+  "internalVariables":
+  {
+    "environmentName": "<%= environment_name %>",
+    "assetGroup": "<%= @uuid %>",
+    "assetCode": "<%= soa_asset_code %>",
+    "defaultHostTargetUsername": "oracle",
+    "defaultHostTargetPassword": "oinstall",
+    "defaultHostTargetTmpDirectory": "<%= temp_location %>",
+    "stageRootDir": "/oracle/stage",
+    "privatePostfix": ""
+  },
+  "projectName": "<%= soa_asset_code %>_<%= uniquifier %>",
+  "uniquifier": "<%= uniquifier %>",
+  "site": {
+    "hostList": [
+      {
+        "id": "<%= @hostList[0] %>",
+        "user": "${defaultHostTargetUsername}",
+        "password": "${defaultHostTargetPassword}",
+        "address": "<%= @hostList[0] %><%= dns_domain %>",
+        "attributes": {
+            "targetTempDir": "${defaultHostTargetTmpDirectory}",
+            "target.tmp.dir": "${defaultHostTargetTmpDirectory}"
+        }
+      },
+      {
+        "id": "<%= @soa['db_host'] %>",
+        "user": "${defaultHostTargetUsername}",
+        "password": "${defaultHostTargetPassword}",
+        "address": "<%= @soa['db_host'] %><%= dns_domain %>",
+        "attributes": {
+            "targetTempDir": "${defaultHostTargetTmpDirectory}",
+            "target.tmp.dir": "${defaultHostTargetTmpDirectory}"
+        }
+      }
+    ],
+    "installationList": [
+
+      {
+        "name": "<%= environment_name %>_<%= soa_asset_code %>_jdk",
+        "product": "jdk",
+        "version": "1.8.0_91",
+        "installPath": "<%= java_install_path %>",
+        "softwareStage": "${stageRootDir}/jdk/jdk-8u91-linux-x64.tar.gz",
+          "attributes": {
+              "newworld": "true",
+              "inventory_location": "<%= inventory_install_path %>"
+          }
+      },
+      {
+        "name": "<%= environment_name %>_<%= soa_asset_code %>_fmwinfra",
+        "product": "fmwinfra",
+        "version": "<%= @soa['version'] %>",
+        "installPath": "<%= soa_install_path %>",
+        "softwareStage": "${stageRootDir}/fmwinfra/<%= @soa['version'] %>/fmw_<%= @soa['longversion'] %>_infrastructure.jar",
+        "dependsonList": [
+          "<%= environment_name %>_<%= soa_asset_code %>_jdk"
+        ],
+        "patchset": [
+          {
+            "targetOracleHome": "${_.installPath}",
+            "softwareStage": "${stageRootDir}/fmwinfra/12.2.1.4/patches",
+            "name": "32652899",
+            "aru": "32652899",
+            "properties": [
+              {
+                "target": "opatch.minimum.version",
+                "value": "13.9.4.2.6"
+              },
+              {
+                "target": "opatch.binary.location",
+                "value": "${stageRootDir}/common_patches/OPatch/139426/6880880"
+              },
+              {
+                "target": "opatch.update.usegeneric",
+                "value": "true"
+              },
+              {
+                "name": "patchWhen",
+                "value": "post-binaries"
+              }
+            ]
+          },{
+            "targetOracleHome": "${_.installPath}",
+            "softwareStage": "${stageRootDir}/fmwinfra/12.2.1.4/patches",
+            "name": "31544353",
+            "aru": "31544353",
+            "properties": [
+              {
+                "target": "opatch.minimum.version",
+                "value": "13.9.4.2.6"
+              },
+              {
+                "target": "opatch.binary.location",
+                "value": "${stageRootDir}/common_patches/OPatch/139426/6880880"
+              },
+              {
+                "target": "opatch.update.usegeneric",
+                "value": "true"
+              },
+              {
+                "name": "patchWhen",
+                "value": "post-binaries"
+              }
+            ]
+          }, {
+            "targetOracleHome": "${_.installPath}",
+            "softwareStage": "${stageRootDir}/fmwinfra/12.2.1.4/patches",
+            "name": "33059296",
+            "aru": "33059296",
+            "properties": [
+              {
+                "target": "opatch.minimum.version",
+                "value": "13.9.4.2.6"
+              },
+              {
+                "target": "opatch.binary.location",
+                "value": "${stageRootDir}/common_patches/OPatch/139426/6880880"
+              },
+              {
+                "target": "opatch.update.usegeneric",
+                "value": "true"
+              },
+              {
+                "name": "patchWhen",
+                "value": "post-binaries"
+              }
+            ]
+          }
+        ],
+          "attributes": {
+              "newworld": "true",
+              "inventory_location": "<%= inventory_install_path %>",
+              "fmw_home": "<%= soa_install_path %>"
+          }
+      },
+      {
+        "name": "<%= environment_name %>_<%= soa_asset_code %>_soa",
+        "product": "soa",
+        "version": "<%= @soa['version'] %>",
+        "installPath": "<%= soa_install_path %>/soa",
+        "softwareStage": "${stageRootDir}/soa/<%= @soa['version'] %>/fmw_<%= @soa['longversion'] %>_soa.jar",
+        "dependsonList": [
+          "<%= environment_name %>_<%= soa_asset_code %>_fmwinfra"
+        ],
+        "patchset": [
+          {
+            "targetOracleHome": "${_.installPath}",
+            "softwareStage": "${stageRootDir}/soa/12.2.1.4/patches",
+            "name": "30995852",
+            "aru": "30995852",
+            "properties": [
+              {
+                "target": "opatch.minimum.version",
+                "value": "13.9.4.2.6"
+              },
+              {
+                "target": "opatch.binary.location",
+                "value": "${stageRootDir}/common_patches/OPatch/139426/6880880"
+              },
+              {
+                "target": "opatch.update.usegeneric",
+                "value": "true"
+              },
+              {
+                "name": "patchWhen",
+                "value": "post-binaries"
+              }
+            ]
+          },{
+            "targetOracleHome": "${_.installPath}",
+            "softwareStage": "${stageRootDir}/soa/12.2.1.4/patches",
+            "name": "31199221",
+            "aru": "31199221",
+            "properties": [
+              {
+                "target": "opatch.minimum.version",
+                "value": "13.9.4.2.6"
+              },
+              {
+                "target": "opatch.binary.location",
+                "value": "${stageRootDir}/common_patches/OPatch/139426/6880880"
+              },
+              {
+                "target": "opatch.update.usegeneric",
+                "value": "true"
+              },
+              {
+                "name": "patchWhen",
+                "value": "post-binaries"
+              }
+            ]
+          },{
+            "targetOracleHome": "${_.installPath}",
+            "softwareStage": "${stageRootDir}/soa/12.2.1.4/patches",
+            "name": "31396632",
+            "aru": "31396632",
+            "properties": [
+              {
+                "target": "opatch.minimum.version",
+                "value": "13.9.4.2.6"
+              },
+              {
+                "target": "opatch.binary.location",
+                "value": "${stageRootDir}/common_patches/OPatch/139426/6880880"
+              },
+              {
+                "target": "opatch.update.usegeneric",
+                "value": "true"
+              },
+              {
+                "name": "patchWhen",
+                "value": "post-binaries"
+              }
+            ]
+          }
+        ],
+          "attributes": {
+              "newworld": "true",
+              "inventory_location": "<%= inventory_install_path %>",
+              "fmw_home": "<%= soa_install_path %>"
+          }
+      }
+
+    ],
+    "environmentName":  "<%= environment_name %>",
+            "topologyName":  "<%= soa_asset_code %>",
+            "nodeManagerList": [
+              {
+                "name": "nm-<%= @hostList[0] %>",
+                "type": "Plain",
+                "hostIdentifier": "<%= @hostList[0] %>",
+                "groupRefs": [
+                  "Node_Manager_Config"
+                ],
+                "attributes": {
+                    "listenAddress": "<%= @hostList[0] %>${privatePostfix}<%= dns_domain %>",
+                    "listenPort": "<%= @soa['node_manager_port'] %>",
+                    "wls.nodemanager.crashrecovery": "false"
+                }
+              }
+            ],
+            "domainList": [
+              {
+                "name": "soa_domain",
+                "locationPath": "<%= soa_admin_server_top %>",
+                "adminUser": "weblogic",
+                "adminPassword": "<%= @soa['wls_admin_password'] %>",
+                "adminServer": {
+                  "name": "AdminServer",
+                  "machineName": "Machine-<%= @hostList[0] %>",
+                  "listenAddress": "<%= @hostList[0] %>${privatePostfix}<%= dns_domain %>",
+                  "listenAddressPort": "<%= @soa['wls_admin_listen_port'].to_i %>",
+                  "listenAddressPortSSL": "<%= @soa['wls_admin_listen_port'].to_i+1000 %>",
+                  "targetName": "<%= soa_asset_code %>AdminServer"
+                },
+                "machineList": [
+                  {
+                    "name": "Machine-<%= @hostList[0] %>",
+                    "nodeManagerName": "nm-<%= @hostList[0] %>"
+                  }
+                ],
+                "clusterList": [
+                  {
+                    "name": "soa_cluster",
+                    "messageMode": "Unicast"
+                  }
+                ],
+                "managedServerList": [
+                  {
+                    "name": "soa_server1",
+                    "machineName": "Machine-<%= @hostList[0] %>",
+                    "listenAddress": "<%= @hostList[0] %>${privatePostfix}<%= dns_domain %>",
+                    "listenAddressPort": "<%= @soa['wls_server_port_pool'].to_i %>",
+                    "listenAddressPortSSL": "<%= @soa['wls_server_port_pool'].to_i + 1000 %>",
+                    "clusterName": "soa_cluster",
+					"targetName": "<%= soa_asset_code %>_${_.name}"
+                  }
+                ],
+                "middlewareList": [
+                  {
+                    "installationName": "<%= environment_name %>_<%= soa_asset_code %>_soa",
+                    "targetList": [
+                      {
+                        "type": "Cluster",
+                        "names":
+                        [
+                          "soa_cluster"
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "configurationList": [
+                  {
+                    "resourceName": "GenericServerSettings",
+                    "type": "Server",
+                    "attributes": {
+                        "serverName": "AdminServer"
+                    }
+                  },
+                  {
+                    "resourceName": "GenericServerSettings",
+                    "type": "Server",
+                    "attributes": {
+                        "serverName": "soa_server1"
+                    }
+                  },
+                  {
+                    "resourceName": "AdminStartupParameters",
+                    "type": "StartupParameter",
+                    "targets": [
+                      {
+                        "type": "SERVER",
+                        "names": [
+                          "AdminServer"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "resourceName": "ClusterStartupParameters",
+                    "type": "StartupParameter",
+                    "targets": [
+                      {
+                        "type": "CLUSTER",
+                        "names": [
+                          "soa_cluster"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "resourceName": "DomainWebappConfig",
+                    "type": "WebAppContainer"
+                  },
+                  {
+                    "resourceName": "DomainLogConfiguration",
+                    "type": "DomainLog"
+                  }
+                ],
+                "templateList": [
+                  {
+                    "name": "soa"
+                  }
+                ],
+                "repositoryList": [
+                  {
+                    "componentList": [
+                      "SOAINFRA"
+                    ],
+                    "dbName": "<%= environment_name %><%= soa_asset_code %>db",
+                    "schemaPassword": "<%= @soa['rcu_schema_password'] %>",
+                    "prefix": "<%= @soa['rcu_schema_prefix'] %>",
+                    "dbUser": "<%= @soa['db_sysdba_username'] %>",
+                    "id": "rcu01",
+                    "defaultRepository": "true"
+                  }
+                ],
+                "attributes": {
+                    "newworld": "true",
+                    "serverStartMode": "prod",
+                    "wls.production.mode": "prod",
+                    "backupEnvironmentName": "<%= environment_name %>",
+                    "environment.name": "<%= environment_name %>"
+                }
+              }
+            ],
+            "hostInstallationList": [
+              {
+                "installationName": "<%= environment_name %>_<%= soa_asset_code %>_soa",
+                "hostIdentifierList": [
+                  "<%= @hostList[0] %>"
+                ]
+              }
+            ],
+            "applicationDeploymentTargetList" : [
+              {
+                "name": "<%= soa_asset_code %>AdminServer"
+              },
+              {
+                "name": "<%= soa_asset_code %>_soa_server1"
+              }
+            ]
+          ,
+    "databaseList": [
+      {
+        "name": "<%= environment_name %><%= soa_asset_code %>db",
+        "port": "<%= @soa['db_listen_port'] %>",
+        "serviceName": "<%= @soa['db_name'] %>",
+        "hostIdentifier": "<%= @soa['db_host'] %>",
+        "schemaList": [
+          {
+            "name": "<%= @soa['db_sysdba_username'] %>",
+            "password": "<%= @soa['db_sysdba_password'] %>"
+          }
+        ],
+        "attributes": {
+            "rcu.datafile.prefix": "+DATA/<%= @soa['db_name'] %>",
+            "rcu.datafile.autonaming": "false",
+            "rcu.datafile.initialsize": "200M",
+            "jdbcUrl": "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(Host=${_.host.address})(Port=${_.port}))(CONNECT_DATA=(SERVICE_NAME=${_.serviceName})))"
+        }
+      }
+    ],
+    "resourceList": [
+      {
+        "name": "DomainWebappConfig",
+        "type": "WebAppContainer",
+        "attributes": {
+          "WeblogicPluginEnabled": "true",
+          "XPoweredByHeaderLevel": "NONE"
+        }
+      },
+      {
+        "name": "GenericServerSettings",
+        "type": "Server",
+        "params": [
+          {
+            "type": "Log",
+            "attributes": {
+              "FileName": "<%= soa_log_location %>/${/domains.name}/%Name%/access.log"
+            }
+          },
+          {
+            "type": "WebServer",
+            "params": [
+              {
+                "type": "WebServerLog",
+                "attributes": {
+                  "FileName": "<%= soa_log_location %>/${/domains.name}/%Name%/access.log"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "AdminStartupParameters",
+        "type": "StartupParameter",
+        "attributes": {
+          "Auto01": "-Dweblogic.Stdout=<%= soa_log_location %>/${/domains.name}/%Name%/%Name%.out",
+          "Auto03": "-Dweblogic.Stderr=<%= soa_log_location %>/${/domains.name}/%Name%/%Name%.err",
+          "Auto05": "-Xms<%= soa_admin_server_heap %> -Xmx<%= soa_admin_server_heap %>"
+        }
+      },
+      {
+        "name": "ClusterStartupParameters",
+        "type": "StartupParameter",
+        "attributes": {
+          "Auto01": "-Dweblogic.Stdout=<%= soa_log_location %>/${/domains.name}/%Name%/%Name%.out",
+          "Auto03": "-Dweblogic.Stderr=<%= soa_log_location %>/${/domains.name}/%Name%/%Name%.err"
+        }
+      },
+      {
+        "attributes": {
+          "FileName": "<%= soa_log_location %>/${/domains.name}.log"
+        },
+        "type": "DomainLog",
+        "name": "DomainLogConfiguration"
+      }
+    ],
+    "propertyGroupList":
+    [
+      {
+        "name": "Node_Manager_Config",
+        "description": "Node Manager configuration",
+        "attributes": {
+            "nmssl": "false",
+            "wls.nodemanager.secure.listener": "false",
+            "wls_nodemanager_setidentity": "false",
+            "wls.nodemanager.setidentity": "false",
+            "wlInstallationName": "<%= environment_name %>_<%= soa_asset_code %>_fmwinfra",
+            "nodemanagerTop": "<%= soa_install_path %>/wlserver/common/nodemanager",
+            "wls.nodemanager.top": "<%= soa_install_path %>/wlserver/common/nodemanager"
+        }
+      }
+    ],
+    "deploymentProperties":
+    {
+      
+    }
+  }
+}

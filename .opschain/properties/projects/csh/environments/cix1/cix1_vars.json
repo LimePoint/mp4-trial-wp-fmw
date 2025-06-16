@@ -1,0 +1,2372 @@
+{
+  "id": "cix1",
+  "environment":{
+    "name": "cix1"
+  },
+
+  "common": {
+    "password_vault_name": "cix1",
+    "trustStore": "WBCTrust.jks",
+    "keyStore": "siebelkeystore.jks",
+    "ldap_wallet": "cwallet.sso",
+    "certs_source": "/oracle/stage/customer/wp/csh/certs",
+    "custom_source": "/oracle/stage/customer/wp/csh/scripts",
+    "git_repo_path": "/custlike/gitrepos/mp-001_mintpress_jsons",
+    "rt_configs_path": "/limepoint/runTime/data/Repository/configs",
+    "git_commit_on_upload": "true",
+    "odl_log_retentionPeriod": "5d",
+    "enable_appdynamics": "false",
+    "eum_key": "SY-AAB-EZT",
+    "appd_url": "syd-col.eum-appdynamics.com",
+    "enable_contrastagent": "false",
+    "enable_dbssl": "false",
+    "appdynamics_agent": "/oracle/app/binaries/appdynamics/javaagent/javaagent.jar",
+    "appd_agent_home": "/agents/appdynamics/javaagent",
+    "migrate_appd_agent": "false",
+    "OAMLogoutURL": "https://obp-sso-cix1.trial.limepoint.com/oam/pages/logout.jsp",
+    "stubbed": "true",
+    "enable_virus_scan": "false",
+    "val_funder_id_pbwp": "VXF-167",
+    "val_funder_id_pbsg": "VXF-187",
+    "val_funder_id_pbbm": "VXF-187",
+    "val_funder_id_pbbs": "VXF-187",
+    "val_client_id_pbwp": "VXCL-12502",
+    "val_client_id_pbsg": "VXCL-12759",
+    "val_client_id_pbbm": "VXCL-12797",
+    "val_client_id_pbbs": "VXCL-12792",
+    "rrb_field_data_tfm": "500001",
+    "batch_gid": "A:g:61002784:rwaDdxtTnNcCoy,A:fdig:61002784:rwaDdxtTnNcCoy",
+    "eoibBond": {
+      "APP": "eth0",
+      "INT": "eth0",
+      "SEC": "eth0"
+    },
+    "jdbc": {
+      "min_capacity": "1",
+      "ssl_dn": "\\\"CN=cix1db.trial.limepoint.com,OU=Infrastructure Platform Services,O=LimePoint,L=Melbourne,ST=VIC,C=AU\\\"",
+      "secondary_ssl_dn": "\\\"CN=cix1db.trial.limepoint.com,OU=Infrastructure Platform Services,O=LimePoint,L=Melbourne,ST=VIC,C=AU\\\""
+    },
+    "oidldap": {
+      "ConnectionPoolSize": "20",
+      "ConnectTimeout": "60",
+      "ConnectionRetryLimit": "5",
+      "ParallelConnectDelay": "0",
+      "ResultsTimeLimit": "60000",
+      "CacheSize": "10240",
+      "CacheTTL": "300"
+    },
+    "gidldap": {
+      "gidhost": "ldap.mte-cmz.trial.limepoint.com",
+      "gidport": "636",
+      "gidaccountusername": "cn=SRV-CSH-WebLogicLDAP-cix1,ou=sa,o=data",
+      "gid_group_base_dn": "ou=groups,o=data",
+      "gid_user_base_dn": "ou=users,o=data",
+      "all_users_filter": "(&(uid=*)(objectclass=person))",
+      "all_groups_filter": "(&(cn=*)(objectclass=groupofnames)(wbcIAMAppID=a006b1))",
+      "user_from_name_filter": "(&(cn=%u)(objectclass=person))",
+      "group_from_name_filter": "(&(cn=%g)(objectclass=groupofnames)(wbcIAMAppID=a006b1))",
+      "ConnectionPoolSize": "20",
+      "ConnectTimeout": "60",
+      "ConnectionRetryLimit": "5",
+      "ParallelConnectDelay": "0",
+      "ResultsTimeLimit": "60000",
+      "CacheSize": "10240",
+      "CacheTTL": "300"
+    }
+  },
+  "obpobh": {
+    "release_version": "1.10.0",
+    "dual_site": "true",
+    "dns_domain_name": ".trial.limepoint.com",
+    "managed_servers_per_host": "1",
+    "wls_admin_user": "weblogic",
+    "host_admin_user": "obphost_admin",
+    "wls_domain_name": "obphost_domain",
+    "register_with_drift": "false",
+    "hostnameList": [
+      "cix1obh01",
+      "cix1obh02",
+      "cix1obh03",
+      "cix1obh04",
+      "cix1obh05",
+      "cix1obh06",
+      "cix1obh07",
+      "cix1obh08"
+    ],
+    "database": {
+      "scan_address": "cix1db.trial.limepoint.com",
+      "secondary_scan_address": "cix1db.trial.limepoint.com",
+      "set_dual_site_url": "true",
+      "listen_port": "1521",
+      "listen_port_ssl": "1299",
+      "service_name": "CIX1_OBP_PRIM",
+      "rcu_schema_prefix": "OBPHOST",
+      "cde_service_name": "CIX1_CST_PRIM",
+      "custom_schema": "CDE,BDPUSER,OIM_BAM_USER,OBPHOST_JMS_TLOGS",
+      "encryption": "false",
+      "sysdba_username": "sys",
+      "ons_node_list": "cix1db.trial.limepoint.com:6200,ohdr3302.trial.limepoint.com:6200,ohdw3201.trial.limepoint.com:6200,ohdw3202.trial.limepoint.com:6200",
+      "sysconfig_url": "jdbc:oracle:thin:@(DESCRIPTION_LIST=(LOAD_BALANCE=OFF)(FAILOVER=ON)(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=cix1db.trial.limepoint.com)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=CIX1_OBP_PRIM)))(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=cix1db.trial.limepoint.com)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=CIX1_OBP_PRIM))))",
+      "obp_batch_svc_url": "jdbc:oracle:thin:@(DESCRIPTION_LIST=(LOAD_BALANCE=OFF)(FAILOVER=ON)(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=cix1db.trial.limepoint.com)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=CIX1_OBP_PRIM)))(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=cix1db.trial.limepoint.com)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=CIX1_OBP_PRIM))))",
+      "sysconfig_url_ssl": "jdbc:oracle:thin:@(DESCRIPTION_LIST=(LOAD_BALANCE=OFF)(FAILOVER=ON)(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=cix1db.trial.limepoint.com)(PORT=1299))(CONNECT_DATA=(SERVICE_NAME=CIX1_OBP_PRIM))(SECURITY=(SSL_SERVER_CERT_DN=\\\"CN=cix1db.trial.limepoint.com,OU=Infrastructure Platform Services,O=LimePoint,L=Melbourne,ST=VIC,C=AU\\\")))(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=cix1db.trial.limepoint.com)(PORT=1299))(CONNECT_DATA=(SERVICE_NAME=CIX1_OBP_PRIM))(SECURITY=(SSL_SERVER_CERT_DN=\\\"CN=cix1db.trial.limepoint.com,OU=Infrastructure Platform Services,O=LimePoint,L=Melbourne,ST=VIC,C=AU\\\"))))",
+      "obp_batch_svc_url_ssl": "jdbc:oracle:thin:@(DESCRIPTION_LIST=(LOAD_BALANCE=OFF)(FAILOVER=ON)(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=cix1db.trial.limepoint.com)(PORT=1299))(CONNECT_DATA=(SERVICE_NAME=CIX1_OBP_PRIM))(SECURITY=(SSL_SERVER_CERT_DN=\\\"CN=cix1db.trial.limepoint.com,OU=Infrastructure Platform Services,O=LimePoint,L=Melbourne,ST=VIC,C=AU\\\")))(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=cix1db.trial.limepoint.com)(PORT=1299))(CONNECT_DATA=(SERVICE_NAME=CIX1_OBP_PRIM))(SECURITY=(SSL_SERVER_CERT_DN=\\\"CN=cix1db.trial.limepoint.com,OU=Infrastructure Platform Services,O=LimePoint,L=Melbourne,ST=VIC,C=AU\\\"))))"
+    },
+    "nm": {
+      "listen_address": "cix1obh01-prv",
+      "listen_port": "16001"
+    },
+    "admin": {
+      "listen_address": "cix1obh-padm",
+      "listen_port": "17001",
+      "listen_port_ssl": "18001",
+      "listen_port_admin": "19001",
+      "ms_heap": "1g",
+      "mx_heap": "4g"
+    },
+    "obphost_server": {
+      "listen_address": "cix1obh01-prv",
+      "listen_port": "17002",
+      "listen_port_ssl": "18002",
+      "cluster_name": "obphost_cluster",
+      "ms_heap": "1g",
+      "mx_heap": "20g"
+    },
+    "frontend": {
+      "protocol": "https",
+      "admin_host": "cix1obh-adm.trial.limepoint.com",
+      "managed_host": "CIX1obh.trial.limepoint.com",
+      "otd_vip_name": "CIX1obh.trial.limepoint.com",
+      "admin_port": "18001",
+      "obh_port": "18002",
+      "t3_port": "14002"
+    }
+  },
+  "obpbat": {
+    "release_version": "2.3.1",
+    "dual_site": "true",
+    "dns_domain_name": ".trial.limepoint.com",
+    "managed_servers_per_host": "1",
+    "wls_admin_user": "weblogic",
+    "host_admin_user": "obphost_admin",
+    "wls_domain_name": "obpbat_domain",
+    "register_with_drift": "false",
+    "hostnameList": [
+      "cix1bat01",
+      "cix1bat02"
+    ],
+    "database": {
+      "scan_address": "cix1db.trial.limepoint.com",
+      "secondary_scan_address": "cix1db.trial.limepoint.com",
+      "set_dual_site_url": "true",
+      "listen_port": "1521",
+      "listen_port_ssl": "1299",
+      "service_name": "CIX1_OBP_PRIM",
+      "rcu_schema_prefix": "OBPBAT",
+      "cde_service_name": "CIX1_CST_PRIM",
+      "custom_schema": "OBPBAT_JMS_TLOGS",
+      "encryption": "false",
+      "sysdba_username": "sys",
+      "ons_node_list": "cix1db.trial.limepoint.com:6200,ohdr3302.trial.limepoint.com:6200,ohdw3201.trial.limepoint.com:6200,ohdw3202.trial.limepoint.com:6200",
+      "sysconfig_url": "jdbc:oracle:thin:@(DESCRIPTION_LIST=(LOAD_BALANCE=OFF)(FAILOVER=ON)(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=cix1db.trial.limepoint.com)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=CIX1_OBP_PRIM)))(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=cix1db.trial.limepoint.com)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=CIX1_OBP_PRIM))))",
+      "obp_batch_svc_url": "jdbc:oracle:thin:@(DESCRIPTION_LIST=(LOAD_BALANCE=OFF)(FAILOVER=ON)(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=cix1db.trial.limepoint.com)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=CIX1_OBP_PRIM)))(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=cix1db.trial.limepoint.com)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=CIX1_OBP_PRIM))))",
+      "sysconfig_url_ssl": "jdbc:oracle:thin:@(DESCRIPTION_LIST=(LOAD_BALANCE=OFF)(FAILOVER=ON)(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=cix1db.trial.limepoint.com)(PORT=1299))(CONNECT_DATA=(SERVICE_NAME=CIX1_OBP_PRIM))(SECURITY=(SSL_SERVER_CERT_DN=\\\"CN=cix1db.trial.limepoint.com,OU=Infrastructure Platform Services,O=LimePoint,L=Melbourne,ST=VIC,C=AU\\\")))(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=cix1db.trial.limepoint.com)(PORT=1299))(CONNECT_DATA=(SERVICE_NAME=CIX1_OBP_PRIM))(SECURITY=(SSL_SERVER_CERT_DN=\\\"CN=cix1db.trial.limepoint.com,OU=Infrastructure Platform Services,O=LimePoint,L=Melbourne,ST=VIC,C=AU\\\"))))",
+      "obp_batch_svc_url_ssl": "jdbc:oracle:thin:@(DESCRIPTION_LIST=(LOAD_BALANCE=OFF)(FAILOVER=ON)(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=cix1db.trial.limepoint.com)(PORT=1299))(CONNECT_DATA=(SERVICE_NAME=CIX1_OBP_PRIM))(SECURITY=(SSL_SERVER_CERT_DN=\\\"CN=cix1db.trial.limepoint.com,OU=Infrastructure Platform Services,O=LimePoint,L=Melbourne,ST=VIC,C=AU\\\")))(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=cix1db.trial.limepoint.com)(PORT=1299))(CONNECT_DATA=(SERVICE_NAME=CIX1_OBP_PRIM))(SECURITY=(SSL_SERVER_CERT_DN=\\\"CN=cix1db.trial.limepoint.com,OU=Infrastructure Platform Services,O=LimePoint,L=Melbourne,ST=VIC,C=AU\\\"))))"
+    },
+    "nm": {
+      "listen_address": "cix1bat01-prv",
+      "listen_port": "16001"
+    },
+    "admin": {
+      "listen_address": "cix1bat-padm",
+      "listen_port": "17001",
+      "listen_port_ssl": "18001",
+      "listen_port_admin": "19001",
+      "ms_heap": "1g",
+      "mx_heap": "4g"
+    },
+    "obpbat_server": {
+      "listen_address": "cix1bat01-prv",
+      "listen_port": "17002",
+      "listen_port_ssl": "18002",
+      "cluster_name": "obpbat_cluster",
+      "ms_heap": "1g",
+      "mx_heap": "14g"
+    },
+    "frontend": {
+      "protocol": "https",
+      "admin_host": "cix1bat-adm.trial.limepoint.com",
+      "managed_host": "CIX1bat.trial.limepoint.com",
+      "otd_vip_name": "CIX1bat.trial.limepoint.com",
+      "admin_port": "18001",
+      "obpbat_port": "18002",
+      "t3_port": "14002"
+    }
+  },
+  "obpsoa": {
+    "release_version": "1.10.0",
+    "dual_site": "true",
+    "dns_domain_name": ".trial.limepoint.com",
+    "managed_servers_per_host": "1",
+    "wls_admin_user": "weblogic",
+    "wls_domain_name": "obpsoa_domain",
+    "soa_admin_user": "obpsoa_admin",
+    "soa_credentialmap_user": "OFSSUser",
+    "register_with_drift": "false",
+    "hostnameList": [
+      "cix1soa01",
+      "cix1soa02",
+      "cix1soa03",
+      "cix1soa04",
+      "cix1soa05",
+      "cix1soa06"
+    ],
+    "database": {
+      "scan_address": "cix1db.trial.limepoint.com",
+      "secondary_scan_address": "cix1db.trial.limepoint.com",
+      "set_dual_site_url": "true",
+      "listen_port": "1521",
+      "listen_port_ssl": "1299",
+      "service_name": "CIX1_SOA_PRIM",
+      "rcu_schema_prefix": "OBPSOA",
+      "encryption": "false",
+      "sysdba_username": "sys",
+      "ons_node_list": "cix1db.trial.limepoint.com:6200,ohdr3302.trial.limepoint.com:6200,ohdw3201.trial.limepoint.com:6200,ohdw3202.trial.limepoint.com:6200",
+      "soa_db_url": "jdbc:oracle:thin:@(DESCRIPTION_LIST=(LOAD_BALANCE=OFF)(FAILOVER=ON)(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=cix1db.trial.limepoint.com)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=CIX1_SOA_PRIM)))(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=cix1db.trial.limepoint.com)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=CIX1_SOA_PRIM))))",
+      "soa_db_url_ssl": "jdbc:oracle:thin:@(DESCRIPTION_LIST=(LOAD_BALANCE=OFF)(FAILOVER=ON)(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=cix1db.trial.limepoint.com)(PORT=1299))(CONNECT_DATA=(SERVICE_NAME=CIX1_SOA_PRIM))(SECURITY=(SSL_SERVER_CERT_DN=\\\"CN=cix1db.trial.limepoint.com,OU=Infrastructure Platform Services,O=LimePoint,L=Melbourne,ST=VIC,C=AU\\\")))(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=cix1db.trial.limepoint.com)(PORT=1299))(CONNECT_DATA=(SERVICE_NAME=CIX1_SOA_PRIM))(SECURITY=(SSL_SERVER_CERT_DN=\\\"CN=cix1db.trial.limepoint.com,OU=Infrastructure Platform Services,O=LimePoint,L=Melbourne,ST=VIC,C=AU\\\"))))"
+    },
+    "nm": {
+      "listen_address": "cix1soa01",
+      "listen_port": "16001"
+    },
+    "admin": {
+      "listen_address": "cix1soa-adm",
+      "listen_port": "17001",
+      "listen_port_ssl": "18001",
+      "listen_port_admin": "19001",
+      "ms_heap": "1g",
+      "mx_heap": "2g"
+    },
+    "soa_server": {
+      "hostnameList": [
+        "cix1soa01",
+        "cix1soa02",
+        "cix1soa03",
+        "cix1soa04",
+        "cix1soa05",
+        "cix1soa06"
+      ],
+      "baseHostnameList": [
+        "cix1soa01",
+        "cix1soa02",
+        "cix1soa03",
+        "cix1soa04",
+        "cix1soa05",
+        "cix1soa06"
+      ],
+      "listen_address": "cix1soa01",
+      "coherence_port": "15002",
+      "listen_port": "17002",
+      "listen_port_ssl": "18002",
+      "cluster_name": "soa_cluster",
+      "ms_heap": "1g",
+      "mx_heap": "16g"
+    },
+    "obphumantask_server": {
+      "hostnameList": [
+        "cix1obt01",
+        "cix1obt02",
+        "cix1obt03",
+        "cix1obt04",
+        "cix1obt05",
+        "cix1obt06"
+      ],
+      "baseHostnameList": [
+        "cix1soa01",
+        "cix1soa02",
+        "cix1soa03",
+        "cix1soa04",
+        "cix1soa05",
+        "cix1soa06"
+      ],
+      "listen_address": "cix1obt01",
+      "coherence_port": "15102",
+      "listen_port": "17102",
+      "listen_port_ssl": "18102",
+      "cluster_name": "hwf_cluster",
+      "ms_heap": "1g",
+      "mx_heap": "16g"
+    },
+    "bam_server": {
+      "hostnameList": [
+        "cix1bam01",
+        "cix1bam02"
+      ],
+      "baseHostnameList": [
+        "cix1soa01",
+        "cix1soa02",
+        "cix1soa03",
+        "cix1soa04",
+        "cix1soa05",
+        "cix1soa06"
+      ],
+      "listen_address": "cix1bam01",
+      "listen_port": "17202",
+      "listen_port_ssl": "18202",
+      "cluster_name": "bam_cluster",
+      "ms_heap": "1g",
+      "mx_heap": "8g"
+    },
+    "frontend": {
+      "protocol": "https",
+      "admin_host": "cix1soa-padm.trial.limepoint.com",
+      "admin_port": "18001",
+      "managed_host": "CIX1soa.trial.limepoint.com",
+      "bam_port": "18202",
+      "soa_port": "18002",
+      "ht_port": "18102",
+      "tcp_proxy_port": "14002",
+      "otd_vip_name": "CIX1soa.trial.limepoint.com",
+      "friendly_name": "obp-worklist-cix1.trial.limepoint.com",
+      "friendly_port": "443",
+      "t3_port": "14002"
+    }
+  },
+  "obpobu": {
+    "release_version": "1.10.0",
+    "dual_site": "true",
+    "dns_domain_name": ".trial.limepoint.com",
+    "managed_servers_per_host": "1",
+    "wls_admin_user": "weblogic",
+    "wls_domain_name": "obpui_domain",
+    "register_with_drift": "false",
+    "hostnameList": [
+      "cix1obu01",
+      "cix1obu02",
+      "cix1obu03",
+      "cix1obu04",
+      "cix1obu05",
+      "cix1obu06"
+    ],
+    "database": {
+      "scan_address": "cix1db.trial.limepoint.com",
+      "secondary_scan_address": "cix1db.trial.limepoint.com",
+      "set_dual_site_url": "true",
+      "listen_port": "1521",
+      "listen_port_ssl": "1299",
+      "service_name": "CIX1_OBP_PRIM",
+      "rcu_schema_prefix": "OBPUI",
+      "encryption": "false",
+      "sysdba_username": "sys",
+      "ons_node_list": "cix1db.trial.limepoint.com:6200,ohdr3302.trial.limepoint.com:6200,ohdw3201.trial.limepoint.com:6200,ohdw3202.trial.limepoint.com:6200",
+      "ui_db_url": "jdbc:oracle:thin:@(DESCRIPTION_LIST=(LOAD_BALANCE=OFF)(FAILOVER=ON)(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=cix1db.trial.limepoint.com)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=CIX1_OBP_PRIM)))(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=cix1db.trial.limepoint.com)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=CIX1_OBP_PRIM))))",
+      "ui_db_url_ssl": "jdbc:oracle:thin:@(DESCRIPTION_LIST=(LOAD_BALANCE=OFF)(FAILOVER=ON)(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=cix1db.trial.limepoint.com)(PORT=1299))(CONNECT_DATA=(SERVICE_NAME=CIX1_OBP_PRIM))(SECURITY=(SSL_SERVER_CERT_DN=\\\"CN=cix1db.trial.limepoint.com,OU=Infrastructure Platform Services,O=LimePoint,L=Melbourne,ST=VIC,C=AU\\\")))(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=cix1db.trial.limepoint.com)(PORT=1299))(CONNECT_DATA=(SERVICE_NAME=CIX1_OBP_PRIM))(SECURITY=(SSL_SERVER_CERT_DN=\\\"CN=cix1db.trial.limepoint.com,OU=Infrastructure Platform Services,O=LimePoint,L=Melbourne,ST=VIC,C=AU\\\"))))"
+    },
+    "nm": {
+      "listen_address": "cix1obu01-prv",
+      "listen_port": "16001"
+    },
+    "admin": {
+      "listen_address": "cix1obu-padm",
+      "listen_port": "17001",
+      "listen_port_ssl": "18001",
+      "listen_port_admin": "19001",
+      "ms_heap": "1g",
+      "mx_heap": "4g"
+    },
+    "obpui_server": {
+      "listen_address": "cix1obu01-prv",
+      "listen_port": "17002",
+      "listen_port_ssl": "18002",
+      "cluster_name": "obpui_cluster",
+      "ms_heap": "1g",
+      "mx_heap": "16g"
+    },
+    "frontend": {
+      "protocol": "https",
+      "admin_host": "cix1obu-adm.trial.limepoint.com",
+      "managed_host": "CIX1obu.trial.limepoint.com",
+      "otd_vip_name": "CIX1obu.trial.limepoint.com",
+      "friendly_name": "obp-banker-cix1.trial.limepoint.com",
+      "friendly_port": "443",
+      "admin_port": "18001",
+      "obu_port": "18002"
+    }
+  },
+  "obpdoc": {
+    "release_version": "1.12.0",
+    "dual_site": "true",
+    "dns_domain_name": ".trial.limepoint.com",
+    "version": "11.1.1.7",
+    "managed_servers_per_host": "1",
+    "wls_admin_user": "weblogic",
+    "wls_domain_name": "obpdoc_domain",
+    "register_with_drift": "false",
+    "app_endpoint": "http://localhost:8080/replace",
+    "hostnameList": [
+      "cix1doc01",
+      "cix1doc02",
+      "cix1doc03",
+      "cix1doc04"
+    ],
+    "database": {
+      "scan_address": "cix1db.trial.limepoint.com",
+      "secondary_scan_address": "cix1db.trial.limepoint.com",
+      "set_dual_site_url": "true",
+      "listen_port": "1521",
+      "listen_port_ssl": "1299",
+      "service_name": "CIX1_DOC_PRIM",
+      "rcu_schema_prefix": "OBPDOC",
+      "encryption": "false",
+      "sysdba_username": "sys",
+      "custom_schema": "DOCU_JMS_TLOGS",
+      "ons_node_list": "cix1db.trial.limepoint.com:6200,ohdr3302.trial.limepoint.com:6200,ohdw3201.trial.limepoint.com:6200,ohdw3202.trial.limepoint.com:6200",
+      "doc_db_url": "jdbc:oracle:thin:@(DESCRIPTION_LIST=(LOAD_BALANCE=OFF)(FAILOVER=ON)(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=cix1db.trial.limepoint.com)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=CIX1_DOC_PRIM)))(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=cix1db.trial.limepoint.com)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=CIX1_DOC_PRIM))))",
+      "doc_db_url_ssl": "jdbc:oracle:thin:@(DESCRIPTION_LIST=(LOAD_BALANCE=OFF)(FAILOVER=ON)(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=cix1db.trial.limepoint.com)(PORT=1299))(CONNECT_DATA=(SERVICE_NAME=CIX1_DOC_PRIM))(SECURITY=(SSL_SERVER_CERT_DN=\\\"CN=cix1db.trial.limepoint.com,OU=Infrastructure Platform Services,O=LimePoint,L=Melbourne,ST=VIC,C=AU\\\")))(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=cix1db.trial.limepoint.com)(PORT=1299))(CONNECT_DATA=(SERVICE_NAME=CIX1_DOC_PRIM))(SECURITY=(SSL_SERVER_CERT_DN=\\\"CN=cix1db.trial.limepoint.com,OU=Infrastructure Platform Services,O=LimePoint,L=Melbourne,ST=VIC,C=AU\\\"))))"
+    },
+    "nm": {
+      "listen_address": "cix1doc01-prv",
+      "listen_port": "16001"
+    },
+    "admin": {
+      "listen_address": "cix1doc-padm",
+      "listen_port": "17001",
+      "listen_port_ssl": "18001",
+      "listen_port_admin": "19001",
+      "ms_heap": "1g",
+      "mx_heap": "2g"
+    },
+    "soa_server": {
+      "listen_address": "cix1doc01-prv",
+      "listen_port": "17002",
+      "listen_port_ssl": "18002",
+      "cluster_name": "soa_cluster",
+      "ms_heap": "1g",
+      "mx_heap": "2g"
+    },
+    "dmkr_server": {
+      "listen_address": "cix1doc01-prv",
+      "listen_port": "17102",
+      "listen_port_ssl": "18102",
+      "cluster_name": "dmkr_cluster",
+      "ms_heap": "1g",
+      "mx_heap": "2g"
+    },
+    "jms_server": {
+      "listen_address": "cix1doc01-prv",
+      "listen_port": "17202",
+      "listen_port_ssl": "18202",
+      "cluster_name": "jms_cluster",
+      "ms_heap": "1g",
+      "mx_heap": "2g"
+    },
+    "idm_server": {
+      "listen_address": "cix1doc01-prv",
+      "listen_port": "17302",
+      "listen_port_ssl": "18302",
+      "cluster_name": "idm_cluster",
+      "ms_heap": "1g",
+      "mx_heap": "2g"
+    },
+    "documaker": {
+      "smtp_user": "smtpuser",
+      "admin_user": "documaker",
+      "ums_user": "ums_user",
+      "ucm_user": "ucm_user",
+      "jms_user": "jmsadmin",
+      "admin_db_user": "dmkr_admin",
+      "asline_db_user": "dmkr_asline"
+    },
+    "frontend": {
+      "protocol": "https",
+      "admin_host": "cix1doc-adm.trial.limepoint.com",
+      "admin_port": "18001",
+      "managed_host": "CIX1doc.trial.limepoint.com",
+      "otd_vip_name": "CIX1doc.trial.limepoint.com",
+      "friendly_name": "obp-files-cix1.trial.limepoint.com",
+      "friendly_port": "443",
+      "soa_port": "18002",
+      "dmkr_port": "18102",
+      "jms_port": "18202",
+      "idm_port": "18302",
+      "t3_jms_vip_port": "17202"
+    }
+  },
+  "obpipm": {
+    "release_version": "1.11.0",
+    "dns_domain_name": ".trial.limepoint.com",
+    "managed_servers_per_host": "1",
+    "wls_admin_user": "weblogic",
+    "ipm_admin_user": "obpipm_admin",
+    "wls_domain_name": "obpipm_domain",
+    "register_with_drift": "false",
+    "hostnameList": [
+      "cix1ipm01",
+      "cix1ipm02",
+      "cix1ipm03",
+      "cix1ipm04"
+    ],
+    "database": {
+      "scan_address": "cix1db.trial.limepoint.com",
+      "listen_port": "1521",
+      "listen_port_ssl": "1299",
+      "service_name": "CIX1_UCM_PRIM",
+      "dcms_service_name": "CIX1_CST_PRIM",
+      "custom_schema": "DCMS",
+      "rcu_schema_prefix": "OBPIPM",
+      "encryption": "false",
+      "sysdba_username": "sys",
+      "ons_node_list": "cix1db.trial.limepoint.com:6200,ohdr3302.trial.limepoint.com:6200",
+      "dcms_ons_node_list": "cix1db.trial.limepoint.com:6200,ohdr3302.trial.limepoint.com:6200,ohdw3201.trial.limepoint.com:6200,ohdw3202.trial.limepoint.com:6200",
+      "dcms_url": "jdbc:oracle:thin:@(DESCRIPTION_LIST=(LOAD_BALANCE=OFF)(FAILOVER=ON)(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=cix1db.trial.limepoint.com)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=CIX1_CST_PRIM)))(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=cix1db.trial.limepoint.com)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=CIX1_CST_PRIM))))",
+      "dcms_url_ssl": "jdbc:oracle:thin:@(DESCRIPTION_LIST=(LOAD_BALANCE=OFF)(FAILOVER=ON)(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=cix1db.trial.limepoint.com)(PORT=1299))(CONNECT_DATA=(SERVICE_NAME=CIX1_CST_PRIM))(SECURITY=(SSL_SERVER_CERT_DN=\\\"CN=cix1db.trial.limepoint.com,OU=Infrastructure Platform Services,O=LimePoint,L=Melbourne,ST=VIC,C=AU\\\")))(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=cix1db.trial.limepoint.com)(PORT=1299))(CONNECT_DATA=(SERVICE_NAME=CIX1_CST_PRIM))(SECURITY=(SSL_SERVER_CERT_DN=\\\"CN=cix1db.trial.limepoint.com,OU=Infrastructure Platform Services,O=LimePoint,L=Melbourne,ST=VIC,C=AU\\\"))))"
+    },
+    "nm": {
+      "listen_address": "cix1ipm01-prv",
+      "listen_port": "16001"
+    },
+    "admin": {
+      "listen_address": "cix1ipm-padm",
+      "listen_port": "17001",
+      "listen_port_ssl": "18001",
+      "listen_port_admin": "19001",
+      "ms_heap": "1g",
+      "mx_heap": "4g"
+    },
+    "ucm_server": {
+      "hostnameList": [
+        "cix1ucm01",
+        "cix1ucm02",
+        "cix1ucm03",
+        "cix1ucm04"
+      ],
+      "baseHostnameList": [
+        "cix1ipm01",
+        "cix1ipm02",
+        "cix1ipm03",
+        "cix1ipm04"
+      ],
+      "listen_address": "cix1ucm01-prv",
+      "listen_port": "17002",
+      "listen_port_ssl": "18002",
+      "cluster_name": "ucm_cluster",
+      "intradoc_port": "14002",
+      "http_address_filter": "127.0.0.1|0:0:0:0:0:0:0:1",
+      "ms_heap": "1g",
+      "mx_heap": "8g"
+    },
+    "ipm_server": {
+      "hostnameList": [
+        "cix1ipm01",
+        "cix1ipm02",
+        "cix1ipm03",
+        "cix1ipm04"
+      ],
+      "baseHostnameList": [
+        "cix1ipm01",
+        "cix1ipm02",
+        "cix1ipm03",
+        "cix1ipm04"
+      ],
+      "listen_address": "cix1ipm01-prv",
+      "listen_port": "17102",
+      "listen_port_ssl": "18102",
+      "cluster_name": "ipm_cluster",
+      "ms_heap": "1g",
+      "mx_heap": "8g"
+    },
+    "frontend": {
+      "protocol": "https",
+      "admin_host": "cix1ipm-adm.trial.limepoint.com",
+      "admin_port": "18001",
+      "otd_vip_name": "CIX1ipm.trial.limepoint.com",
+      "friendly_name": "obp-files-cix1.trial.limepoint.com",
+      "managed_host": "CIX1ipm.trial.limepoint.com",
+      "ucm_port": "18002",
+      "ipm_port": "18102",
+      "friendly_port": "443"
+    }
+  },
+  "obpurm": {
+    "release_version": "1.11.0",
+    "dns_domain_name": ".trial.limepoint.com",
+    "managed_servers_per_host": "1",
+    "wls_admin_user": "weblogic",
+    "urm_admin_user": "obpurm_admin",
+    "wls_domain_name": "obpurm_domain",
+    "register_with_drift": "false",
+    "hostnameList": [
+      "cix1urm01",
+      "cix1urm02"
+    ],
+    "database": {
+      "scan_address": "cix1db.trial.limepoint.com",
+      "secondary_scan_address": "cix1db.trial.limepoint.com",
+      "set_dual_site_url": "true",
+      "listen_port": "1521",
+      "listen_port_ssl": "1299",
+      "service_name": "CIX1_INT_PRIM",
+      "rcu_schema_prefix": "obpurm",
+      "encryption": "false",
+      "sysdba_username": "sys",
+      "ons_node_list": "cix1db.trial.limepoint.com:6200,ohdr3302.trial.limepoint.com:6200,ohdw3201.trial.limepoint.com:6200,ohdw3202.trial.limepoint.com:6200"
+    },
+    "nm": {
+      "listen_address": "cix1urm01-prv",
+      "listen_port": "16001"
+    },
+    "admin": {
+      "listen_address": "cix1urm-padm",
+      "listen_port": "17001",
+      "listen_port_ssl": "18001",
+      "listen_port_admin": "19001",
+      "ms_heap": "1g",
+      "mx_heap": "4g"
+    },
+    "urm_server": {
+      "listen_address": "cix1urm01-prv",
+      "listen_port": "17002",
+      "listen_port_ssl": "18002",
+      "cluster_name": "urm_cluster",
+      "intradoc_port": "14002",
+      "ms_heap": "1g",
+      "mx_heap": "4g"
+    },
+    "frontend": {
+      "protocol": "https",
+      "admin_host": "cix1urm-adm.trial.limepoint.com",
+      "admin_port": "18001",
+      "otd_vip_name": "CIX1urm.trial.limepoint.com",
+      "friendly_name": "obp-records-cix1.trial.limepoint.com",
+      "managed_host": "CIX1urm.trial.limepoint.com",
+      "urm_port": "18002",
+      "friendly_port": "443"
+    }
+  },
+  "obpoim": {
+    "release_version": "1.12.0",
+    "dns_domain_name": ".trial.limepoint.com",
+    "managed_servers_per_host": "1",
+    "wls_admin_user": "weblogic",
+    "oim_admin_user": "xelsysadm",
+    "wls_domain_name": "obpoim_domain",
+    "register_with_drift": "false",
+    "hostnameList": [
+      "cix1oim01",
+      "cix1oim02"
+    ],
+    "database": {
+      "scan_address": "cix1db.trial.limepoint.com",
+      "secondary_scan_address": "cix1db.trial.limepoint.com",
+      "set_dual_site_url": "true",
+      "listen_port": "1521",
+      "listen_port_ssl": "1299",
+      "service_name": "CIX1_IDM_PRIM",
+      "rcu_schema_prefix": "OBPOIM",
+      "encryption": "false",
+      "sysdba_username": "sys",
+      "ons_node_list": "cix1db.trial.limepoint.com:6200,ohdr3302.trial.limepoint.com:6200,ohdw3201.trial.limepoint.com:6200,ohdw3202.trial.limepoint.com:6200"
+    },
+    "nm": {
+      "listen_address": "cix1oim01",
+      "listen_port": "16101"
+    },
+    "admin": {
+      "listen_address": "cix1oim-adm",
+      "listen_port": "17101",
+      "listen_port_ssl": "18101",
+      "listen_port_admin": "19101",
+      "ms_heap": "1g",
+      "mx_heap": "2g"
+    },
+    "oim_server": {
+      "listen_address": "cix1oim01",
+      "listen_port": "17202",
+      "listen_port_ssl": "18202",
+      "cluster_name": "oim_cluster",
+      "ms_heap": "1g",
+      "mx_heap": "8g"
+    },
+    "soa_server": {
+      "listen_address": "cix1oim01",
+      "listen_port": "17302",
+      "listen_port_ssl": "18302",
+      "cluster_name": "soa_cluster",
+      "ms_heap": "1g",
+      "mx_heap": "4g"
+    },
+    "frontend": {
+      "protocol": "https",
+      "admin_host": "cix1oim-padm.trial.limepoint.com",
+      "admin_port": "18101",
+      "otd_vip_name": "CIX1oim.trial.limepoint.com",
+      "friendly_name": "obp-identity-cix1.trial.limepoint.com",
+      "managed_host": "CIX1oim.trial.limepoint.com",
+      "oim_port": "18202",
+      "soa_port": "18302",
+      "bi_port": "18402",
+      "friendly_port": "443"
+    }
+  },
+  "obpodi": {
+    "release_version": "1.11.0",
+    "dual_site": "true",
+    "dns_domain_name": ".trial.limepoint.com",
+    "managed_servers_per_host": "1",
+    "wls_admin_user": "weblogic",
+    "wls_domain_name": "obpodi_domain",
+    "register_with_drift": "false",
+    "hostnameList": [
+      "cix1odi01",
+      "cix1odi02"
+    ],
+    "database": {
+      "scan_address": "cix1db.trial.limepoint.com",
+      "secondary_scan_address": "cix1db.trial.limepoint.com",
+      "set_dual_site_url": "true",
+      "listen_port": "1521",
+      "listen_port_ssl": "1299",
+      "service_name": "CIX1_INT_PRIM",
+      "rcu_schema_prefix": "OBPODI",
+      "custom_schema": "OBPODI_CSA_REPO",
+      "encryption": "false",
+      "sysdba_username": "sys",
+      "ons_node_list": "cix1db.trial.limepoint.com:6200,ohdr3302.trial.limepoint.com:6200,ohdw3201.trial.limepoint.com:6200,ohdw3202.trial.limepoint.com:6200",
+      "odi_db_url": "jdbc:oracle:thin:@(DESCRIPTION_LIST=(LOAD_BALANCE=OFF)(FAILOVER=ON)(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=cix1db.trial.limepoint.com)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=CIX1_INT_PRIM)))(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=cix1db.trial.limepoint.com)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=CIX1_INT_PRIM))))",
+      "odi_db_url_ssl": "jdbc:oracle:thin:@(DESCRIPTION_LIST=(LOAD_BALANCE=OFF)(FAILOVER=ON)(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=cix1db.trial.limepoint.com)(PORT=1299))(CONNECT_DATA=(SERVICE_NAME=CIX1_INT_PRIM))(SECURITY=(SSL_SERVER_CERT_DN=\\\"CN=cix1db.trial.limepoint.com,OU=Infrastructure Platform Services,O=LimePoint,L=Melbourne,ST=VIC,C=AU\\\")))(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=cix1db.trial.limepoint.com)(PORT=1299))(CONNECT_DATA=(SERVICE_NAME=CIX1_INT_PRIM))(SECURITY=(SSL_SERVER_CERT_DN=\\\"CN=cix1db.trial.limepoint.com,OU=Infrastructure Platform Services,O=LimePoint,L=Melbourne,ST=VIC,C=AU\\\"))))"
+    },
+    "nm": {
+      "listen_address": "cix1odi01-prv",
+      "listen_port": "16001"
+    },
+    "admin": {
+      "listen_address": "cix1odi-padm",
+      "listen_port": "17001",
+      "listen_port_ssl": "18001",
+      "listen_port_admin": "19001",
+      "ms_heap": "1g",
+      "mx_heap": "2g"
+    },
+    "odi_server": {
+      "listen_address": "cix1odi01-prv",
+      "listen_port": "17002",
+      "listen_port_ssl": "18002",
+      "coh_listen_port": "15002",
+      "cluster_name": "obpodi_cluster",
+      "ms_heap": "1g",
+      "mx_heap": "4g"
+    },
+    "frontend": {
+      "protocol": "https",
+      "admin_host": "cix1odi-adm.trial.limepoint.com",
+      "admin_port": "18001",
+      "managed_host": "CIX1odi.trial.limepoint.com",
+      "otd_vip_name": "CIX1odi.trial.limepoint.com",
+      "odi_port": "18002"
+    }
+  },
+  "obpoid": {
+    "release_version": "1.12.0",
+    "dns_domain_name": ".trial.limepoint.com",
+    "managed_servers_per_host": "1",
+    "register_with_drift": "false",
+    "wls_admin_user": "weblogic",
+    "wls_domain_name": "obpoid_domain",
+    "hostnameList": [
+      "cix1oid01",
+      "cix1oid02"
+    ],
+    "database": {
+      "scan_address": "cix1db.trial.limepoint.com",
+      "listen_port": "1521",
+      "listen_port_ssl": "1299",
+      "service_name": "CIX1_SEC_PRIM",
+      "rcu_schema_prefix": "ODS",
+      "encryption": "false",
+      "sysdba_username": "sys",
+      "ons_node_list": "cix1db.trial.limepoint.com:6200,ohdr3302.trial.limepoint.com:6200"
+    },
+    "nm": {
+      "listen_address": "cix1oid01-prv",
+      "listen_port": "16010"
+    },
+    "admin": {
+      "listen_address": "cix1oid-padm",
+      "listen_port": "17110",
+      "listen_port_ssl": "18110",
+      "listen_port_admin": "19110",
+      "ms_heap": "1g",
+      "mx_heap": "4g"
+    },
+    "oidldap": {
+      "listen_address": "cix1oid01-prv",
+      "listen_port": "17001",
+      "listen_port_ssl": "18001",
+      "admin_user": "cn=orcladmin"
+    },
+    "oidrepl": {
+      "listen_address": "cix1oid01-prv",
+      "listen_port": "17002",
+      "listen_port_ssl": "18002",
+      "admin_user": "cn=orcladmin"
+    },
+    "frontend": {
+      "managed_host": "CIX1oid.trial.limepoint.com",
+      "ldap_port": "18001",
+      "repl_port": "18002",
+      "protocol": "https",
+      "admin_host": "cix1oid-adm.trial.limepoint.com",
+      "admin_port": "18110"
+    }
+  },
+  "obpcid": {
+    "release_version": "1.12.0",
+    "dns_domain_name": ".trial.limepoint.com",
+    "managed_servers_per_host": "1",
+    "register_with_drift": "false",
+    "wls_admin_user": "weblogic",
+    "wls_domain_name": "obpcid_domain",
+    "hostnameList": [
+      "cix1cid01",
+      "cix1cid02"
+    ],
+    "database": {
+      "scan_address": "cix1db.trial.limepoint.com",
+      "listen_port": "1521",
+      "listen_port_ssl": "1299",
+      "service_name": "CIX1_OSB_PRIM",
+      "rcu_schema_prefix": "ODS",
+      "encryption": "false",
+      "sysdba_username": "sys",
+      "ons_node_list": "cix1db.trial.limepoint.com:6200,ohdr3302.trial.limepoint.com:6200"
+    },
+    "nm": {
+      "listen_address": "cix1cid01-prv",
+      "listen_port": "16010"
+    },
+    "admin": {
+      "listen_address": "cix1cid-padm",
+      "listen_port": "17110",
+      "listen_port_ssl": "18110",
+      "listen_port_admin": "19110",
+      "ms_heap": "1g",
+      "mx_heap": "4g"
+    },
+    "oidldap": {
+      "listen_address": "cix1cid01-prv",
+      "listen_port": "17001",
+      "listen_port_ssl": "18001",
+      "admin_user": "cn=orcladmin"
+    },
+    "oidrepl": {
+      "listen_address": "cix1cid01-prv",
+      "listen_port": "17002",
+      "listen_port_ssl": "18002",
+      "admin_user": "cn=orcladmin"
+    },
+    "frontend": {
+      "managed_host": "CIX1cid.trial.limepoint.com",
+      "ldap_port": "18001",
+      "repl_port": "18002",
+      "protocol": "https",
+      "admin_host": "cix1cid-adm.trial.limepoint.com",
+      "admin_port": "18110"
+    }
+  },
+  "obpoam": {
+    "release_version": "1.12.0",
+    "dns_domain_name": ".trial.limepoint.com",
+    "managed_servers_per_host": "1",
+    "wls_admin_user": "weblogic",
+    "wls_domain_name": "obpoam_domain",
+    "register_with_drift": "false",
+    "hostnameList": [
+      "cix1oam01",
+      "cix1oam02"
+    ],
+    "database": {
+      "scan_address": "cix1db.trial.limepoint.com",
+      "listen_port": "1521",
+      "listen_port_ssl": "1299",
+      "service_name": "CIX1_SEC_PRIM",
+      "rcu_schema_prefix": "OBPOAM",
+      "encryption": "false",
+      "sysdba_username": "sys",
+      "ons_node_list": "cix1db.trial.limepoint.com:6200,ohdr3302.trial.limepoint.com:6200"
+    },
+    "nm": {
+      "listen_address": "cix1oam01-prv",
+      "listen_port": "16001"
+    },
+    "admin": {
+      "listen_address": "cix1oam-padm",
+      "listen_port": "17001",
+      "listen_port_ssl": "18001",
+      "listen_port_admin": "19001",
+      "ms_heap": "1g",
+      "mx_heap": "4g"
+    },
+    "oam_server": {
+      "listen_address": "cix1oam01-prv",
+      "listen_port": "17002",
+      "listen_port_ssl": "18002",
+      "cluster_name": "oam_cluster",
+      "ms_heap": "1g",
+      "mx_heap": "8g"
+    },
+    "oam_policy_mgr": {
+      "listen_address": "cix1oam01-prv",
+      "listen_port": "17202",
+      "listen_port_ssl": "18202",
+      "cluster_name": "opm_cluster",
+      "ms_heap": "1g",
+      "mx_heap": "2g"
+    },
+    "frontend": {
+      "protocol": "https",
+      "admin_host": "cix1oam-adm.trial.limepoint.com",
+      "friendly_name": "obp-sso-cix1.trial.limepoint.com",
+      "friendly_port": "443",
+      "admin_port": "18001",
+      "managed_host": "CIX1oam.trial.limepoint.com"
+    }
+  },
+  "obposb": {
+    "release_version": "1.10.0",
+    "dns_domain_name": ".trial.limepoint.com",
+    "managed_servers_per_host": "1",
+    "wls_admin_user": "weblogic",
+    "wls_domain_name": "obposb_domain",
+    "register_with_drift": "false",
+    "enable_wildcard": "false",
+    "sa_obp_och_username": "UNTMP001T",
+    "sa_obp_bcm_username": "OBPBCM-UAT",
+    "sa_obp_netiq_username": "STS-CSH-ServiceAccount",
+    "rb_issuer_name": "https://login-preprod.trial.limepoint.com/nidp/wstrust/sts",
+    "hostnameList": [
+      "cix1osb01",
+      "cix1osb02",
+      "cix1osb03",
+      "cix1osb04"
+    ],
+    "database": {
+      "scan_address": "cix1db.trial.limepoint.com",
+      "listen_port": "1521",
+      "listen_port_ssl": "1299",
+      "service_name": "CIX1_OSB_PRIM",
+      "rcu_schema_prefix": "OBPOSB",
+      "custom_schema": "OSB_JMS_TLOGS",
+      "encryption": "false",
+      "sysdba_username": "sys",
+      "ons_node_list": "cix1db.trial.limepoint.com:6200,ohdr3302.trial.limepoint.com:6200"
+    },
+    "nm": {
+      "listen_address": "cix1osb01-prv",
+      "listen_port": "16001"
+    },
+    "admin": {
+      "listen_address": "cix1osb-padm",
+      "listen_port": "17001",
+      "listen_port_ssl": "18001",
+      "listen_port_admin": "19001",
+      "ms_heap": "1g",
+      "mx_heap": "6g"
+    },
+    "osb_server": {
+      "listen_address": "cix1osb01-prv",
+      "listen_port": "17002",
+      "listen_port_ssl": "18002",
+      "coh_listen_port": "15002",
+      "cluster_name": "obposb_cluster",
+      "ms_heap": "1g",
+      "mx_heap": "8g"
+    },
+    "frontend": {
+      "protocol": "https",
+      "admin_host": "cix1osb-adm.trial.limepoint.com",
+      "admin_port": "18001",
+      "otd_vip_name": "CIX1osb.trial.limepoint.com",
+      "osb_port": "18002",
+      "managed_host": "CIX1osb.trial.limepoint.com"
+    }
+  },
+  "obpotd": {
+    "release_version": "2.0.1",
+    "dns_domain_name": ".trial.limepoint.com",
+    "managed_servers_per_host": "1",
+    "wls_admin_user": "weblogic",
+    "wls_domain_name": "obpotd_domain",
+    "register_with_drift": "false",
+    "hostnameList": [
+      "cix1otd01",
+      "cix1otd02"
+    ],
+    "nm": {
+      "listen_address": "cix1otd01-prv",
+      "listen_port": "16001"
+    },
+    "admin": {
+      "listen_address": "cix1otd-padm",
+      "listen_port": "17001",
+      "listen_port_ssl": "18001",
+      "listen_port_admin": "19001",
+      "ms_heap": "1g",
+      "mx_heap": "6g"
+    },
+    "frontend": {
+      "protocol": "https",
+      "admin_host": "cix1otd-adm.trial.limepoint.com",
+      "admin_port": "18001"
+    },
+    "otd_config": {
+      "obpoid": {
+        "routerId": "161",
+        "server_name": "CIX1oid.trial.limepoint.com",
+        "e_vip_name": "CIX1oid.trial.limepoint.com",
+        "origin_pool_list": [
+          {
+            "name": "obpoid",
+            "type": "tcp",
+            "members": [
+              {
+                "host": "cix1oid01-prv.trial.limepoint.com",
+                "port": "18001"
+              },
+              {
+                "host": "cix1oid02-prv.trial.limepoint.com",
+                "port": "18001"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obpoid",
+            "tcp": {
+              "e_listener_port": "18001",
+              "origin_pool": "obpoid"
+            }
+          }
+        ]
+      },
+      "obpcid": {
+        "routerId": "177",
+        "server_name": "CIX1cid.trial.limepoint.com",
+        "e_vip_name": "CIX1cid.trial.limepoint.com",
+        "origin_pool_list": [
+          {
+            "name": "obpcid",
+            "type": "tcp",
+            "members": [
+              {
+                "host": "cix1cid01-prv.trial.limepoint.com",
+                "port": "18001"
+              },
+              {
+                "host": "cix1cid02-prv.trial.limepoint.com",
+                "port": "18001"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obpcid",
+            "tcp": {
+              "e_listener_port": "18001",
+              "origin_pool": "obpcid"
+            }
+          }
+        ]
+      },
+      "obpobh": {
+        "routerId": "162",
+        "server_name": "CIX1obh.trial.limepoint.com",
+        "e_vip_name": "CIX1obh.trial.limepoint.com",
+        "origin_pool_list": [
+          {
+            "name": "obpobh",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "cix1obh01-prv.trial.limepoint.com",
+                "port": "18002"
+              },
+              {
+                "host": "cix1obh02-prv.trial.limepoint.com",
+                "port": "18003"
+              },
+              {
+                "host": "cix1obh03-prv.trial.limepoint.com",
+                "port": "18004"
+              },
+              {
+                "host": "cix1obh04-prv.trial.limepoint.com",
+                "port": "18005"
+              },
+              {
+                "host": "cix1obh05-prv.trial.limepoint.com",
+                "port": "18006"
+              },
+              {
+                "host": "cix1obh06-prv.trial.limepoint.com",
+                "port": "18007"
+              },
+              {
+                "host": "cix1obh07-prv.trial.limepoint.com",
+                "port": "18008"
+              },
+              {
+                "host": "cix1obh08-prv.trial.limepoint.com",
+                "port": "18009"
+              }
+            ]
+          },
+          {
+            "name": "obpobh",
+            "type": "tcp",
+            "members": [
+              {
+                "host": "cix1obh01-prv.trial.limepoint.com",
+                "port": "18002"
+              },
+              {
+                "host": "cix1obh02-prv.trial.limepoint.com",
+                "port": "18003"
+              },
+              {
+                "host": "cix1obh03-prv.trial.limepoint.com",
+                "port": "18004"
+              },
+              {
+                "host": "cix1obh04-prv.trial.limepoint.com",
+                "port": "18005"
+              },
+              {
+                "host": "cix1obh05-prv.trial.limepoint.com",
+                "port": "18006"
+              },
+              {
+                "host": "cix1obh06-prv.trial.limepoint.com",
+                "port": "18007"
+              },
+              {
+                "host": "cix1obh07-prv.trial.limepoint.com",
+                "port": "18008"
+              },
+              {
+                "host": "cix1obh08-prv.trial.limepoint.com",
+                "port": "18009"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obpobh",
+            "ssl": {
+              "e_listener_port": "18002",
+              "origin_pool": "obpobh"
+            },
+            "tcp": {
+              "e_listener_port": "14002",
+              "origin_pool": "obpobh"
+            }
+          }
+        ]
+      },
+      "obpobu": {
+        "routerId": "163",
+        "server_name": "CIX1obu.trial.limepoint.com",
+        "e_vip_name": "cix1obu01.trial.limepoint.com",
+        "origin_pool_list": [
+          {
+            "name": "obpobu",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "cix1obu01-prv.trial.limepoint.com",
+                "port": "18002"
+              },
+              {
+                "host": "cix1obu02-prv.trial.limepoint.com",
+                "port": "18003"
+              },
+              {
+                "host": "cix1obu03-prv.trial.limepoint.com",
+                "port": "18004"
+              },
+              {
+                "host": "cix1obu04-prv.trial.limepoint.com",
+                "port": "18005"
+              },
+              {
+                "host": "cix1obu05-prv.trial.limepoint.com",
+                "port": "18006"
+              },
+              {
+                "host": "cix1obu06-prv.trial.limepoint.com",
+                "port": "18007"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obpobu",
+            "ssl": {
+              "e_listener_port": "18002",
+              "origin_pool": "obpobu"
+            }
+          }
+        ]
+      },
+      "obpsoa": {
+        "routerId": "164",
+        "server_name": "CIX1soa.trial.limepoint.com",
+        "e_vip_name": "cix1soa01.trial.limepoint.com",
+        "origin_pool_list": [
+          {
+            "name": "obpsoa",
+            "type": "ssl",
+            "request_uri": "/soa-infra/services/isSoaServerReady",
+            "members": [
+              {
+                "host": "cix1soa01.trial.limepoint.com",
+                "port": "18002"
+              },
+              {
+                "host": "cix1soa02.trial.limepoint.com",
+                "port": "18003"
+              },
+              {
+                "host": "cix1soa03.trial.limepoint.com",
+                "port": "18004"
+              },
+              {
+                "host": "cix1soa04.trial.limepoint.com",
+                "port": "18005"
+              },
+              {
+                "host": "cix1soa05.trial.limepoint.com",
+                "port": "18006"
+              },
+              {
+                "host": "cix1soa06.trial.limepoint.com",
+                "port": "18007"
+              }
+            ]
+          },
+          {
+            "name": "obpsoa",
+            "type": "tcp",
+            "members": [
+              {
+                "host": "cix1soa01.trial.limepoint.com",
+                "port": "18002"
+              },
+              {
+                "host": "cix1soa02.trial.limepoint.com",
+                "port": "18003"
+              },
+              {
+                "host": "cix1soa03.trial.limepoint.com",
+                "port": "18004"
+              },
+              {
+                "host": "cix1soa04.trial.limepoint.com",
+                "port": "18005"
+              },
+              {
+                "host": "cix1soa05.trial.limepoint.com",
+                "port": "18006"
+              },
+              {
+                "host": "cix1soa06.trial.limepoint.com",
+                "port": "18007"
+              }
+            ]
+          },
+          {
+            "name": "obpht",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "cix1obt01.trial.limepoint.com",
+                "port": "18102"
+              },
+              {
+                "host": "cix1obt02.trial.limepoint.com",
+                "port": "18103"
+              },
+              {
+                "host": "cix1obt03.trial.limepoint.com",
+                "port": "18104"
+              },
+              {
+                "host": "cix1obt04.trial.limepoint.com",
+                "port": "18105"
+              },
+              {
+                "host": "cix1obt05.trial.limepoint.com",
+                "port": "18106"
+              },
+              {
+                "host": "cix1obt06.trial.limepoint.com",
+                "port": "18107"
+              }
+            ]
+          },
+          {
+            "name": "obpbam",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "cix1bam01.trial.limepoint.com",
+                "port": "18202"
+              },
+              {
+                "host": "cix1bam02.trial.limepoint.com",
+                "port": "18203"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obpsoa",
+            "ssl": {
+              "e_listener_port": "18002",
+              "origin_pool": "obpsoa",
+              "compression_rules": [
+                {
+                  "name": "obpsoa-compression-rule-1",
+                  "condition": "$uri =~ \\\".*integration\\\\\\\\/.*\\\" and not $uri =~ \\\".*(gif|jpe?g|png)$\\\"",
+                  "compression_level": "9"
+                }
+              ]
+            },
+            "tcp": {
+              "e_listener_port": "14002",
+              "origin_pool": "obpsoa"
+            }
+          },
+          {
+            "name": "obpht",
+            "ssl": {
+              "e_listener_port": "18102",
+              "origin_pool": "obpht"
+            }
+          },
+          {
+            "name": "obpbam",
+            "ssl": {
+              "e_listener_port": "18202",
+              "origin_pool": "obpbam",
+              "compression_rules": [
+                {
+                  "name": "obpbam-compression-rule-1",
+                  "condition": "$uri =~ \\\"OracleBAMWS\\\\\\\\/*\\\" or $uri =~ \\\"oracleBAM\\\\\\\\/*\\\" and not $uri =~ \\\".*(gif|jpe?g|png)$\\\"",
+                  "compression_level": "9"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "obpipm": {
+        "routerId": "165",
+        "server_name": "CIX1ipm.trial.limepoint.com",
+        "e_vip_name": "CIX1ipm.trial.limepoint.com",
+        "origin_pool_list": [
+          {
+            "name": "obpipm",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "cix1ipm01-prv.trial.limepoint.com",
+                "port": "18102"
+              },
+              {
+                "host": "cix1ipm02-prv.trial.limepoint.com",
+                "port": "18103"
+              },
+              {
+                "host": "cix1ipm03-prv.trial.limepoint.com",
+                "port": "18104"
+              },
+              {
+                "host": "cix1ipm04-prv.trial.limepoint.com",
+                "port": "18105"
+              }
+            ]
+          },
+          {
+            "name": "obpucm",
+            "type": "ssl",
+            "request_uri": "/cs/checkucm.html",
+            "members": [
+              {
+                "host": "cix1ucm01-prv.trial.limepoint.com",
+                "port": "18002"
+              },
+              {
+                "host": "cix1ucm02-prv.trial.limepoint.com",
+                "port": "18003"
+              },
+              {
+                "host": "cix1ucm03-prv.trial.limepoint.com",
+                "port": "18004"
+              },
+              {
+                "host": "cix1ucm04-prv.trial.limepoint.com",
+                "port": "18005"
+              }
+            ]
+          },
+          {
+            "name": "obpucm",
+            "type": "tcp",
+            "members": [
+              {
+                "host": "cix1ucm01-prv.trial.limepoint.com",
+                "port": "14002"
+              },
+              {
+                "host": "cix1ucm02-prv.trial.limepoint.com",
+                "port": "14002"
+              },
+              {
+                "host": "cix1ucm03-prv.trial.limepoint.com",
+                "port": "14002"
+              },
+              {
+                "host": "cix1ucm04-prv.trial.limepoint.com",
+                "port": "14002"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obpipm",
+            "ssl": {
+              "e_listener_port": "18102",
+              "origin_pool": "obpipm",
+              "compression_rules": [
+                {
+                  "name": "obpipm-compression-rule-1",
+                  "condition": "$uri =~ \\\"imaging\\\\\\\\/*\\\" and not $uri =~ \\\".*(gif|jpe?g|png)$\\\"",
+                  "compression_level": "9"
+                }
+              ]
+            }
+          },
+          {
+            "name": "obpucm",
+            "ssl": {
+              "e_listener_port": "18002",
+              "origin_pool": "obpucm"
+            },
+            "tcp": {
+              "e_listener_port": "14002",
+              "origin_pool": "obpucm"
+            }
+          }
+        ]
+      },
+      "obpdoc": {
+        "routerId": "166",
+        "server_name": "CIX1doc.trial.limepoint.com",
+        "e_vip_name": "CIX1doc.trial.limepoint.com",
+        "origin_pool_list": [
+          {
+            "name": "obpdocdmkr",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "cix1doc01-prv.trial.limepoint.com",
+                "port": "18102"
+              },
+              {
+                "host": "cix1doc02-prv.trial.limepoint.com",
+                "port": "18103"
+              },
+              {
+                "host": "cix1doc03-prv.trial.limepoint.com",
+                "port": "18104"
+              },
+              {
+                "host": "cix1doc04-prv.trial.limepoint.com",
+                "port": "18105"
+              }
+            ]
+          },
+          {
+            "name": "obpdocjms",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "cix1doc01-prv.trial.limepoint.com",
+                "port": "18202"
+              },
+              {
+                "host": "cix1doc02-prv.trial.limepoint.com",
+                "port": "18203"
+              },
+              {
+                "host": "cix1doc03-prv.trial.limepoint.com",
+                "port": "18204"
+              },
+              {
+                "host": "cix1doc04-prv.trial.limepoint.com",
+                "port": "18205"
+              }
+            ]
+          },
+          {
+            "name": "obpdocjms",
+            "type": "tcp",
+            "members": [
+              {
+                "host": "cix1doc01-prv.trial.limepoint.com",
+                "port": "17202"
+              },
+              {
+                "host": "cix1doc02-prv.trial.limepoint.com",
+                "port": "17203"
+              },
+              {
+                "host": "cix1doc03-prv.trial.limepoint.com",
+                "port": "17204"
+              },
+              {
+                "host": "cix1doc04-prv.trial.limepoint.com",
+                "port": "17205"
+              }
+            ]
+          },
+          {
+            "name": "obpdocidm",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "cix1doc01-prv.trial.limepoint.com",
+                "port": "18302"
+              },
+              {
+                "host": "cix1doc02-prv.trial.limepoint.com",
+                "port": "18303"
+              },
+              {
+                "host": "cix1doc03-prv.trial.limepoint.com",
+                "port": "18304"
+              },
+              {
+                "host": "cix1doc04-prv.trial.limepoint.com",
+                "port": "18305"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obpdocdmkr",
+            "ssl": {
+              "e_listener_port": "18102",
+              "origin_pool": "obpdocdmkr"
+            }
+          },
+          {
+            "name": "obpdocjms",
+            "ssl": {
+              "e_listener_port": "18202",
+              "origin_pool": "obpdocjms"
+            },
+            "tcp": {
+              "e_listener_port": "14202",
+              "origin_pool": "obpdocjms"
+            }
+          },
+          {
+            "name": "obpdocidm",
+            "ssl": {
+              "e_listener_port": "18302",
+              "origin_pool": "obpdocidm"
+            }
+          }
+        ]
+      },
+      "obpodi": {
+        "routerId": "168",
+        "server_name": "CIX1odi.trial.limepoint.com",
+        "e_vip_name": "CIX1odi.trial.limepoint.com",
+        "origin_pool_list": [
+          {
+            "name": "obpodi",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "cix1odi01-prv.trial.limepoint.com",
+                "port": "18002"
+              },
+              {
+                "host": "cix1odi02-prv.trial.limepoint.com",
+                "port": "18003"
+              }
+            ]
+          },
+          {
+            "name": "ftpodi",
+            "type": "tcp",
+            "members": [
+              {
+                "host": "cix1odi01-prv.trial.limepoint.com",
+                "port": "2022"
+              },
+              {
+                "host": "cix1odi02-prv.trial.limepoint.com",
+                "port": "2022"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obpodi",
+            "ssl": {
+              "e_listener_port": "18002",
+              "origin_pool": "obpodi"
+            }
+          },
+          {
+            "name": "ftpodi",
+            "tcp": {
+              "e_listener_port": "2022",
+              "origin_pool": "ftpodi"
+            }
+          }
+        ]
+      },
+      "obposb": {
+        "routerId": "169",
+        "server_name": "CIX1osb.trial.limepoint.com",
+        "e_vip_name": "CIX1osb.trial.limepoint.com",
+        "origin_pool_list": [
+          {
+            "name": "obposb",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "cix1osb01-prv.trial.limepoint.com",
+                "port": "18002"
+              },
+              {
+                "host": "cix1osb02-prv.trial.limepoint.com",
+                "port": "18003"
+              },
+              {
+                "host": "cix1osb03-prv.trial.limepoint.com",
+                "port": "18004"
+              },
+              {
+                "host": "cix1osb04-prv.trial.limepoint.com",
+                "port": "18005"
+              }
+            ]
+          },
+          {
+            "name": "obposb",
+            "type": "tcp",
+            "members": [
+              {
+                "host": "cix1osb01-prv.trial.limepoint.com",
+                "port": "18002"
+              },
+              {
+                "host": "cix1osb02-prv.trial.limepoint.com",
+                "port": "18003"
+              },
+              {
+                "host": "cix1osb03-prv.trial.limepoint.com",
+                "port": "18004"
+              },
+              {
+                "host": "cix1osb04-prv.trial.limepoint.com",
+                "port": "18005"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obposb",
+            "ssl": {
+              "e_listener_port": "18002",
+              "origin_pool": "obposb"
+            }
+          },
+          {
+            "name": "obposb-2",
+            "ssl": {
+              "e_listener_port": "443",
+              "origin_pool": "obposb",
+              "client-auth": "required"
+            },
+            "tcp": {
+              "e_listener_port": "444",
+              "origin_pool": "obposb"
+            }
+          }
+        ]
+      },
+      "obpoim": {
+        "routerId": "170",
+        "server_name": "CIX1oim.trial.limepoint.com",
+        "e_vip_name": "CIX1oim.trial.limepoint.com",
+        "origin_pool_list": [
+          {
+            "name": "obpoim",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "cix1oim01.trial.limepoint.com",
+                "port": "18202"
+              },
+              {
+                "host": "cix1oim02.trial.limepoint.com",
+                "port": "18203"
+              }
+            ]
+          },
+          {
+            "name": "obpoimsoa",
+            "type": "ssl",
+            "request_uri": "/soa-infra/services/isSoaServerReady",
+            "members": [
+              {
+                "host": "cix1oim01.trial.limepoint.com",
+                "port": "18302"
+              },
+              {
+                "host": "cix1oim02.trial.limepoint.com",
+                "port": "18303"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obpoim",
+            "ssl": {
+              "e_listener_port": "443",
+              "origin_pool": "obpoim"
+            }
+          },
+          {
+            "name": "obpoimsoa",
+            "ssl": {
+              "e_listener_port": "18302",
+              "origin_pool": "obpoimsoa"
+            }
+          }
+        ]
+      },
+      "obpurm": {
+        "routerId": "178",
+        "server_name": "CIX1urm.trial.limepoint.com",
+        "e_vip_name": "cix1urm-e.trial.limepoint.com",
+        "origin_pool_list": [
+          {
+            "name": "obpurm",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "cix1urm01-prv.trial.limepoint.com",
+                "port": "18002"
+              },
+              {
+                "host": "cix1urm02-prv.trial.limepoint.com",
+                "port": "18003"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obpurm",
+            "ssl": {
+              "e_listener_port": "18002",
+              "origin_pool": "obpurm"
+            }
+          }
+        ]
+      },
+      "obpapi": {
+        "routerId": "180",
+        "server_name": "CIX1api.trial.limepoint.com",
+        "e_vip_name": "cix1api-e.trial.limepoint.com",
+        "origin_pool_list": [
+          {
+            "name": "obpapi",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "cix1obh01-prv.trial.limepoint.com",
+                "port": "18002"
+              },
+              {
+                "host": "cix1obh02-prv.trial.limepoint.com",
+                "port": "18003"
+              },
+              {
+                "host": "cix1obh03-prv.trial.limepoint.com",
+                "port": "18004"
+              },
+              {
+                "host": "cix1obh04-prv.trial.limepoint.com",
+                "port": "18005"
+              },
+              {
+                "host": "cix1obh05-prv.trial.limepoint.com",
+                "port": "18006"
+              },
+              {
+                "host": "cix1obh06-prv.trial.limepoint.com",
+                "port": "18007"
+              },
+              {
+                "host": "cix1obh07-prv.trial.limepoint.com",
+                "port": "18008"
+              },
+              {
+                "host": "cix1obh08-prv.trial.limepoint.com",
+                "port": "18009"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obpapi",
+            "ssl": {
+              "e_listener_port": "443",
+              "origin_pool": "obpapi",
+              "client-auth": "required"
+            }
+          },
+          {
+            "name": "obpapi-hc",
+            "ssl": {
+              "e_listener_port": "18002",
+              "origin_pool": "obpapi"
+            }
+          }
+        ]
+      },
+      "obp-sso": {
+        "routerId": "171",
+        "server_name": "obp-sso-cix1.trial.limepoint.com",
+        "e_vip_name": "custwpr-sso-cix1.trial.limepoint.com",
+        "origin_pool_list": [
+          {
+            "name": "obp-sso",
+            "type": "ssl",
+            "request_uri": "/oam/server/HeartBeat",
+            "members": [
+              {
+                "host": "cix1oam01-prv.trial.limepoint.com",
+                "port": "18002"
+              },
+              {
+                "host": "cix1oam02-prv.trial.limepoint.com",
+                "port": "18003"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obp-sso",
+            "ssl": {
+              "e_listener_port": "443",
+              "origin_pool": "obp-sso",
+              "content_rules": [
+                {
+                  "name": "obp-sso-content-rule-1",
+                  "uri_prefix": "/adrum",
+                  "directory_path": "/oracle/app/runtime/obpotd/domains/hosting/obp-sso"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "obp-banker": {
+        "routerId": "172",
+        "server_name": "obp-banker-cix1.trial.limepoint.com",
+        "e_vip_name": "custwpr-banker-cix1.trial.limepoint.com",
+        "origin_pool_list": [
+          {
+            "name": "obp-banker",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "cix1obu01-prv.trial.limepoint.com",
+                "port": "18002"
+              },
+              {
+                "host": "cix1obu02-prv.trial.limepoint.com",
+                "port": "18003"
+              },
+              {
+                "host": "cix1obu03-prv.trial.limepoint.com",
+                "port": "18004"
+              },
+              {
+                "host": "cix1obu04-prv.trial.limepoint.com",
+                "port": "18005"
+              },
+              {
+                "host": "cix1obu05-prv.trial.limepoint.com",
+                "port": "18006"
+              },
+              {
+                "host": "cix1obu06-prv.trial.limepoint.com",
+                "port": "18007"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obp-banker",
+            "ssl": {
+              "e_listener_port": "443",
+              "webgate": {
+                "identifier": "MultiSSO",
+                "agentName": "obp-banker-rcc",
+                "logoutRedirectUrl": "https://obp-sso-cix1.trial.limepoint.com/oam/server/logout"
+              },
+              "origin_pool": "obp-banker",
+              "cache_rules": [
+                {
+                  "name": "obp-banker-cache-rule-1",
+                  "condition": "$uri =~ \\\".*(gif|jpe?g|png|css|js)$\\\"",
+                  "cache_https_response": "true",
+                  "enabled": "false"
+                }
+              ],
+              "content_rules": [
+                {
+                  "name": "obp-banker-content-rule-1",
+                  "uri_prefix": "/adrum",
+                  "directory_path": "/oracle/app/runtime/obpotd/domains/hosting/obp-banker"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "obp-worklist": {
+        "routerId": "173",
+        "server_name": "obp-worklist-cix1.trial.limepoint.com",
+        "e_vip_name": "custwpr-worklist-cix1.trial.limepoint.com",
+        "origin_pool_list": [
+          {
+            "name": "obp-worklist",
+            "type": "ssl",
+            "request_uri": "/soa-infra/services/isSoaServerReady",
+            "members": [
+              {
+                "host": "cix1soa01.trial.limepoint.com",
+                "port": "18002"
+              },
+              {
+                "host": "cix1soa02.trial.limepoint.com",
+                "port": "18003"
+              },
+              {
+                "host": "cix1soa03.trial.limepoint.com",
+                "port": "18004"
+              },
+              {
+                "host": "cix1soa04.trial.limepoint.com",
+                "port": "18005"
+              },
+              {
+                "host": "cix1soa05.trial.limepoint.com",
+                "port": "18006"
+              },
+              {
+                "host": "cix1soa06.trial.limepoint.com",
+                "port": "18007"
+              }
+            ]
+          },
+          {
+            "name": "obp-humantask",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "cix1obt01.trial.limepoint.com",
+                "port": "18102"
+              },
+              {
+                "host": "cix1obt02.trial.limepoint.com",
+                "port": "18103"
+              },
+              {
+                "host": "cix1obt03.trial.limepoint.com",
+                "port": "18104"
+              },
+              {
+                "host": "cix1obt04.trial.limepoint.com",
+                "port": "18105"
+              },
+              {
+                "host": "cix1obt05.trial.limepoint.com",
+                "port": "18106"
+              },
+              {
+                "host": "cix1obt06.trial.limepoint.com",
+                "port": "18107"
+              }
+            ]
+          },
+          {
+            "name": "obp-bam",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "cix1bam01.trial.limepoint.com",
+                "port": "18202"
+              },
+              {
+                "host": "cix1bam02.trial.limepoint.com",
+                "port": "18203"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obp-worklist",
+            "ssl": {
+              "e_listener_port": "443",
+              "origin_pool": "obp-worklist",
+              "webgate": {
+                "identifier": "MultiSSO",
+                "agentName": "obp-worklist-rcc",
+                "logoutRedirectUrl": "https://obp-sso-cix1.trial.limepoint.com/oam/server/logout"
+              },
+              "routes": [
+                {
+                  "name": "workflow",
+                  "condition": "$uri =~ \\\"/workflow*\\\"",
+                  "origin_pool": "obp-humantask",
+                  "cookie_name": "ORA_OTD_JROUTE_WF"
+                },
+                {
+                  "name": "bam",
+                  "condition": "$uri = \\\"/bam*\\\"",
+                  "origin_pool": "obp-bam",
+                  "cookie_name": "ORA_OTD_JROUTE_BAM"
+                }
+              ],
+              "cache_rules": [
+                {
+                  "name": "obp-worklist-cache-rule-1",
+                  "condition": "$uri =~ \\\".*(gif|jpe?g|png|css|js)$\\\"",
+                  "cache_https_response": "false"
+                }
+              ],
+              "content_rules": [
+                {
+                  "name": "obp-worklist-content-rule-1",
+                  "uri_prefix": "/adrum",
+                  "directory_path": "/oracle/app/runtime/obpotd/domains/hosting/obp-worklist"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "obp-files": {
+        "routerId": "175",
+        "server_name": "obp-files-cix1.trial.limepoint.com",
+        "e_vip_name": "custwpr-files-cix1.trial.limepoint.com",
+        "origin_pool_list": [
+          {
+            "name": "obp-files",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "cix1ipm01-prv.trial.limepoint.com",
+                "port": "18102"
+              },
+              {
+                "host": "cix1ipm02-prv.trial.limepoint.com",
+                "port": "18103"
+              },
+              {
+                "host": "cix1ipm03-prv.trial.limepoint.com",
+                "port": "18104"
+              },
+              {
+                "host": "cix1ipm04-prv.trial.limepoint.com",
+                "port": "18105"
+              }
+            ]
+          },
+          {
+            "name": "obp-doc-cor",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "cix1doc01-prv.trial.limepoint.com",
+                "port": "18302"
+              },
+              {
+                "host": "cix1doc02-prv.trial.limepoint.com",
+                "port": "18303"
+              },
+              {
+                "host": "cix1doc03-prv.trial.limepoint.com",
+                "port": "18304"
+              },
+              {
+                "host": "cix1doc04-prv.trial.limepoint.com",
+                "port": "18305"
+              }
+            ]
+          },
+          {
+            "name": "obp-cs",
+            "type": "ssl",
+            "request_uri": "/cs/checkucm.html",
+            "members": [
+              {
+                "host": "cix1ucm01-prv.trial.limepoint.com",
+                "port": "18002"
+              },
+              {
+                "host": "cix1ucm02-prv.trial.limepoint.com",
+                "port": "18003"
+              },
+              {
+                "host": "cix1ucm03-prv.trial.limepoint.com",
+                "port": "18004"
+              },
+              {
+                "host": "cix1ucm04-prv.trial.limepoint.com",
+                "port": "18005"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obp-files",
+            "ssl": {
+              "e_listener_port": "443",
+              "origin_pool": "obp-files",
+              "webgate": {
+                "identifier": "MultiSSO",
+                "agentName": "obp-files-rcc",
+                "logoutRedirectUrl": "https://obp-sso-cix1.trial.limepoint.com/oam/server/logout"
+              },
+              "routes": [
+                {
+                  "name": "doc-cor",
+                  "condition": "$uri =~ \\\"/DocumakerCorrespondence*\\\"",
+                  "origin_pool": "obp-doc-cor",
+                  "cookie_name": "ORA_OTD_JROUTE_DC"
+                },
+                {
+                  "name": "ucm-route",
+                  "condition": "$uri = \\\"/cs*\\\" or $uri = \\\"/adfAuthentication\\\" or $uri =~ \\\"/_ocsh*\\\"",
+                  "origin_pool": "obp-cs",
+                  "cookie_name": "ORA_OTD_JROUTE_CS"
+                }
+              ],
+              "content_rules": [
+                {
+                  "name": "obp-files-content-rule-1",
+                  "uri_prefix": "/adrum",
+                  "directory_path": "/oracle/app/runtime/obpotd/domains/hosting/obp-files"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "obp-records": {
+        "routerId": "179",
+        "server_name": "obp-records-cix1.trial.limepoint.com",
+        "e_vip_name": "custwpr-records-cix1.trial.limepoint.com",
+        "origin_pool_list": [
+          {
+            "name": "obp-records",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "cix1urm01-prv.trial.limepoint.com",
+                "port": "18002"
+              },
+              {
+                "host": "cix1urm02-prv.trial.limepoint.com",
+                "port": "18003"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obp-records",
+            "ssl": {
+              "e_listener_port": "443",
+              "webgate": {
+                "identifier": "MultiSSO",
+                "agentName": "obp-records-rcc",
+                "logoutRedirectUrl": "https://obp-sso-cix1.trial.limepoint.com/oam/server/logout"
+              },
+              "origin_pool": "obp-records"
+            }
+          }
+        ]
+      },
+      "obpbrk": {
+        "routerId": "227",
+        "server_name": "CIX1brk.trial.limepoint.com",
+        "e_vip_name": "cix1brk-e.trial.limepoint.com",
+        "origin_pool_list": [
+          {
+            "name": "obpbrk",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "cix1obh01-prv.trial.limepoint.com",
+                "port": "18002"
+              },
+              {
+                "host": "cix1obh02-prv.trial.limepoint.com",
+                "port": "18003"
+              },
+              {
+                "host": "cix1obh03-prv.trial.limepoint.com",
+                "port": "18004"
+              },
+              {
+                "host": "cix1obh04-prv.trial.limepoint.com",
+                "port": "18005"
+              },
+              {
+                "host": "cix1obh05-prv.trial.limepoint.com",
+                "port": "18006"
+              },
+              {
+                "host": "cix1obh06-prv.trial.limepoint.com",
+                "port": "18007"
+              },
+              {
+                "host": "cix1obh07-prv.trial.limepoint.com",
+                "port": "18008"
+              },
+              {
+                "host": "cix1obh08-prv.trial.limepoint.com",
+                "port": "18009"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obpbrk",
+            "ssl": {
+              "e_listener_port": "443",
+              "origin_pool": "obpbrk",
+              "client-auth": "required"
+            }
+          },
+          {
+            "name": "obpbrk-hc",
+            "ssl": {
+              "e_listener_port": "18002",
+              "origin_pool": "obpbrk"
+            }
+          }
+        ]
+      },
+      "obpbat": {
+        "routerId": "191",
+        "server_name": "CIX1bat.trial.limepoint.com",
+        "e_vip_name": "cix1bat-e.trial.limepoint.com",
+        "origin_pool_list": [
+          {
+            "name": "obpbat",
+            "type": "ssl",
+            "request_uri": "/healthcheck/webstat.html",
+            "members": [
+              {
+                "host": "cix1bat01-prv.trial.limepoint.com",
+                "port": "18002"
+              },
+              {
+                "host": "cix1bat02-prv.trial.limepoint.com",
+                "port": "18003"
+              }
+            ]
+          },
+          {
+            "name": "obpbat",
+            "type": "tcp",
+            "members": [
+              {
+                "host": "cix1bat01-prv.trial.limepoint.com",
+                "port": "18002"
+              },
+              {
+                "host": "cix1bat02-prv.trial.limepoint.com",
+                "port": "18003"
+              }
+            ]
+          }
+        ],
+        "server_pool_list": [
+          {
+            "name": "obpbat",
+            "ssl": {
+              "e_listener_port": "18002",
+              "origin_pool": "obpbat"
+            },
+            "tcp": {
+              "e_listener_port": "14002",
+              "origin_pool": "obpbat"
+            }
+          }
+        ]
+      }
+    }
+  }
+}
+

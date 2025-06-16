@@ -1,0 +1,20 @@
+                    "c1": "-Dweblogic.Stdout=<%= @log_location_path %>/${/domains.name}/%Name%/%Name%.out",
+                    "c2": "-Dweblogic.Stderr=<%= @log_location_path %>/${/domains.name}/%Name%/%Name%.err",
+                    <% if @environment_name =~ /^svp\d*[rw]/ or @environment_name =~ /^prd\d*[rw]/  or @environment_name =~ /^nft\d*[rw]/ or @environment_name =~ /^psp/ %>
+					"c3": "-Xloggc:<%= @log_location_path %>/${/domains.name}/%Name%/%Name%_gc.out -XX:+UseG1GC -XX:MaxGCPauseMillis=150 -XX:G1HeapRegionSize=4M -XX:+UseStringDeduplication -XX:ReservedCodeCacheSize=512M -XX:+ParallelRefProcEnabled -XX:+DisableExplicitGC -XX:+UnlockCommercialFeatures -XX:+FlightRecorder -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps",
+                    <% else %>
+					"c3": "-Xloggc:<%= @log_location_path %>/${/domains.name}/%Name%/%Name%_gc.out -XX:+UseG1GC -XX:MaxGCPauseMillis=150 -XX:G1HeapRegionSize=4M -XX:+UseStringDeduplication -XX:ReservedCodeCacheSize=512M -XX:+ParallelRefProcEnabled -XX:+DisableExplicitGC -XX:+UnlockCommercialFeatures -XX:+FlightRecorder -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps",
+					<% end %>
+					"c4": "-Djava.security.debug=failure -Djava.net.preferIPv4Stack=true -Doracle.ons.maxconnections=2 -Dweblogic.security.disableNullCipher=true",
+                    "c5": "-Dweblogic.MaxMessageSize=500000000  -Dweblogic.Chunksize=65536 -Djava.security.egd=file:///dev/urandom",
+                    "s1": "-Dweblogic.security.SSL.minimumProtocolVersion=TLSv1.2 -Dweblogic.security.SSL.protocolVersion=TLSv1.2",
+                    "s2": "-Dweblogic.management.disableManagedServerNotifications=true",
+                    "s3": "-Dweblogic.security.SSL.allowUnencryptedNullCipher=false",
+                    "s4": "-Dweblogic.security.SSL.enableJSSE=true",
+                    "s4a": "-Dweblogic.security.SSL.nojce=true -Dweblogic.jdbc.remoteEnabled=true",
+                    "s5": "-Dweblogic.ssl.JSSEEnabled=true -Dweblogic.rjvm.enableprotocolswitch=true",
+                    "s6": "-Dweblogic.net.ssl.trustStore=<%= @certs_location_path %>/<%= @truststore %>",
+                    "s7": "-Djavax.net.ssl.trustStore=<%= @certs_location_path %>/<%= @truststore %>",
+                    "s8": "-Dweblogic.webservice.client.ssl.trustedcertfile=<%= @certs_location_path %>/cacerts.pem",
+                    "s9": "-Dweblogic.security.audit.auditLogDir=<%= @log_location_path %>/${/domains.name}",
+                    "s10": "-Dweblogic.ssl.SSLv2HelloEnabled=false"
