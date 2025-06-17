@@ -5,7 +5,7 @@
   },
 
   "common": {
-    "password_vault_name": "cix1",
+    "password_vault_name": "secret-vault://csh/environments/cix1",
     "trustStore": "WBCTrust.jks",
     "keyStore": "siebelkeystore.jks",
     "ldap_wallet": "cwallet.sso",
